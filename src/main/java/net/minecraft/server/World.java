@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
+import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlockState;
@@ -85,6 +86,8 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     public boolean populating;
     public final org.spigotmc.SpigotWorldConfig spigotConfig; // Spigot
 
+    public final SpigotTimings.WorldTimingsHandler timings; // Spigot
+
     public CraftWorld getWorld() {
         return this.world;
     }
@@ -140,6 +143,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
             public void c(WorldBorder worldborder, double d0) {}
         });
         // CraftBukkit end
+        timings = new SpigotTimings.WorldTimingsHandler(this); // Spigot - code below can generate new world and access timings
     }
 
     @Override
@@ -612,6 +616,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
 
         gameprofilerfiller.enter("blockEntities");
+        timings.tileEntityTick.startTiming(); // Spigot
         if (!this.tileEntityListUnload.isEmpty()) {
             this.tileEntityListTick.removeAll(this.tileEntityListUnload);
             this.tileEntityList.removeAll(this.tileEntityListUnload);
@@ -632,6 +637,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
                         gameprofilerfiller.a(() -> {
                             return String.valueOf(TileEntityTypes.a(tileentity.q()));
                         });
+                        tileentity.tickTimer.startTiming(); // Spigot
                         if (tileentity.q().a(this.getType(blockposition).getBlock())) {
                             ((ITickable) tileentity).tick();
                         } else {
@@ -646,6 +652,11 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
                         tileentity.a(crashreportsystemdetails);
                         throw new ReportedException(crashreport);
                     }
+                    // Spigot start
+                    finally {
+                        tileentity.tickTimer.stopTiming();
+                    }
+                    // Spigot end
                 }
             }
 
@@ -658,6 +669,8 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
             }
         }
 
+        timings.tileEntityTick.stopTiming(); // Spigot
+        timings.tileEntityPending.startTiming(); // Spigot
         this.tickingTileEntities = false;
         gameprofilerfiller.exitEnter("pendingBlockEntities");
         if (!this.tileEntityListPending.isEmpty()) {
@@ -690,12 +703,15 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
             this.tileEntityListPending.clear();
         }
 
+        timings.tileEntityPending.stopTiming(); // Spigot
         gameprofilerfiller.exit();
     }
 
     public void a(Consumer<Entity> consumer, Entity entity) {
         try {
+            SpigotTimings.tickEntityTimer.startTiming(); // Spigot
             consumer.accept(entity);
+            SpigotTimings.tickEntityTimer.stopTiming(); // Spigot
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Ticking entity");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Entity being ticked");
