@@ -316,6 +316,7 @@ public class WorldServer extends World {
             this.tickingEntities = true;
             ObjectIterator objectiterator = this.entitiesById.int2ObjectEntrySet().iterator();
 
+            org.spigotmc.ActivationRange.activateEntities(this); // Spigot
             timings.entityTick.startTiming(); // Spigot
             while (objectiterator.hasNext()) {
                 Entry<Entity> entry = (Entry) objectiterator.next();
@@ -547,6 +548,14 @@ public class WorldServer extends World {
 
     public void entityJoinedWorld(Entity entity) {
         if (entity instanceof EntityHuman || this.getChunkProvider().a(entity)) {
+            // Spigot start
+            if (!org.spigotmc.ActivationRange.checkIfActive(entity)) {
+                entity.ticksLived++;
+                entity.inactiveTick();
+                return;
+            }
+            // Spigot end
+
             entity.tickTimer.startTiming(); // Spigot
             entity.H = entity.locX;
             entity.I = entity.locY;

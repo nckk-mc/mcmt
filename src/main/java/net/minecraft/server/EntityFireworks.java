@@ -18,6 +18,14 @@ public class EntityFireworks extends Entity implements IProjectile {
         super(entitytypes, world);
     }
 
+    // Spigot Start
+    @Override
+    public void inactiveTick() {
+        this.ticksFlown += 1;
+        super.inactiveTick();
+    }
+    // Spigot End
+
     @Override
     protected void initDatawatcher() {
         this.datawatcher.register(EntityFireworks.FIREWORK_ITEM, ItemStack.a);
