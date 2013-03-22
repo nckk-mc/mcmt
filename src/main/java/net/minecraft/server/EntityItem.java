@@ -144,7 +144,10 @@ public class EntityItem extends Entity {
     }
 
     private void mergeNearby() {
-        List<EntityItem> list = this.world.a(EntityItem.class, this.getBoundingBox().grow(0.5D, 0.0D, 0.5D), (entityitem) -> {
+        // Spigot start
+        double radius = world.spigotConfig.itemMerge;
+        List<EntityItem> list = this.world.a(EntityItem.class, this.getBoundingBox().grow(radius, radius, radius), (entityitem) -> {
+            // Spigot end
             return entityitem != this && entityitem.z();
         });
 
@@ -178,7 +181,7 @@ public class EntityItem extends Entity {
             if (itemstack1.getCount() + itemstack.getCount() <= itemstack1.getMaxStackSize()) {
                 if (!(itemstack1.hasTag() ^ itemstack.hasTag())) {
                     if (!itemstack1.hasTag() || itemstack1.getTag().equals(itemstack.getTag())) {
-                        if (itemstack1.getCount() < itemstack.getCount()) {
+                        if (true || itemstack1.getCount() < itemstack.getCount()) { // Spigot
                             a(this, itemstack, entityitem, itemstack1);
                         } else {
                             a(entityitem, itemstack1, this, itemstack);
