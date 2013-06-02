@@ -1650,4 +1650,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getHandle().a(org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(book), net.minecraft.server.EnumHand.MAIN_HAND); // PAIL rename openBook
         getInventory().setItemInMainHand(hand);
     }
+
+    // Spigot start
+    private final Player.Spigot spigot = new Player.Spigot()
+    {
+    };
+
+    public Player.Spigot spigot()
+    {
+        return spigot;
+    }
+    // Spigot end
 }
