@@ -220,7 +220,7 @@ public class ItemCrossbow extends ItemProjectileWeapon {
                 ((IProjectile) object).shoot((double) vector3fa.a(), (double) vector3fa.b(), (double) vector3fa.c(), f1, f2);
             }
             // CraftBukkit start
-            org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityliving, itemstack, (Entity) object, f);
+            org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityliving, itemstack, itemstack1, (IProjectile) object, f); // Paper // TODO: consume??
             if (event.isCancelled()) {
                 event.getProjectile().remove();
                 return;

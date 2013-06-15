@@ -50,6 +50,7 @@ import net.minecraft.server.GeneratorAccess;
 import net.minecraft.server.IBlockData;
 import net.minecraft.server.IChatBaseComponent;
 import net.minecraft.server.IInventory;
+import net.minecraft.server.IProjectile;
 import net.minecraft.server.ItemActionContext;
 import net.minecraft.server.ItemStack;
 import net.minecraft.server.Items;
@@ -457,16 +458,16 @@ public class CraftEventFactory {
     /**
      * EntityShootBowEvent
      */
-    public static EntityShootBowEvent callEntityShootBowEvent(EntityLiving who, ItemStack itemstack, Entity entityArrow, float force) {
+    public static EntityShootBowEvent callEntityShootBowEvent(EntityLiving who, ItemStack itemstack, ItemStack arrowItem, IProjectile entityArrow, float force) { // paper
         LivingEntity shooter = (LivingEntity) who.getBukkitEntity();
         CraftItemStack itemInHand = CraftItemStack.asCraftMirror(itemstack);
-        org.bukkit.entity.Entity arrow = entityArrow.getBukkitEntity();
+        org.bukkit.entity.Entity arrow = ((Entity) entityArrow).getBukkitEntity(); // Paper
 
         if (itemInHand != null && (itemInHand.getType() == Material.AIR || itemInHand.getAmount() == 0)) {
             itemInHand = null;
         }
 
-        EntityShootBowEvent event = new EntityShootBowEvent(shooter, itemInHand, arrow, force);
+        EntityShootBowEvent event = new EntityShootBowEvent(shooter, itemInHand, CraftItemStack.asCraftMirror(arrowItem), arrow, force); // Paper
         Bukkit.getPluginManager().callEvent(event);
 
         return event;

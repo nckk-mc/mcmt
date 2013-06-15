@@ -36,6 +36,7 @@ public class ItemBow extends ItemProjectileWeapon {
                 if ((double) f >= 0.1D) {
                     boolean flag1 = flag && itemstack1.getItem() == Items.ARROW;
 
+                    boolean consumeArrow = true; // Paper
                     if (!world.isClientSide) {
                         ItemArrow itemarrow = (ItemArrow) ((ItemArrow) (itemstack1.getItem() instanceof ItemArrow ? itemstack1.getItem() : Items.ARROW));
                         EntityArrow entityarrow = itemarrow.a(world, itemstack1, (EntityLiving) entityhuman);
@@ -61,7 +62,7 @@ public class ItemBow extends ItemProjectileWeapon {
                             entityarrow.setOnFire(100);
                         }
                         // CraftBukkit start
-                        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, entityarrow, f);
+                        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, itemstack1, entityarrow, f); // Paper
                         if (event.isCancelled()) {
                             event.getProjectile().remove();
                             return;
@@ -71,7 +72,8 @@ public class ItemBow extends ItemProjectileWeapon {
                         itemstack.damage(1, entityhuman, (entityhuman1) -> {
                             entityhuman1.d(entityhuman.getRaisedHand());
                         });
-                        if (flag1 || entityhuman.abilities.canInstantlyBuild && (itemstack1.getItem() == Items.SPECTRAL_ARROW || itemstack1.getItem() == Items.TIPPED_ARROW)) {
+                        consumeArrow = event.getConsumeArrow(); // Paper
+                        if (!consumeArrow || flag1 || (entityhuman.abilities.canInstantlyBuild && ((itemstack1.getItem() == Items.SPECTRAL_ARROW) || (itemstack1.getItem() == Items.TIPPED_ARROW)))) { // Paper - add
                             entityarrow.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                         }
 
@@ -88,7 +90,7 @@ public class ItemBow extends ItemProjectileWeapon {
                     }
 
                     world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0F, 1.0F / (ItemBow.i.nextFloat() * 0.4F + 1.2F) + f * 0.5F);
-                    if (!flag1 && !entityhuman.abilities.canInstantlyBuild) {
+                    if (!flag1 && !entityhuman.abilities.canInstantlyBuild && consumeArrow) { // Paper
                         itemstack1.subtract(1);
                         if (itemstack1.isEmpty()) {
                             entityhuman.inventory.f(itemstack1);
