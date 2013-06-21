@@ -63,11 +63,11 @@ public class HandshakeListener implements PacketHandshakingInListener {
                 // CraftBukkit end
 
                 if (packethandshakinginsetprotocol.c() > SharedConstants.a().getProtocolVersion()) {
-                    chatmessage = new ChatMessage("multiplayer.disconnect.outdated_server", new Object[]{SharedConstants.a().getName()});
+                    chatmessage = new ChatMessage( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedServerMessage.replaceAll("'", "''"), SharedConstants.a().getName() ) ); // Spigot
                     this.b.sendPacket(new PacketLoginOutDisconnect(chatmessage));
                     this.b.close(chatmessage);
                 } else if (packethandshakinginsetprotocol.c() < SharedConstants.a().getProtocolVersion()) {
-                    chatmessage = new ChatMessage("multiplayer.disconnect.outdated_client", new Object[]{SharedConstants.a().getName()});
+                    chatmessage = new ChatMessage( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedClientMessage.replaceAll("'", "''"), SharedConstants.a().getName() ) ); // Spigot
                     this.b.sendPacket(new PacketLoginOutDisconnect(chatmessage));
                     this.b.close(chatmessage);
                 } else {
