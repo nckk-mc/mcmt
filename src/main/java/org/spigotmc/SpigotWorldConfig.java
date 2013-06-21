@@ -148,4 +148,11 @@ public class SpigotWorldConfig
         viewDistance = Math.max( viewDistance, 3 );
         log( "View Distance: " + viewDistance );
     }
+
+    public byte mobSpawnRange;
+    private void mobSpawnRange()
+    {
+        mobSpawnRange = (byte) getInt( "mob-spawn-range", 6 );
+        log( "Mob Spawn Range: " + mobSpawnRange );
+    }
 }
