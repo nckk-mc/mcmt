@@ -963,6 +963,21 @@ public class WorldServer extends World {
     }
 
     public void unloadChunk(Chunk chunk) {
+        // Spigot Start
+        for (TileEntity tileentity : chunk.getTileEntities().values())
+        {
+            if ( tileentity instanceof IInventory )
+            {
+                for ( org.bukkit.entity.HumanEntity h : Lists.<org.bukkit.entity.HumanEntity>newArrayList((List<org.bukkit.entity.HumanEntity>) ( (IInventory) tileentity ).getViewers() ) )
+                {
+                    if ( h instanceof org.bukkit.craftbukkit.entity.CraftHumanEntity )
+                    {
+                       ( (org.bukkit.craftbukkit.entity.CraftHumanEntity) h).getHandle().closeInventory();
+                    }
+                }
+            }
+        }
+        // Spigot End
         this.tileEntityListUnload.addAll(chunk.getTileEntities().values());
         EntitySlice[] aentityslice = chunk.getEntitySlices();
         int i = aentityslice.length;
@@ -973,6 +988,18 @@ public class WorldServer extends World {
 
             while (iterator.hasNext()) {
                 Entity entity = (Entity) iterator.next();
+                // Spigot Start
+                if ( entity instanceof IInventory )
+                {
+                    for ( org.bukkit.entity.HumanEntity h : Lists.<org.bukkit.entity.HumanEntity>newArrayList( (List<org.bukkit.entity.HumanEntity>) ( (IInventory) entity ).getViewers() ) )
+                    {
+                        if ( h instanceof org.bukkit.craftbukkit.entity.CraftHumanEntity )
+                        {
+                           ( (org.bukkit.craftbukkit.entity.CraftHumanEntity) h).getHandle().closeInventory();
+                        }
+                    }
+                }
+                // Spigot End
 
                 if (!(entity instanceof EntityPlayer)) {
                     if (this.tickingEntities) {
