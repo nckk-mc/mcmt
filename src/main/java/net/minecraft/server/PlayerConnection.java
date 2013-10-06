@@ -127,6 +127,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
     private float lastPitch = Float.MAX_VALUE;
     private float lastYaw = Float.MAX_VALUE;
     private boolean justTeleported = false;
+    private boolean hasMoved; // Spigot
 
     public CraftPlayer getPlayer() {
         return (this.player == null) ? null : (CraftPlayer) this.player.getBukkitEntity();
@@ -363,6 +364,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
                     flag1 = true;
                     PlayerConnection.LOGGER.warn("{} moved wrongly!", entity.getDisplayName().getString());
                 }
+                Location curPos = this.getPlayer().getLocation(); // Spigot
 
                 entity.setLocation(d3, d4, d5, f, f1);
                 player.setLocation(d3, d4, d5, this.player.yaw, this.player.pitch); // CraftBukkit
@@ -377,6 +379,17 @@ public class PlayerConnection implements PacketListenerPlayIn {
 
                 // CraftBukkit start - fire PlayerMoveEvent
                 Player player = this.getPlayer();
+                // Spigot Start
+                if ( !hasMoved )
+                {
+                    lastPosX = curPos.getX();
+                    lastPosY = curPos.getY();
+                    lastPosZ = curPos.getZ();
+                    lastYaw = curPos.getYaw();
+                    lastPitch = curPos.getPitch();
+                    hasMoved = true;
+                }
+                // Spigot End
                 Location from = new Location(player.getWorld(), lastPosX, lastPosY, lastPosZ, lastYaw, lastPitch); // Get the Players previous Event location.
                 Location to = player.getLocation().clone(); // Start off the To location as the Players current location.
 
@@ -402,7 +415,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
                     this.lastPitch = to.getPitch();
 
                     // Skip the first time we do this
-                    if (from.getX() != Double.MAX_VALUE) {
+                    if (true) { // Spigot - don't skip any move events
                         Location oldTo = to.clone();
                         PlayerMoveEvent event = new PlayerMoveEvent(player, from, to);
                         this.server.getPluginManager().callEvent(event);
