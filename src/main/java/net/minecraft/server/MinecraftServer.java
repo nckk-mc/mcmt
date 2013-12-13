@@ -174,7 +174,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
         this.gameProfileRepository = gameprofilerepository;
         this.userCache = usercache;
         // this.universe = file; // CraftBukkit
-        this.serverConnection = new ServerConnection(this); // CraftBukkit
+        // this.serverConnection = new ServerConnection(this); // CraftBukkit // Spigot
         this.worldLoadListenerFactory = worldloadlistenerfactory;
         // this.convertable = new Convertable(file.toPath(), file.toPath().resolve("../backups"), datafixer); // CraftBukkit - moved to DedicatedServer.init
         this.dataConverterManager = datafixer;
@@ -1519,7 +1519,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
     @Nullable
     public ServerConnection getServerConnection() {
-        return this.serverConnection;
+        return this.serverConnection == null ? this.serverConnection = new ServerConnection(this) : this.serverConnection; // Spigot
     }
 
     public boolean ah() {
