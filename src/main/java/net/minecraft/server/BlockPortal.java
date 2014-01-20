@@ -35,7 +35,7 @@ public class BlockPortal extends Block {
 
     @Override
     public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
-        if (world.worldProvider.isOverworld() && world.getGameRules().getBoolean("doMobSpawning") && random.nextInt(2000) < world.getDifficulty().a()) {
+        if (world.spigotConfig.enableZombiePigmenPortalSpawns && world.worldProvider.isOverworld() && world.getGameRules().getBoolean("doMobSpawning") && random.nextInt(2000) < world.getDifficulty().a()) { // Spigot
             while (world.getType(blockposition).getBlock() == this) {
                 blockposition = blockposition.down();
             }
