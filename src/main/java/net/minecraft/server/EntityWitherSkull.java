@@ -35,8 +35,11 @@ public class EntityWitherSkull extends EntityFireball {
             if (movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
                 Entity entity = ((MovingObjectPositionEntity) movingobjectposition).getEntity();
 
+                // Spigot start
+                boolean didDamage = false;
                 if (this.shooter != null) {
-                    if (entity.damageEntity(DamageSource.projectile(this, shooter), 8.0F)) { // CraftBukkit
+                    didDamage = entity.damageEntity(DamageSource.projectile(this, shooter), 8.0F);
+                    if (didDamage) { // CraftBukkit
                         if (entity.isAlive()) {
                             this.a(this.shooter, entity);
                         } else {
@@ -44,10 +47,11 @@ public class EntityWitherSkull extends EntityFireball {
                         }
                     }
                 } else {
-                    entity.damageEntity(DamageSource.MAGIC, 5.0F);
+                    didDamage = entity.damageEntity(DamageSource.MAGIC, 5.0F);
                 }
 
-                if (entity instanceof EntityLiving) {
+                if (didDamage && entity instanceof EntityLiving) {
+                // Spigot end
                     byte b0 = 0;
 
                     if (this.world.getDifficulty() == EnumDifficulty.NORMAL) {
