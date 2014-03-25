@@ -895,6 +895,7 @@ public class WorldServer extends World {
 
     // CraftBukkit start
     private boolean addEntity0(Entity entity, CreatureSpawnEvent.SpawnReason spawnReason) {
+        org.spigotmc.AsyncCatcher.catchOp( "entity add"); // Spigot
         if (entity.dead) {
             // WorldServer.LOGGER.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.getName(entity.getEntityType())); // CraftBukkit
             return false;
@@ -1017,6 +1018,7 @@ public class WorldServer extends World {
     }
 
     public void removeEntity(Entity entity) {
+        org.spigotmc.AsyncCatcher.catchOp( "entity remove"); // Spigot
         if (this.tickingEntities) {
             throw new IllegalStateException("Removing entity while ticking!");
         } else {
