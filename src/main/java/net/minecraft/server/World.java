@@ -949,6 +949,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
                         }
                     }
 
+                    tileentity.setWorld(this); // Spigot - No null worlds
                     this.tileEntityListPending.add(tileentity);
                 } else {
                     this.getChunkAtWorldCoords(blockposition).setTileEntity(blockposition, tileentity);
