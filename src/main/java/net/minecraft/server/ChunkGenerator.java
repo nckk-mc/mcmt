@@ -196,4 +196,10 @@ public abstract class ChunkGenerator<C extends GeneratorSettingsDefault> {
     public int c(int i, int j, HeightMap.Type heightmap_type) {
         return this.getBaseHeight(i, j, heightmap_type) - 1;
     }
+
+    // Spigot start
+    public World getWorld() {
+        return this.a.getMinecraftWorld();
+    }
+    // Spigot end
 }

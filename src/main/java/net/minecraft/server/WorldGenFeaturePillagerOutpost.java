@@ -67,8 +67,10 @@ public class WorldGenFeaturePillagerOutpost extends WorldGenFeatureRandomScatter
     }
 
     @Override
-    protected int getSeed() {
-        return 165745296;
+    // Spigot start
+    protected int getSeed(World world) {
+        return world.spigotConfig.outpostSeed;
+        // Spigot end
     }
 
     public static class a extends StructureAbstract {

@@ -25,8 +25,10 @@ public class WorldGenFeatureIgloo extends WorldGenFeatureRandomScattered<WorldGe
     }
 
     @Override
-    protected int getSeed() {
-        return 14357618;
+    // Spigot start
+    protected int getSeed(World world) {
+        return world.spigotConfig.iglooSeed;
+        // Spigot end
     }
 
     public static class a extends StructureStart {

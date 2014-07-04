@@ -25,8 +25,10 @@ public class WorldGenFeatureJunglePyramid extends WorldGenFeatureRandomScattered
     }
 
     @Override
-    protected int getSeed() {
-        return 14357619;
+    // Spigot start
+    protected int getSeed(World world) {
+        return world.spigotConfig.jungleSeed;
+        // Spigot end
     }
 
     public static class a extends StructureStart {

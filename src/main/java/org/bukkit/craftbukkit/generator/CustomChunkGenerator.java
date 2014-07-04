@@ -172,4 +172,10 @@ public class CustomChunkGenerator extends InternalChunkGenerator<GeneratorSettin
     public int getGenerationDepth() {
         return world.getHeight();
     }
+
+    // Spigot start
+    public WorldServer getWorld() {
+        return world;
+    }
+    // Spigot end
 }

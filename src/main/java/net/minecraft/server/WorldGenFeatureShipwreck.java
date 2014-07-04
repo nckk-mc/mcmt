@@ -25,8 +25,10 @@ public class WorldGenFeatureShipwreck extends WorldGenFeatureRandomScattered<Wor
     }
 
     @Override
-    protected int getSeed() {
-        return 165745295;
+    // Spigot start
+    protected int getSeed(World world) {
+        return world.spigotConfig.shipwreckSeed;
+        // Spigot end
     }
 
     @Override

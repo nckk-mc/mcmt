@@ -21,7 +21,7 @@ public abstract class WorldGenFeatureRandomScattered<C extends WorldGenFeatureCo
         int k2 = i2 / i1;
         int l2 = j2 / i1;
 
-        ((SeededRandom) random).a(chunkgenerator.getSeed(), k2, l2, this.getSeed());
+        ((SeededRandom) random).a(chunkgenerator.getSeed(), k2, l2, this.getSeed(chunkgenerator.getWorld())); // Spigot
         k2 *= i1;
         l2 *= i1;
         k2 += random.nextInt(i1 - j1);
@@ -52,5 +52,5 @@ public abstract class WorldGenFeatureRandomScattered<C extends WorldGenFeatureCo
         return chunkgenerator.getSettings().i();
     }
 
-    protected abstract int getSeed();
+    protected abstract int getSeed(World world); // Spigot
 }

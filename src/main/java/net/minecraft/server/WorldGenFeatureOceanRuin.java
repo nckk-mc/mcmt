@@ -39,8 +39,10 @@ public class WorldGenFeatureOceanRuin extends WorldGenFeatureRandomScattered<Wor
     }
 
     @Override
-    protected int getSeed() {
-        return 14357621;
+    // Spigot start
+    protected int getSeed(World world) {
+        return world.spigotConfig.oceanSeed;
+        // Spigot end
     }
 
     public static enum Temperature {

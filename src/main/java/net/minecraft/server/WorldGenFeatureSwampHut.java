@@ -30,8 +30,10 @@ public class WorldGenFeatureSwampHut extends WorldGenFeatureRandomScattered<Worl
     }
 
     @Override
-    protected int getSeed() {
-        return 14357620;
+    // Spigot start
+    protected int getSeed(World world) {
+        return world.spigotConfig.swampSeed;
+        // Spigot end
     }
 
     @Override
