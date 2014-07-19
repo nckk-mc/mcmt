@@ -9,6 +9,7 @@ public class EntityOcelot extends EntityAnimal {
     private static final DataWatcherObject<Boolean> bA = DataWatcher.a(EntityOcelot.class, DataWatcherRegistry.i);
     private EntityOcelot.a<EntityHuman> bB;
     private EntityOcelot.b bD;
+    public boolean spawnBonus = true; // Spigot
 
     public EntityOcelot(EntityTypes<? extends EntityOcelot> entitytypes, World world) {
         super(entitytypes, world);
@@ -227,7 +228,7 @@ public class EntityOcelot extends EntityAnimal {
     @Override
     public GroupDataEntity prepare(GeneratorAccess generatoraccess, DifficultyDamageScaler difficultydamagescaler, EnumMobSpawn enummobspawn, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
         groupdataentity = super.prepare(generatoraccess, difficultydamagescaler, enummobspawn, groupdataentity, nbttagcompound);
-        if (generatoraccess.getRandom().nextInt(7) == 0) {
+        if (spawnBonus && generatoraccess.getRandom().nextInt(7) == 0) { // Spigot
             this.dW();
         }
 

@@ -1591,6 +1591,12 @@ public class CraftWorld implements World {
         }
 
         if (entity != null) {
+            // Spigot start
+            if (entity instanceof net.minecraft.server.EntityOcelot)
+            {
+                ( (net.minecraft.server.EntityOcelot) entity ).spawnBonus = false;
+            }
+            // Spigot end
             return entity;
         }
 
