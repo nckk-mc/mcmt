@@ -797,6 +797,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
             this.a(crashreport);
         } finally {
             try {
+                org.spigotmc.WatchdogThread.doStop();
                 this.isStopped = true;
                 this.stop();
             } catch (Throwable throwable1) {
@@ -955,6 +956,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
         this.ap.a(i1 - i);
         this.methodProfiler.exit();
+        org.spigotmc.WatchdogThread.tick(); // Spigot
         SpigotTimings.serverTickTimer.stopTiming(); // Spigot
         org.spigotmc.CustomTimingsHandler.tick(); // Spigot
     }
