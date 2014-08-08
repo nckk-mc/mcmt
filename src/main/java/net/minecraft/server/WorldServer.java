@@ -1015,6 +1015,30 @@ public class WorldServer extends World {
     }
 
     public void unregisterEntity(Entity entity) {
+        // Spigot start
+        if ( entity instanceof EntityHuman )
+        {
+            this.getMinecraftServer().worldServer.values().stream().map( WorldServer::getWorldPersistentData ).forEach( (worldData) ->
+            {
+                for (Object o : worldData.data.values() )
+                {
+                    if ( o instanceof WorldMap )
+                    {
+                        WorldMap map = (WorldMap) o;
+                        map.humans.remove( (EntityHuman) entity );
+                        for ( Iterator<WorldMap.WorldMapHumanTracker> iter = (Iterator<WorldMap.WorldMapHumanTracker>) map.i.iterator(); iter.hasNext(); )
+                        {
+                            if ( iter.next().trackee == entity )
+                            {
+                                iter.remove();
+                            }
+                        }
+                    }
+                }
+            } );
+        }
+        // Spigot end
+
         if (entity instanceof EntityEnderDragon) {
             EntityComplexPart[] aentitycomplexpart = ((EntityEnderDragon) entity).dT();
             int i = aentitycomplexpart.length;
