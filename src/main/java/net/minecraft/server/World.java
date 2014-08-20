@@ -723,6 +723,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
 
         timings.tileEntityPending.stopTiming(); // Spigot
         gameprofilerfiller.exit();
+        spigotConfig.currentPrimedTnt = 0; // Spigot
     }
 
     public void a(Consumer<Entity> consumer, Entity entity) {
