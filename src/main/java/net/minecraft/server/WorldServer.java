@@ -1487,13 +1487,37 @@ public class WorldServer extends World {
         return ((PersistentIdCounts) this.getMinecraftServer().getWorldServer(DimensionManager.OVERWORLD).getWorldPersistentData().a(PersistentIdCounts::new, "idcounts")).a();
     }
 
+    // Paper start - helper function for configurable spawn radius
+    public void addTicketsForSpawn(int radiusInBlocks, BlockPosition spawn) {
+        ChunkProviderServer chunkproviderserver = this.getChunkProvider();
+        for (int x = -radiusInBlocks; x <= radiusInBlocks; x+= 16) {
+            for (int z = -radiusInBlocks; z <= radiusInBlocks; z += 16) {
+                chunkproviderserver.addTicket(TicketType.START, new ChunkCoordIntPair(spawn.add(x, 0, z)), 1, Unit.INSTANCE);
+            }
+        }
+    }
+    public void removeTicketsForSpawn(int radiusInBlocks, BlockPosition spawn) {
+        ChunkProviderServer chunkproviderserver = this.getChunkProvider();
+        for (int x = -radiusInBlocks; x <= radiusInBlocks; x+= 16) {
+            for (int z = -radiusInBlocks; z <= radiusInBlocks; z += 16) {
+                chunkproviderserver.removeTicket(TicketType.START, new ChunkCoordIntPair(spawn.add(x, 0, z)), 1, Unit.INSTANCE);
+            }
+        }
+    }
+    // Paper end
+
     @Override
     public void a_(BlockPosition blockposition) {
-        ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(new BlockPosition(this.worldData.b(), 0, this.worldData.d()));
+        // Paper - configurable spawn radius
+        BlockPosition prevSpawn = this.getSpawn();
 
         super.a_(blockposition);
-        this.getChunkProvider().removeTicket(TicketType.START, chunkcoordintpair, 11, Unit.INSTANCE);
-        this.getChunkProvider().addTicket(TicketType.START, new ChunkCoordIntPair(blockposition), 11, Unit.INSTANCE);
+        if (this.keepSpawnInMemory) {
+            // if this keepSpawnInMemory is false a plugin has already removed our tickets, do not re-add
+            this.removeTicketsForSpawn(this.paperConfig.keepLoadedRange, prevSpawn);
+            this.addTicketsForSpawn(this.paperConfig.keepLoadedRange, blockposition);
+        }
+        // Paper end
     }
 
     public LongSet getForceLoadedChunks() {
