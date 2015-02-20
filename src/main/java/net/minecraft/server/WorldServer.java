@@ -979,11 +979,11 @@ public class WorldServer extends World {
         }
         // Spigot End
         this.tileEntityListUnload.addAll(chunk.getTileEntities().values());
-        EntitySlice[] aentityslice = chunk.getEntitySlices();
+        List[] aentityslice = chunk.getEntitySlices(); // Spigot
         int i = aentityslice.length;
 
         for (int j = 0; j < i; ++j) {
-            EntitySlice<Entity> entityslice = aentityslice[j];
+            List<Entity> entityslice = aentityslice[j]; // Spigot
             Iterator iterator = entityslice.iterator();
 
             while (iterator.hasNext()) {

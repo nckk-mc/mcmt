@@ -537,11 +537,11 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                     chunk.setLoaded(true);
                     this.world.a(chunk.getTileEntities().values());
                     List<Entity> list = null;
-                    EntitySlice[] aentityslice = chunk.getEntitySlices();
+                    List<Entity>[] aentityslice = chunk.getEntitySlices(); // Spigot
                     int i = aentityslice.length;
 
                     for (int j = 0; j < i; ++j) {
-                        EntitySlice<Entity> entityslice = aentityslice[j];
+                        List<Entity> entityslice = aentityslice[j]; // Spigot
                         Iterator iterator = entityslice.iterator();
 
                         while (iterator.hasNext()) {
