@@ -1914,6 +1914,16 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
                 }
             }
             // CraftBukkit end
+            // Spigot start
+            org.spigotmc.event.entity.EntityMountEvent event = new org.spigotmc.event.entity.EntityMountEvent(entity.getBukkitEntity(), this.getBukkitEntity());
+            // Suppress during worldgen
+            if (this.valid) {
+                Bukkit.getPluginManager().callEvent(event);
+            }
+            if (event.isCancelled()) {
+                return false;
+            }
+            // Spigot end
             if (!this.world.isClientSide && entity instanceof EntityHuman && !(this.getRidingPassenger() instanceof EntityHuman)) {
                 this.passengers.add(0, entity);
             } else {
@@ -1944,6 +1954,13 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
                 }
             }
             // CraftBukkit end
+            // Spigot start
+            org.spigotmc.event.entity.EntityDismountEvent event = new org.spigotmc.event.entity.EntityDismountEvent(entity.getBukkitEntity(), this.getBukkitEntity());
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                return false;
+            }
+            // Spigot end
             this.passengers.remove(entity);
             entity.j = 60;
         }
