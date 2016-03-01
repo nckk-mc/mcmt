@@ -609,7 +609,7 @@ public abstract class EntityInsentient extends EntityLiving {
         if (!this.isPersistent() && !this.I()) {
             EntityHuman entityhuman = this.world.findNearbyPlayer(this, -1.0D);
 
-            if (entityhuman != null) {
+            if (entityhuman != null && entityhuman.affectsSpawning) { // Paper - Affects Spawning API
                 double d0 = entityhuman.h(this);
 
                 if (d0 > world.paperConfig.hardDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // Paper - custom despawn distances

@@ -106,7 +106,7 @@ public class EntitySilverfish extends EntityMonster {
         if (super.a(generatoraccess, enummobspawn)) {
             EntityHuman entityhuman = this.world.a(EntitySilverfish.b, (EntityLiving) this);
 
-            return entityhuman == null;
+            return !(entityhuman != null && !entityhuman.affectsSpawning) && entityhuman == null; // Paper - Affects Spawning API
         } else {
             return false;
         }
