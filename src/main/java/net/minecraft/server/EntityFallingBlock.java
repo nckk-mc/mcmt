@@ -105,11 +105,13 @@ public class EntityFallingBlock extends Entity {
 
                 if (!this.onGround && !flag1) {
                     if (!this.world.isClientSide && (this.ticksLived > 100 && (blockposition.getY() < 1 || blockposition.getY() > 256) || this.ticksLived > 600)) {
+                        if (this.world.paperConfig.fallingBlockHeightNerf != 0 && this.locY > this.world.paperConfig.fallingBlockHeightNerf) { // Paper - Configurable EntityFallingBlock height nerf
                         if (this.dropItem && this.world.getGameRules().getBoolean("doEntityDrops")) {
                             this.a((IMaterial) block);
                         }
 
                         this.die();
+                    } // Paper
                     }
                 } else {
                     IBlockData iblockdata = this.world.getType(blockposition);
