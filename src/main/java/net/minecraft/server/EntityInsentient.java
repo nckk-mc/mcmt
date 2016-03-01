@@ -612,11 +612,11 @@ public abstract class EntityInsentient extends EntityLiving {
             if (entityhuman != null) {
                 double d0 = entityhuman.h(this);
 
-                if (d0 > 16384.0D) { // CraftBukkit - remove isTypeNotPersistent() check
+                if (d0 > world.paperConfig.hardDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // Paper - custom despawn distances
                     this.die();
                 }
 
-                if (this.ticksFarFromPlayer > 600 && this.random.nextInt(800) == 0 && d0 > 1024.0D) { // CraftBukkit - remove isTypeNotPersistent() check
+                if (this.ticksFarFromPlayer > 600 && this.random.nextInt(800) == 0 && d0 > world.paperConfig.softDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // Paper - custom despawn distances
                     this.die();
                 } else if (d0 < 1024.0D) {
                     this.ticksFarFromPlayer = 0;
