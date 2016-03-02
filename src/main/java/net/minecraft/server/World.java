@@ -19,6 +19,7 @@ import org.apache.logging.log4j.util.Supplier;
 // CraftBukkit start
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
+import java.util.HashMap; // Paper
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
@@ -94,6 +95,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     private org.spigotmc.TickLimiter entityLimiter;
     private org.spigotmc.TickLimiter tileLimiter;
     private int tileTickPosition;
+    public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<>(); // Paper - Optimize explosions
 
     public CraftWorld getWorld() {
         return this.world;
