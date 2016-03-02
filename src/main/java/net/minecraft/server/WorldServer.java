@@ -384,7 +384,7 @@ public class WorldServer extends World {
         gameprofilerfiller.enter("thunder");
         BlockPosition blockposition;
 
-        if (flag && this.U() && this.random.nextInt(100000) == 0) {
+        if (!this.paperConfig.disableThunder && flag && this.U() && this.random.nextInt(100000) == 0) { // Paper - Disable thunder
             blockposition = this.a(this.a(j, 0, k, 15));
             if (this.isRainingAt(blockposition)) {
                 DifficultyDamageScaler difficultydamagescaler = this.getDamageScaler(blockposition);
