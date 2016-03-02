@@ -397,9 +397,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.fallDistance *= 0.5F;
         }
 
+        // Paper start - Configurable nether ceiling damage
+        // Extracted to own function
+        /*
         if (this.locY < -64.0D) {
             this.ae();
         }
+        */
+        this.performVoidDamage();
+        // Paper end
 
         if (!this.world.isClientSide) {
             this.setFlag(0, this.fireTicks > 0);
@@ -408,6 +414,17 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.justCreated = false;
         this.world.getMethodProfiler().exit();
     }
+
+    // Paper start
+    protected void performVoidDamage() {
+        if (this.locY < -64.0D || (this.world.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER
+            && world.paperConfig.doNetherTopVoidDamage()
+            && this.locY >= world.paperConfig.netherVoidTopDamageHeight)) {
+
+            this.doVoidDamage();
+        }
+    }
+    // Paper end
 
     protected void E() {
         if (this.portalCooldown > 0) {
@@ -476,6 +493,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.fireTicks = 0;
     }
 
+   protected final void doVoidDamage() { this.ae(); } // Paper - OBFHELPER
     protected void ae() {
         this.die();
     }
