@@ -166,4 +166,9 @@ public class PaperWorldConfig {
     private void disableIceAndSnow(){
         disableIceAndSnow = getBoolean("disable-ice-and-snow", false);
     }
+
+    public int mobSpawnerTickRate;
+    private void mobSpawnerTickRate() {
+        mobSpawnerTickRate = getInt("mob-spawner-tick-rate", 1);
+    }
 }
