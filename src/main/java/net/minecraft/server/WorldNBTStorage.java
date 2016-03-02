@@ -164,7 +164,7 @@ public class WorldNBTStorage implements IPlayerFileData {
             File file = new File(this.playerDir, entityhuman.getUniqueIDString() + ".dat");
             // Spigot Start
             boolean usingWrongFile = false;
-            if ( !file.exists() )
+            if ( org.bukkit.Bukkit.getOnlineMode() && !file.exists() ) // Paper - Check online mode first
             {
                 file = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
                 if ( file.exists() )
