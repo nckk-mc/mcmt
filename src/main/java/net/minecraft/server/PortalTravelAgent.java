@@ -70,10 +70,11 @@ public class PortalTravelAgent {
             } else {
                 double d2 = Double.MAX_VALUE;
 
-                for (int i = -128; i <= 128; ++i) {
+                int portalSearchRadius = world.paperConfig.portalSearchRadius; // Paper
+                for (int i = -portalSearchRadius; i <= portalSearchRadius; ++i) { // Paper
                     BlockPosition blockposition2;
 
-                    for (int j = -128; j <= 128; ++j) {
+                    for (int j = -world.paperConfig.portalSearchRadius; j <= world.paperConfig.portalSearchRadius; ++j) { // Paper
                         for (BlockPosition blockposition3 = blockposition.b(i, this.world.getHeight() - 1 - blockposition.getY(), j); blockposition3.getY() >= 0; blockposition3 = blockposition2) {
                             blockposition2 = blockposition3.down();
                             if (this.world.getType(blockposition3).getBlock() == PortalTravelAgent.b) {
