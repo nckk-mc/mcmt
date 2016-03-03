@@ -271,6 +271,13 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return clazz;
     }
 
+    // Paper start
+    @Override
+    public String getTimingsServerName() {
+        return com.destroystokyo.paper.PaperConfig.timingsServerName;
+    }
+    // Paper end
+
     /**
      * This helper class represents the different NBT Tags.
      * <p>

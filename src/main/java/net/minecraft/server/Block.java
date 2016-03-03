@@ -31,6 +31,15 @@ public class Block implements IMaterial {
     protected final boolean q;
     protected final SoundEffectType stepSound;
     protected final Material material;
+    // Paper start
+    public co.aikar.timings.Timing timing;
+    public co.aikar.timings.Timing getTiming() {
+        if (timing == null) {
+            timing = co.aikar.timings.MinecraftTimings.getBlockTiming(this);
+        }
+        return timing;
+    }
+    // Paper end
     protected final MaterialMapColor t;
     private final float frictionFactor;
     protected final BlockStateList<Block, IBlockData> blockStateList;

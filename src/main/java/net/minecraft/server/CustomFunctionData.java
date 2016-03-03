@@ -101,7 +101,7 @@ public class CustomFunctionData implements IResourcePackListener {
 
             return 0;
         } else {
-            try {
+            try (co.aikar.timings.Timing timing = customfunction.getTiming().startTiming()) { // Paper
                 this.h = true;
                 int j = 0;
                 CustomFunction.c[] acustomfunction_c = customfunction.b();

@@ -28,13 +28,18 @@ public class TickListServer<T> implements TickList<T> {
     private final List<NextTickListEntry<T>> h = Lists.newArrayList();
     private final Consumer<NextTickListEntry<T>> i;
 
-    public TickListServer(WorldServer worldserver, Predicate<T> predicate, Function<T, MinecraftKey> function, Function<MinecraftKey, T> function1, Consumer<NextTickListEntry<T>> consumer) {
+    public TickListServer(WorldServer worldserver, Predicate<T> predicate, Function<T, MinecraftKey> function, Function<MinecraftKey, T> function1, Consumer<NextTickListEntry<T>> consumer, String timingsType) { // Paper
         this.a = predicate;
         this.b = function;
         this.c = function1;
         this.f = worldserver;
         this.i = consumer;
+        this.timingCleanup = co.aikar.timings.WorldTimingsHandler.getTickList(worldserver, timingsType + " - Cleanup");
+        this.timingTicking = co.aikar.timings.WorldTimingsHandler.getTickList(worldserver, timingsType + " - Ticking");
     }
+    private final co.aikar.timings.Timing timingCleanup; // Paper
+    private final co.aikar.timings.Timing timingTicking; // Paper
+    // Paper end
 
     public void a() {
         int i = this.nextTickList.size();
@@ -57,6 +62,7 @@ public class TickListServer<T> implements TickList<T> {
 
             this.f.getMethodProfiler().enter("cleaning");
 
+            this.timingCleanup.startTiming(); // Paper
             NextTickListEntry nextticklistentry;
 
             while (i > 0 && iterator.hasNext()) {
@@ -72,7 +78,9 @@ public class TickListServer<T> implements TickList<T> {
                     --i;
                 }
             }
+            this.timingCleanup.stopTiming(); // Paper
 
+            this.timingTicking.startTiming(); // Paper
             this.f.getMethodProfiler().exitEnter("ticking");
 
             while ((nextticklistentry = (NextTickListEntry) this.g.poll()) != null) {
@@ -93,6 +101,7 @@ public class TickListServer<T> implements TickList<T> {
             }
 
             this.f.getMethodProfiler().exit();
+            this.timingTicking.stopTiming(); // Paper
             this.h.clear();
             this.g.clear();
         }

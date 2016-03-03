@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import co.aikar.timings.Timings;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -406,7 +407,7 @@ public class ChunkRegionLoader {
     private static void loadEntities(NBTTagCompound nbttagcompound, Chunk chunk) {
         NBTTagList nbttaglist = nbttagcompound.getList("Entities", 10);
         World world = chunk.getWorld();
-        world.timings.syncChunkLoadEntitiesTimer.startTiming(); // Spigot
+        world.timings.chunkLoadLevelTimer.startTiming(); // Spigot
 
         for (int i = 0; i < nbttaglist.size(); ++i) {
             NBTTagCompound nbttagcompound1 = nbttaglist.getCompound(i);
@@ -418,8 +419,6 @@ public class ChunkRegionLoader {
             chunk.d(true);
         }
 
-        world.timings.syncChunkLoadEntitiesTimer.stopTiming(); // Spigot
-        world.timings.syncChunkLoadTileEntitiesTimer.startTiming(); // Spigot
         NBTTagList nbttaglist1 = nbttagcompound.getList("TileEntities", 10);
 
         for (int j = 0; j < nbttaglist1.size(); ++j) {
@@ -436,7 +435,7 @@ public class ChunkRegionLoader {
                 }
             }
         }
-        world.timings.syncChunkLoadTileEntitiesTimer.stopTiming(); // Spigot
+        world.timings.chunkLoadLevelTimer.stopTiming(); // Paper
 
     }
 

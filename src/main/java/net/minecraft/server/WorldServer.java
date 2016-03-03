@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import co.aikar.timings.TimingHistory;
+import co.aikar.timings.Timings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
@@ -33,7 +35,6 @@ import org.apache.logging.log4j.Logger;
 // CraftBukkit start
 import org.bukkit.Bukkit;
 import org.bukkit.WeatherType;
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.server.MapInitializeEvent;
@@ -90,10 +91,10 @@ public class WorldServer extends World {
         // CraftBukkit end
         this.nextTickListBlock = new TickListServer<>(this, (block) -> {
             return block == null || block.getBlockData().isAir();
-        }, IRegistry.BLOCK::getKey, IRegistry.BLOCK::get, this::b);
+        }, IRegistry.BLOCK::getKey, IRegistry.BLOCK::get, this::b, "Blocks"); // Paper - Timings
         this.nextTickListFluid = new TickListServer<>(this, (fluidtype) -> {
             return fluidtype == null || fluidtype == FluidTypes.EMPTY;
-        }, IRegistry.FLUID::getKey, IRegistry.FLUID::get, this::a);
+        }, IRegistry.FLUID::getKey, IRegistry.FLUID::get, this::a, "Fluids"); // Paper - Timings
         this.I = Sets.newHashSet();
         this.siegeManager = new VillageSiege(this);
         this.J = new ObjectLinkedOpenHashSet();
@@ -256,12 +257,12 @@ public class WorldServer extends World {
         gameprofilerfiller.exitEnter("chunkSource");
         this.getChunkProvider().tick(booleansupplier);
         gameprofilerfiller.exitEnter("tickPending");
-        timings.doTickPending.startTiming(); // Spigot
+        timings.scheduledBlocks.startTiming(); // Spigot
         if (this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES) {
             this.nextTickListBlock.a();
             this.nextTickListFluid.a();
         }
-        timings.doTickPending.stopTiming(); // Spigot
+        timings.scheduledBlocks.stopTiming(); // Spigot
 
         gameprofilerfiller.exitEnter("village");
         timings.doVillages.startTiming(); // Spigot
@@ -318,6 +319,7 @@ public class WorldServer extends World {
 
             org.spigotmc.ActivationRange.activateEntities(this); // Spigot
             timings.entityTick.startTiming(); // Spigot
+            TimingHistory.entityTicks += this.globalEntityList.size(); // Paper
             while (objectiterator.hasNext()) {
                 Entry<Entity> entry = (Entry) objectiterator.next();
                 Entity entity1 = (Entity) entry.getValue();
@@ -421,6 +423,7 @@ public class WorldServer extends World {
         }
 
         gameprofilerfiller.exitEnter("tickBlocks");
+        timings.chunkTicksBlocks.startTiming(); // Paper
         if (i > 0) {
             ChunkSection[] achunksection = chunk.getSections();
             int l = achunksection.length;
@@ -452,7 +455,7 @@ public class WorldServer extends World {
                 }
             }
         }
-
+        timings.chunkTicksBlocks.stopTiming(); // Paper
         gameprofilerfiller.exit();
     }
 
@@ -747,6 +750,7 @@ public class WorldServer extends World {
 
         if (!flag1) {
             org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getWorld())); // CraftBukkit
+            try (co.aikar.timings.Timing ignored = timings.worldSave.startTiming()) { // Paper
             if (iprogressupdate != null) {
                 iprogressupdate.a(new ChatMessage("menu.savingLevel", new Object[0]));
             }
@@ -756,7 +760,10 @@ public class WorldServer extends World {
                 iprogressupdate.c(new ChatMessage("menu.savingChunks", new Object[0]));
             }
 
+            timings.worldSaveChunks.startTiming(); // Paper
             chunkproviderserver.save(flag);
+            timings.worldSaveChunks.stopTiming(); // Paper
+            } // Paper
         }
     }
 

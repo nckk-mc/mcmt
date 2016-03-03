@@ -245,7 +245,9 @@ public class ChunkProviderServer extends IChunkProvider {
 
     public void save(boolean flag) {
         this.tickDistanceManager();
+        try (co.aikar.timings.Timing timed = world.timings.chunkSaveData.startTiming()) { // Paper - Timings
         this.playerChunkMap.save(flag);
+        } // Paper - Timings
     }
 
     @Override
@@ -365,9 +367,9 @@ public class ChunkProviderServer extends IChunkProvider {
                             this.world.getMethodProfiler().exit();
                         }
 
-                        this.world.timings.doTickTiles.startTiming(); // Spigot
+                        this.world.timings.chunkTicks.startTiming(); // Spigot // Paper
                         this.world.a(chunk, k);
-                        this.world.timings.doTickTiles.stopTiming(); // Spigot
+                        this.world.timings.chunkTicks.stopTiming(); // Spigot // Paper
                     }
                 }
             }
@@ -381,9 +383,7 @@ public class ChunkProviderServer extends IChunkProvider {
             this.world.getMethodProfiler().exit();
         }
 
-        this.world.timings.tracker.startTiming(); // Spigot
         this.playerChunkMap.g();
-        this.world.timings.tracker.stopTiming(); // Spigot
     }
 
     @Override

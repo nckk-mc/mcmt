@@ -1,6 +1,8 @@
 package net.minecraft.server;
 
 import com.google.common.collect.ImmutableList;
+import co.aikar.timings.Timing;
+import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
@@ -479,7 +481,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
         });
 
         return completablefuture.thenComposeAsync((either) -> {
-            return (CompletableFuture) either.map((list) -> {
+            return either.map((list) -> { // Paper - Shut up.
                 try {
                     CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture1 = chunkstatus.a(this.world, this.chunkGenerator, this.definedStructureManager, this.lightEngine, (ichunkaccess) -> {
                         return this.c(playerchunk);
@@ -965,6 +967,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
 
         PlayerChunkMap.EntityTracker playerchunkmap_entitytracker;
         ObjectIterator objectiterator;
+        world.timings.tracker1.startTiming(); // Paper
 
         for (objectiterator = this.trackedEntities.values().iterator(); objectiterator.hasNext(); playerchunkmap_entitytracker.trackerEntry.a()) {
             playerchunkmap_entitytracker = (PlayerChunkMap.EntityTracker) objectiterator.next();
@@ -982,13 +985,16 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                 playerchunkmap_entitytracker.e = sectionposition1;
             }
         }
+        world.timings.tracker1.stopTiming(); // Paper
 
         objectiterator = this.trackedEntities.values().iterator();
 
+        world.timings.tracker2.startTiming(); // Paper
         while (objectiterator.hasNext()) {
             playerchunkmap_entitytracker = (PlayerChunkMap.EntityTracker) objectiterator.next();
             playerchunkmap_entitytracker.track(list);
         }
+        world.timings.tracker2.stopTiming(); // Paper
 
     }
 
