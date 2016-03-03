@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
+import com.destroystokyo.paper.exception.ServerInternalException;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 // CraftBukkit end
 
@@ -83,6 +84,7 @@ public final class SpawnerCreature {
                                                         entityinsentient = (EntityInsentient) entity;
                                                     } catch (Exception exception) {
                                                         SpawnerCreature.LOGGER.warn("Failed to create mob", exception);
+                                                        ServerInternalException.reportInternalException(exception); // Paper
                                                         return;
                                                     }
 
@@ -208,6 +210,7 @@ public final class SpawnerCreature {
                                 entity = biomebase_biomemeta.b.a(generatoraccess.getMinecraftWorld());
                             } catch (Exception exception) {
                                 SpawnerCreature.LOGGER.warn("Failed to create mob", exception);
+                                ServerInternalException.reportInternalException(exception); // Paper
                                 continue;
                             }
 

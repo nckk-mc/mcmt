@@ -646,6 +646,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                 this.world.checkSession();
             } catch (ExceptionWorldConflict exceptionworldconflict) {
                 PlayerChunkMap.LOGGER.error("Couldn't save chunk; already in use by another instance of Minecraft?", exceptionworldconflict);
+                com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(exceptionworldconflict); // Paper
                 return false;
             }
 
@@ -673,6 +674,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                 return true;
             } catch (Exception exception) {
                 PlayerChunkMap.LOGGER.error("Failed to save chunk {},{}", chunkcoordintpair.x, chunkcoordintpair.z, exception);
+                com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(exception); // Paper
                 return false;
             }
         }

@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.destroystokyo.paper.exception.ServerInternalException;
+
 import java.util.Iterator;
 import javax.annotation.Nullable;
 
@@ -98,6 +100,7 @@ public class VillageSiege {
                 entityzombie.prepare(this.a, this.a.getDamageScaler(new BlockPosition(entityzombie)), EnumMobSpawn.EVENT, (GroupDataEntity) null, (NBTTagCompound) null);
             } catch (Exception exception) {
                 exception.printStackTrace();
+                ServerInternalException.reportInternalException(exception); // Paper
                 return;
             }
 

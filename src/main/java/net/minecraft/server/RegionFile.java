@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.collect.Lists;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -142,6 +143,7 @@ public class RegionFile implements AutoCloseable {
                 }
             }
         } catch (IOException ioexception) {
+            ServerInternalException.reportInternalException(ioexception); // Paper
             return null;
         }
     }
@@ -252,6 +254,7 @@ public class RegionFile implements AutoCloseable {
             this.b(chunkcoordintpair, (int) (SystemUtils.getTimeMillis() / 1000L));
         } catch (IOException ioexception) {
             ioexception.printStackTrace();
+            ServerInternalException.reportInternalException(ioexception); // Paper
         }
 
     }
