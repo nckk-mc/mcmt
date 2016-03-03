@@ -197,11 +197,11 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     }
 
     public static boolean isValidLocation(BlockPosition blockposition) {
-        return !isOutsideWorld(blockposition) && blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() < 30000000;
+        return blockposition.isValidLocation(); // Paper
     }
 
     public static boolean isOutsideWorld(BlockPosition blockposition) {
-        return b(blockposition.getY());
+        return blockposition.isInvalidYLocation(); // Paper
     }
 
     public static boolean b(int i) {

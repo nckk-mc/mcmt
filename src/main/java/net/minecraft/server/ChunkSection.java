@@ -9,7 +9,7 @@ public class ChunkSection {
     private short nonEmptyBlockCount;
     private short tickingBlockCount;
     private short e;
-    private final DataPaletteBlock<IBlockData> blockIds;
+    final DataPaletteBlock<IBlockData> blockIds; // Paper - package
 
     public ChunkSection(int i) {
         this(i, (short) 0, (short) 0, (short) 0);
