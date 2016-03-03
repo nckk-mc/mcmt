@@ -40,7 +40,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     public final List<TileEntity> tileEntityList = Lists.newArrayList();
     public final List<TileEntity> tileEntityListTick = Lists.newArrayList();
     protected final List<TileEntity> tileEntityListPending = Lists.newArrayList();
-    protected final List<TileEntity> tileEntityListUnload = Lists.newArrayList();
+    protected final java.util.Set<TileEntity> tileEntityListUnload = com.google.common.collect.Sets.newHashSet(); // Paper
     private final long b = 16777215L;
     private final Thread serverThread;
     private int d;
