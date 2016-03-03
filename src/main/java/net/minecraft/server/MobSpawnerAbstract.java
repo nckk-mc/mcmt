@@ -133,6 +133,16 @@ public abstract class MobSpawnerAbstract {
                         {
                             entity.fromMobSpawner = true;
                         }
+                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callSpawnerSpawnEvent(entity, blockposition).isCancelled()) {
+                            Entity vehicle = entity.getVehicle();
+                            if (vehicle != null) {
+                                vehicle.dead = true;
+                            }
+                            for (Entity passenger : entity.getAllPassengers()) {
+                                passenger.dead = true;
+                            }
+                            continue;
+                        }
                         // Spigot End
                         this.a(entity);
                         world.triggerEffect(2004, blockposition, 0);
