@@ -20,7 +20,7 @@ public class BlockCocoa extends BlockFacingHorizontal implements IBlockFragilePl
 
     @Override
     public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
-        if (world.random.nextInt(5) == 0) {
+        if (world.random.nextInt(Math.max(1, (int) (100.0F / world.spigotConfig.cocoaModifier) * 5)) == 0) { // Spigot
             int i = (Integer) iblockdata.get(BlockCocoa.AGE);
 
             if (i < 2) {
