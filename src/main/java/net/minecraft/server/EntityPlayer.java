@@ -60,7 +60,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     private long cm = SystemUtils.getMonotonicMillis();
     private Entity spectatedEntity;
     public boolean worldChangeInvuln;
-    private boolean cp;
+    private boolean cp; private void setHasSeenCredits(boolean has) { this.cp = has; } // Paper - OBFHELPER
     private final RecipeBookServer recipeBook;
     private Vec3D cr;
     private int cs;
@@ -698,6 +698,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.getWorldServer().removePlayer(this);
             if (!this.viewingCredits) {
                 this.viewingCredits = true;
+                if (world.paperConfig.disableEndCredits) this.setHasSeenCredits(true); // Paper - Toggle to always disable end credits
                 this.playerConnection.sendPacket(new PacketPlayOutGameStateChange(4, this.cp ? 0.0F : 1.0F));
                 this.cp = true;
             }
