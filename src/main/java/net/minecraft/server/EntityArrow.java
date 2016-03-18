@@ -263,7 +263,7 @@ public abstract class EntityArrow extends Entity implements IProjectile {
 
     protected void i() {
         ++this.despawnCounter;
-        if (this.despawnCounter >= world.spigotConfig.arrowDespawnRate) { // Spigot
+        if (this.despawnCounter >= (fromPlayer == PickupStatus.CREATIVE_ONLY ? world.paperConfig.creativeArrowDespawnRate : (fromPlayer == PickupStatus.DISALLOWED ? world.paperConfig.nonPlayerArrowDespawnRate : world.spigotConfig.arrowDespawnRate))) { // Spigot // Paper
             this.die();
         }
 
