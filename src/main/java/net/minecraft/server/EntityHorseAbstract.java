@@ -107,7 +107,7 @@ public abstract class EntityHorseAbstract extends EntityAnimal implements IInven
 
     @Override
     public boolean a(EntityHuman entityhuman) {
-        return super.a(entityhuman) && this.getMonsterType() != EnumMonsterType.UNDEAD;
+        return world.paperConfig.allowLeashingUndeadHorse ? super.a(entityhuman) : super.a(entityhuman) && this.getMonsterType() != EnumMonsterType.UNDEAD; // Paper
     }
 
     @Override
