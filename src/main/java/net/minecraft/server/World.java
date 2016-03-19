@@ -46,7 +46,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     protected final java.util.Set<TileEntity> tileEntityListUnload = com.google.common.collect.Sets.newHashSet(); // Paper
     private final long b = 16777215L;
     private final Thread serverThread;
-    private int d;
+    private int d; public int getSkylightSubtracted() { return this.d; } public void setSkylightSubtracted(int value) { this.d = value;} // Paper - OBFHELPER
     protected int j = (new Random()).nextInt();
     protected final int k = 1013904223;
     protected float lastRainLevel;
@@ -207,6 +207,54 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     public static boolean b(int i) {
         return i < 0 || i >= 256;
     }
+
+    // Paper start
+    public boolean isLoadedAndInBounds(BlockPosition blockposition) {
+        return getWorldBorder().isInBounds(blockposition) && getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4) != null;
+    }
+    public Chunk getChunkIfLoaded(BlockPosition blockposition) {
+        return getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+    }
+    // test if meets light level, return faster
+    // logic copied from below
+    public boolean isLightLevel(BlockPosition blockposition, int level) {
+        return this.getLightLevel(blockposition) >= level; // TODO
+//        if (isValidLocation(blockposition)) {
+//            if (this.getType(blockposition).c(this, blockposition)) { // use neighbour brightness (where did this go)
+//                int sky = getSkylightSubtracted();
+//                if (this.getLightLevel(blockposition.up(), sky) >= level) {
+//                    return true;
+//                }
+//                if (this.getLightLevel(blockposition.east(), sky) >= level) {
+//                    return true;
+//                }
+//                if (this.getLightLevel(blockposition.west(), sky) >= level) {
+//                    return true;
+//                }
+//                if (this.getLightLevel(blockposition.south(), sky) >= level) {
+//                    return true;
+//                }
+//                if (this.getLightLevel(blockposition.north(), sky) >= level) {
+//                    return true;
+//                }
+//                return false;
+//            } else {
+//                if (blockposition.getY() >= 256) {
+//                    blockposition = new BlockPosition(blockposition.getX(), 255, blockposition.getZ());
+//                }
+//
+//                Chunk chunk = this.getChunkAtWorldCoords(blockposition);
+//                return chunk.getLightSubtracted(blockposition, this.getSkylightSubtracted()) >= level;
+//            }
+//        } else {
+//            return true;
+//        }
+    }
+    //  reduces need to do isLoaded before getType
+    public IBlockData getTypeIfLoadedAndInBounds(BlockPosition blockposition) {
+        return getWorldBorder().isInBounds(blockposition) ? getTypeIfLoaded(blockposition) : null;
+    }
+    // Paper end
 
     public Chunk getChunkAtWorldCoords(BlockPosition blockposition) {
         return this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4);
