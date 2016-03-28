@@ -68,6 +68,7 @@ public class WorldServer extends World {
 
     // CraftBukkit start
     private int tickPosition;
+    boolean hasPhysicsEvent = true; // Paper
 
     // Add env and gen to constructor
     public WorldServer(MinecraftServer minecraftserver, Executor executor, WorldNBTStorage worldnbtstorage, WorldData worlddata, DimensionManager dimensionmanager, GameProfilerFiller gameprofilerfiller, WorldLoadListener worldloadlistener, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {

@@ -55,7 +55,7 @@ public class BlockTallPlant extends BlockPlant {
     @Override
     public void a(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman) {
         // CraftBukkit start
-        if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockPhysicsEvent(world, blockposition).isCancelled()) {
+        if (((WorldServer)world).hasPhysicsEvent && org.bukkit.craftbukkit.event.CraftEventFactory.callBlockPhysicsEvent(world, blockposition).isCancelled()) { // Paper
             return;
         }
         // CraftBukkit end
