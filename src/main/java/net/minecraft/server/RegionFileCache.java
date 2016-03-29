@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import javax.annotation.Nullable;
+import com.destroystokyo.paper.PaperConfig; // Paper
 
 public abstract class RegionFileCache implements AutoCloseable {
 
@@ -25,7 +26,7 @@ public abstract class RegionFileCache implements AutoCloseable {
         if (regionfile != null) {
             return regionfile;
         } else {
-            if (this.cache.size() >= 256) {
+            if (this.cache.size() >= PaperConfig.regionFileCacheSize) { // Paper - configurable
                 ((RegionFile) this.cache.removeLast()).close();
             }
 
