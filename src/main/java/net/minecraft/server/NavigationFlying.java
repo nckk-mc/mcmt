@@ -25,7 +25,7 @@ public class NavigationFlying extends NavigationAbstract {
 
     @Override
     public PathEntity a(Entity entity) {
-        return this.b(new BlockPosition(entity));
+        return this.b(new BlockPosition(entity), entity); // Paper - Pathfind event
     }
 
     @Override

@@ -60,7 +60,7 @@ public class Navigation extends NavigationAbstract {
 
     @Override
     public PathEntity a(Entity entity) {
-        return this.b(new BlockPosition(entity));
+        return this.b(new BlockPosition(entity), entity); // Paper - Forward target entity
     }
 
     private int s() {

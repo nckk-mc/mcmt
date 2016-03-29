@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 public abstract class NavigationAbstract {
 
-    protected final EntityInsentient a;
+    protected final EntityInsentient a; public Entity getEntity() { return a; } // Paper - OBFHELPER
     protected final World b;
     @Nullable
     protected PathEntity c;
@@ -71,13 +71,15 @@ public abstract class NavigationAbstract {
         return this.b(new BlockPosition(d0, d1, d2));
     }
 
-    @Nullable
-    public PathEntity b(BlockPosition blockposition) {
+    // Paper start - Add target entity parameter for path find event
+    @Nullable public PathEntity b(BlockPosition blockposition) { return this.b(blockposition, null); }
+    @Nullable public PathEntity b(BlockPosition blockposition, Entity target) {
+        // Paper end
         float f = (float) blockposition.getX() + 0.5F;
         float f1 = (float) blockposition.getY() + 0.5F;
         float f2 = (float) blockposition.getZ() + 0.5F;
 
-        return this.a(blockposition, (double) f, (double) f1, (double) f2, 8, false);
+        return this.a(blockposition, target, (double) f, (double) f1, (double) f2, 8, false); // Paper - Path find event
     }
 
     @Nullable
@@ -87,11 +89,12 @@ public abstract class NavigationAbstract {
         double d1 = entity.getBoundingBox().minY;
         double d2 = entity.locZ;
 
-        return this.a(blockposition, d0, d1, d2, 16, true);
+        return this.a(blockposition, entity, d0, d1, d2, 16, true); // Paper - Path find event
     }
 
     @Nullable
-    protected PathEntity a(BlockPosition blockposition, double d0, double d1, double d2, int i, boolean flag) {
+    protected PathEntity a(BlockPosition blockposition, double d0, double d1, double d2, int i, boolean flag) { return this.a(blockposition, null, d0, d1, d2, i, flag); }
+    @Nullable protected PathEntity a(BlockPosition blockposition, Entity target, double d0, double d1, double d2, int i, boolean flag) {
         if (this.a.locY < 0.0D) {
             return null;
         } else if (!this.a()) {
@@ -99,6 +102,12 @@ public abstract class NavigationAbstract {
         } else if (this.c != null && !this.c.b() && blockposition.equals(this.q)) {
             return this.c;
         } else {
+            // Paper start - Pathfind event
+            if (!new com.destroystokyo.paper.event.entity.EntityPathfindEvent(getEntity().getBukkitEntity(),
+                MCUtil.toLocation(getEntity().world, blockposition), target == null ? null : target.getBukkitEntity()).callEvent()) {
+                return null;
+            }
+            // Paper end
             this.q = blockposition.immutableCopy();
             float f = this.i();
 
