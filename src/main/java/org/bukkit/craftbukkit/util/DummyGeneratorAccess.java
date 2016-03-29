@@ -201,4 +201,22 @@ public class DummyGeneratorAccess implements GeneratorAccess {
     public boolean b(BlockPosition blockposition, boolean flag) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    // Paper start - if loaded util
+    @javax.annotation.Nullable
+    @Override
+    public IChunkAccess getChunkIfLoadedImmediately(int x, int z) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Fluid getFluidIfLoaded(BlockPosition blockposition) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    // Paper end
 }

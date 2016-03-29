@@ -210,6 +210,44 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         return (Chunk) this.getChunkAt(i, j, ChunkStatus.FULL);
     }
 
+    // Paper start - if loaded
+    @Nullable
+    @Override
+    public IChunkAccess getChunkIfLoadedImmediately(int x, int z) {
+        if (!((ChunkProviderServer)this.chunkProvider).isLoaded(x, z)) {
+            return null;
+        }
+
+        return this.chunkProvider.getChunkAt(x, z, ChunkStatus.FULL, true);
+    }
+
+    @Override
+    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+        // CraftBukkit start - tree generation
+        if (captureTreeGeneration) {
+            for (CraftBlockState previous : capturedBlockStates) {
+                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
+                    return previous.getHandle();
+                }
+            }
+        }
+        // CraftBukkit end
+        if (!isValidLocation(blockposition)) {
+            return Blocks.AIR.getBlockData();
+        }
+        IChunkAccess chunk = this.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+
+        return chunk == null ? null : chunk.getType(blockposition);
+    }
+
+    @Override
+    public Fluid getFluidIfLoaded(BlockPosition blockposition) {
+        IChunkAccess chunk = this.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+
+        return chunk == null ? null : chunk.getFluid(blockposition);
+    }
+    // Paper end
+
     @Override
     public IChunkAccess getChunkAt(int i, int j, ChunkStatus chunkstatus, boolean flag) {
         IChunkAccess ichunkaccess = this.chunkProvider.getChunkAt(i, j, chunkstatus, flag);
@@ -371,8 +409,9 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
 
     public void a(BlockPosition blockposition, IBlockData iblockdata, IBlockData iblockdata1) {}
 
-    @Override
-    public boolean a(BlockPosition blockposition, boolean flag) {
+    public boolean setAir(BlockPosition blockposition) { return this.a(blockposition, false); } // Paper - OBFHELPER
+    public boolean setAir(BlockPosition blockposition, boolean moved) { return this.a(blockposition, moved); } // Paper - OBFHELPER
+    @Override public boolean a(BlockPosition blockposition, boolean flag) { // Paper - OBFHELPER
         Fluid fluid = this.getFluid(blockposition);
 
         return this.setTypeAndData(blockposition, fluid.getBlockData(), 3 | (flag ? 64 : 0));

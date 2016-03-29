@@ -106,6 +106,26 @@ public class RegionLimitedWorldAccess implements GeneratorAccess {
         return i >= ichunkaccess.getPos().x && i <= ichunkaccess1.getPos().x && j >= ichunkaccess.getPos().z && j <= ichunkaccess1.getPos().z;
     }
 
+    // Paper start - if loaded util
+    @Nullable
+    @Override
+    public IChunkAccess getChunkIfLoadedImmediately(int x, int z) {
+        return this.getChunkAt(x, z, ChunkStatus.FULL, false);
+    }
+
+    @Override
+    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+        IChunkAccess chunk = this.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+        return chunk == null ? null : chunk.getType(blockposition);
+    }
+
+    @Override
+    public Fluid getFluidIfLoaded(BlockPosition blockposition) {
+        IChunkAccess chunk = this.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+        return chunk == null ? null : chunk.getFluid(blockposition);
+    }
+    // Paper end
+
     @Override
     public IBlockData getType(BlockPosition blockposition) {
         return this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4).getType(blockposition);

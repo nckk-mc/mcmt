@@ -80,6 +80,7 @@ public abstract class BlockDataAbstract<O, S> implements IBlockDataHolder<S> {
         return Collections.unmodifiableCollection(this.d.keySet());
     }
 
+    public final <T extends Comparable<T>> boolean hasProperty(IBlockState<T> iblockstate) { return this.b(iblockstate); } // Paper - OBFHELPER
     public <T extends Comparable<T>> boolean b(IBlockState<T> iblockstate) {
         return this.d.containsKey(iblockstate);
     }

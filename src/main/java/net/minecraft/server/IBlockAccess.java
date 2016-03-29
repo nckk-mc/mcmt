@@ -9,9 +9,23 @@ public interface IBlockAccess {
     @Nullable
     TileEntity getTileEntity(BlockPosition blockposition);
 
+    IBlockData getTypeIfLoaded(BlockPosition blockposition); // Paper - if loaded util
     IBlockData getType(BlockPosition blockposition);
 
+    Fluid getFluidIfLoaded(BlockPosition blockposition); // Paper - if loaded util
     Fluid getFluid(BlockPosition blockposition);
+
+    // Paper start - if loaded util
+    default Material getMaterialIfLoaded(BlockPosition blockposition) {
+        IBlockData type = this.getTypeIfLoaded(blockposition);
+        return type == null ? null : type.getMaterial();
+    }
+
+    default Block getBlockIfLoaded(BlockPosition blockposition) {
+        IBlockData type = this.getTypeIfLoaded(blockposition);
+        return type == null ? null : type.getBlock();
+    }
+    // Paper end
 
     default int h(BlockPosition blockposition) {
         return this.getType(blockposition).h();

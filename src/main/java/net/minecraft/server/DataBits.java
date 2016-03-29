@@ -82,6 +82,7 @@ public class DataBits {
         }
     }
 
+    public long[] getDataBits() { return this.a(); } // Paper - OBFHELPER
     public long[] a() {
         return this.a;
     }

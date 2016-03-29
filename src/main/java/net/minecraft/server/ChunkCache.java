@@ -47,6 +47,30 @@ public class ChunkCache implements IWorldReader {
         return this.e.getLightLevel(blockposition, i);
     }
 
+    // Paper start - if loaded util
+    @Nullable
+    @Override
+    public IChunkAccess getChunkIfLoadedImmediately(int x, int z) {
+        IChunkAccess chunk = this.getChunkAt(x, z, ChunkStatus.FULL, false);
+        if (chunk instanceof ChunkEmpty) {
+            return null;
+        }
+        return chunk;
+    }
+
+    @Override
+    public Fluid getFluidIfLoaded(BlockPosition blockposition) {
+        IChunkAccess chunk = this.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+        return chunk == null ? null : chunk.getFluid(blockposition);
+    }
+
+    @Override
+    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+        IChunkAccess chunk = this.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+        return chunk == null ? null : chunk.getType(blockposition);
+    }
+    // Paper end
+
     @Nullable
     @Override
     public IChunkAccess getChunkAt(int i, int j, ChunkStatus chunkstatus, boolean flag) {

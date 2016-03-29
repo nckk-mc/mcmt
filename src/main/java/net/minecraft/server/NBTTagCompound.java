@@ -23,7 +23,7 @@ public class NBTTagCompound implements NBTBase {
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Pattern g = Pattern.compile("[A-Za-z0-9._+-]+");
-    private final Map<String, NBTBase> map = Maps.newHashMap();
+    public final Map<String, NBTBase> map = Maps.newHashMap(); // Paper
 
     public NBTTagCompound() {}
 
@@ -99,11 +99,15 @@ public class NBTTagCompound implements NBTBase {
         this.map.put(s, new NBTTagLong(i));
     }
 
+    public void setUUID(String prefix, UUID uuid) { a(prefix, uuid); } // Paper - OBFHELPER
     public void a(String s, UUID uuid) {
         this.setLong(s + "Most", uuid.getMostSignificantBits());
         this.setLong(s + "Least", uuid.getLeastSignificantBits());
     }
 
+
+    @Nullable public UUID getUUID(String prefix) { return a(prefix); } // Paper - OBFHELPER
+    @Nullable
     public UUID a(String s) {
         return new UUID(this.getLong(s + "Most"), this.getLong(s + "Least"));
     }

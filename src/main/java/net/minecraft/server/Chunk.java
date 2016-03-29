@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 public class Chunk implements IChunkAccess {
 
     private static final Logger LOGGER = LogManager.getLogger();
-    public static final ChunkSection a = null;
+    public static final ChunkSection a = null; public static final ChunkSection EMPTY_CHUNK_SECTION = Chunk.a; // Paper - OBFHELPER
     private final ChunkSection[] sections;
     private final BiomeBase[] d;
     private final Map<BlockPosition, NBTTagCompound> e;
@@ -212,6 +212,18 @@ public class Chunk implements IChunkAccess {
             }
         }
     }
+
+    // Paper start - If loaded util
+    @Override
+    public Fluid getFluidIfLoaded(BlockPosition blockposition) {
+        return this.getFluid(blockposition);
+    }
+
+    @Override
+    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+        return this.getType(blockposition);
+    }
+    // Paper end
 
     @Override
     public Fluid getFluid(BlockPosition blockposition) {
@@ -400,6 +412,7 @@ public class Chunk implements IChunkAccess {
         return this.a(blockposition, Chunk.EnumTileEntityState.CHECK);
     }
 
+    @Nullable public final TileEntity getTileEntityImmediately(BlockPosition pos) { return this.a(pos, EnumTileEntityState.IMMEDIATE); } // Paper - OBFHELPER
     @Nullable
     public TileEntity a(BlockPosition blockposition, Chunk.EnumTileEntityState chunk_enumtileentitystate) {
         // CraftBukkit start

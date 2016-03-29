@@ -126,6 +126,7 @@ public abstract class EntityLiving extends Entity {
     public org.bukkit.craftbukkit.attribute.CraftAttributeMap craftAttributes;
     public boolean collides = true;
     public boolean canPickUpLoot;
+    public org.bukkit.craftbukkit.entity.CraftLivingEntity getBukkitLivingEntity() { return (org.bukkit.craftbukkit.entity.CraftLivingEntity) super.getBukkitEntity(); } // Paper
 
     @Override
     public float getBukkitYaw() {

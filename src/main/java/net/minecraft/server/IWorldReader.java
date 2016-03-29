@@ -39,6 +39,7 @@ public interface IWorldReader extends IIBlockAccess {
 
     int getLightLevel(BlockPosition blockposition, int i);
 
+    @Nullable IChunkAccess getChunkIfLoadedImmediately(int x, int z); // Paper - ifLoaded api (we need this since current impl blocks if the chunk is loading)
     @Nullable
     IChunkAccess getChunkAt(int i, int j, ChunkStatus chunkstatus, boolean flag);
 

@@ -37,10 +37,19 @@ import org.bukkit.event.world.StructureGrowEvent;
 public final class ItemStack {
 
     private static final Logger LOGGER = LogManager.getLogger();
-    public static final ItemStack a = new ItemStack((Item) null);
+    public static final ItemStack a = new ItemStack((Item) null);public static final ItemStack NULL_ITEM = a; // Paper - OBFHELPER
     public static final DecimalFormat b = F();
     private int count;
     private int e;
+    // Paper start
+    private org.bukkit.craftbukkit.inventory.CraftItemStack bukkitStack;
+    public org.bukkit.inventory.ItemStack getBukkitStack() {
+        if (bukkitStack == null || bukkitStack.getHandle() != this) {
+            bukkitStack = org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(this);
+        }
+        return bukkitStack;
+    }
+    // Paper end
     @Deprecated
     private Item item;
     private NBTTagCompound tag;
@@ -591,6 +600,17 @@ public final class ItemStack {
         return this.tag != null ? this.tag.getList("Enchantments", 10) : new NBTTagList();
     }
 
+    // Paper start - (this is just a good no conflict location)
+    public org.bukkit.inventory.ItemStack asBukkitMirror() {
+        return CraftItemStack.asCraftMirror(this);
+    }
+    public org.bukkit.inventory.ItemStack asBukkitCopy() {
+        return CraftItemStack.asCraftMirror(this.cloneItemStack());
+    }
+    public static ItemStack fromBukkitCopy(org.bukkit.inventory.ItemStack itemstack) {
+        return CraftItemStack.asNMSCopy(itemstack);
+    }
+    // Paper end
     public void setTag(@Nullable NBTTagCompound nbttagcompound) {
         this.tag = nbttagcompound;
     }
@@ -675,6 +695,7 @@ public final class ItemStack {
         return this.tag != null && this.tag.hasKeyOfType("Enchantments", 9) ? !this.tag.getList("Enchantments", 10).isEmpty() : false;
     }
 
+    public void getOrCreateTagAndSet(String s, NBTBase nbtbase) { a(s, nbtbase);} // Paper - OBFHELPER
     public void a(String s, NBTBase nbtbase) {
         this.getOrCreateTag().set(s, nbtbase);
     }
@@ -748,6 +769,7 @@ public final class ItemStack {
     // CraftBukkit start
     @Deprecated
     public void setItem(Item item) {
+        this.bukkitStack = null; // Paper
         this.item = item;
     }
     // CraftBukkit end
