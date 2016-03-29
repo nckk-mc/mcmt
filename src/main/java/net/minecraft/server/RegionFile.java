@@ -26,7 +26,7 @@ public class RegionFile implements AutoCloseable {
     private final File file;
     // Spigot end
     private static final byte[] a = new byte[4096];
-    private final RandomAccessFile b;
+    private final RandomAccessFile b; private RandomAccessFile getDataFile() { return this.b; } // Paper - OBFHELPER
     private final int[] c = new int[1024];
     private final int[] d = new int[1024];
     private final List<Boolean> e;
@@ -59,10 +59,19 @@ public class RegionFile implements AutoCloseable {
         this.e.set(1, false);
         this.b.seek(0L);
 
+        // Paper Start
+        java.nio.ByteBuffer header = java.nio.ByteBuffer.allocate(8192);
+        while (header.hasRemaining())  {
+            if (this.getDataFile().getChannel().read(header) == -1) throw new java.io.EOFException();
+        }
+        header.clear();
+        java.nio.IntBuffer headerAsInts = header.asIntBuffer();
+        // Paper End
+
         int k;
 
         for (j = 0; j < 1024; ++j) {
-            k = this.b.readInt();
+            k = headerAsInts.get(); // Paper
             this.c[j] = k;
             // Spigot start
             int length = k & 255;
@@ -88,7 +97,7 @@ public class RegionFile implements AutoCloseable {
         }
 
         for (j = 0; j < 1024; ++j) {
-            k = this.b.readInt();
+            k = headerAsInts.get(); // Paper
             this.d[j] = k;
         }
 
