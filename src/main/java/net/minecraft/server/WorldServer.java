@@ -1101,6 +1101,7 @@ public class WorldServer extends World {
                 entity.origin = entity.getBukkitEntity().getLocation();
             }
             // Paper end
+            new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
         }
 
     }
@@ -1110,6 +1111,7 @@ public class WorldServer extends World {
         if (this.tickingEntities) {
             throw new IllegalStateException("Removing entity while ticking!");
         } else {
+            new com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
             this.removeEntityFromChunk(entity);
             this.entitiesById.remove(entity.getId());
             this.unregisterEntity(entity);
