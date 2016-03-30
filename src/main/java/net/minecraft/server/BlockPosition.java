@@ -57,12 +57,12 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
         OfInt ofint = dynamic.asIntStream().spliterator();
         int[] aint = new int[3];
 
-        if (ofint.tryAdvance((i) -> {
+        if (ofint.tryAdvance((Consumer<? super Integer>) (i) -> { // Paper - decomile fix
             aint[0] = i;
-        }) && ofint.tryAdvance((i) -> {
+        }) && ofint.tryAdvance((Consumer<? super Integer>) (i) -> { // Paper - decompile fix
             aint[1] = i;
         })) {
-            ofint.tryAdvance((i) -> {
+            ofint.tryAdvance((Consumer<? super Integer>) (i) -> { // Paper - decompile fix
                 aint[2] = i;
             });
         }

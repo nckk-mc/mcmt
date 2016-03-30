@@ -134,7 +134,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
             BiomeBase[] abiomebase = chunk.getBiomeIndex();
 
             for (l = 0; l < abiomebase.length; ++l) {
-                packetdataserializer.writeInt(IRegistry.BIOME.a((Object) abiomebase[l]));
+                packetdataserializer.writeInt(IRegistry.BIOME.a(abiomebase[l])); // Paper - decompile fix
             }
         }
 

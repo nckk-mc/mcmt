@@ -29,7 +29,7 @@ public abstract class BlockDataAbstract<O, S> implements IBlockDataHolder<S> {
         }
 
         private <T extends Comparable<T>> String a(IBlockState<T> iblockstate, Comparable<?> comparable) {
-            return iblockstate.a(comparable);
+            return iblockstate.a((T) comparable); // Paper - decompiler fix
         }
     };
     protected final O a;
@@ -44,11 +44,11 @@ public abstract class BlockDataAbstract<O, S> implements IBlockDataHolder<S> {
     }
 
     public <T extends Comparable<T>> S a(IBlockState<T> iblockstate) {
-        return this.set(iblockstate, (Comparable) a(iblockstate.d(), this.get(iblockstate)));
+        return this.set(iblockstate, a(iblockstate.d(), this.get(iblockstate))); // Paper - decompiler fix
     }
 
     protected static <T> T a(Collection<T> collection, T t0) {
-        Iterator iterator = collection.iterator();
+        Iterator<T> iterator = collection.iterator(); // Paper - decompiler fix
 
         do {
             if (!iterator.hasNext()) {
@@ -91,7 +91,7 @@ public abstract class BlockDataAbstract<O, S> implements IBlockDataHolder<S> {
         if (comparable == null) {
             throw new IllegalArgumentException("Cannot get property " + iblockstate + " as it does not exist in " + this.a);
         } else {
-            return (Comparable) iblockstate.b().cast(comparable);
+            return iblockstate.b().cast(comparable); // Paper - decompiler fix
         }
     }
 
@@ -102,7 +102,7 @@ public abstract class BlockDataAbstract<O, S> implements IBlockDataHolder<S> {
         if (comparable == null) {
             throw new IllegalArgumentException("Cannot set property " + iblockstate + " as it does not exist in " + this.a);
         } else if (comparable == v0) {
-            return this;
+            return (S) this; // Paper - decompiler fix
         } else {
             S s0 = this.f.get(iblockstate, v0);
 

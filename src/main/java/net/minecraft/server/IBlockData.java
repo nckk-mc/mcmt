@@ -265,12 +265,12 @@ public class IBlockData extends BlockDataAbstract<Block, IBlockData> implements 
 
     public static <T> Dynamic<T> a(DynamicOps<T> dynamicops, IBlockData iblockdata) {
         ImmutableMap<IBlockState<?>, Comparable<?>> immutablemap = iblockdata.getStateMap();
-        Object object;
+        T object; // Paper - decompile fix
 
         if (immutablemap.isEmpty()) {
             object = dynamicops.createMap(ImmutableMap.of(dynamicops.createString("Name"), dynamicops.createString(IRegistry.BLOCK.getKey(iblockdata.getBlock()).toString())));
         } else {
-            object = dynamicops.createMap(ImmutableMap.of(dynamicops.createString("Name"), dynamicops.createString(IRegistry.BLOCK.getKey(iblockdata.getBlock()).toString()), dynamicops.createString("Properties"), dynamicops.createMap((Map) immutablemap.entrySet().stream().map((entry) -> {
+            object = dynamicops.createMap(ImmutableMap.of(dynamicops.createString("Name"), dynamicops.createString(IRegistry.BLOCK.getKey(iblockdata.getBlock()).toString()), dynamicops.createString("Properties"), dynamicops.createMap(immutablemap.entrySet().stream().map((entry) -> { // Paper - decompile fix
                 return Pair.of(dynamicops.createString(((IBlockState) entry.getKey()).a()), dynamicops.createString(IBlockDataHolder.b((IBlockState) entry.getKey(), (Comparable) entry.getValue())));
             }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)))));
         }
@@ -329,9 +329,9 @@ public class IBlockData extends BlockDataAbstract<Block, IBlockData> implements 
             if (!iblockdata.o()) {
                 this.f = null;
             } else {
-                this.f = new VoxelShape[IBlockData.a.a.length];
+                this.f = new VoxelShape[a.length]; // Paper - decompile fix
                 voxelshape = block.h(iblockdata, BlockAccessAir.INSTANCE, BlockPosition.ZERO);
-                EnumDirection[] aenumdirection = IBlockData.a.a;
+                EnumDirection[] aenumdirection = a; // Paper - decompile fix
                 int i = aenumdirection.length;
 
                 for (int j = 0; j < i; ++j) {
@@ -342,8 +342,9 @@ public class IBlockData extends BlockDataAbstract<Block, IBlockData> implements 
             }
 
             voxelshape = block.b(iblockdata, BlockAccessAir.INSTANCE, BlockPosition.ZERO, VoxelShapeCollision.a());
+            final VoxelShape final_voxelshape = voxelshape; // Paper - decompile fix
             this.g = Arrays.stream(EnumDirection.EnumAxis.values()).anyMatch((enumdirection_enumaxis) -> {
-                return voxelshape.b(enumdirection_enumaxis) < 0.0D || voxelshape.c(enumdirection_enumaxis) > 1.0D;
+                return final_voxelshape.b(enumdirection_enumaxis) < 0.0D || final_voxelshape.c(enumdirection_enumaxis) > 1.0D; // Paper - decompile fix
             });
         }
     }

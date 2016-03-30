@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 
 public class GameRules {
 
-    private static final TreeMap<String, GameRules.GameRuleDefinition> a = (TreeMap) SystemUtils.a((Object) (new TreeMap()), (treemap) -> {
+    private static final TreeMap<String, GameRules.GameRuleDefinition> a = SystemUtils.a(new TreeMap(), (treemap) -> { // Paper - decompile fix
         treemap.put("doFireTick", new GameRules.GameRuleDefinition("true", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
         treemap.put("mobGriefing", new GameRules.GameRuleDefinition("true", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
         treemap.put("keepInventory", new GameRules.GameRuleDefinition("false", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
@@ -133,7 +133,7 @@ public class GameRules {
         private final Supplier<ArgumentType<?>> d;
         private final BiFunction<CommandContext<CommandListenerWrapper>, String, String> e;
 
-        private EnumGameRuleType(Supplier supplier, BiFunction bifunction) {
+        private EnumGameRuleType(Supplier supplier, BiFunction<CommandContext<CommandListenerWrapper>, String, String> bifunction) { // Paper - decompile fix
             this.d = supplier;
             this.e = bifunction;
         }

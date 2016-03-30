@@ -97,7 +97,7 @@ public class EntityFox extends EntityAnimal {
         this.goalSelector.a(11, new EntityFox.j(this, EntityHuman.class, 24.0F));
         this.goalSelector.a(12, new EntityFox.r());
         this.targetSelector.a(3, new EntityFox.a(EntityLiving.class, false, false, (entityliving) -> {
-            return EntityFox.bF.test(entityliving) && !this.c(entityliving.getUniqueID());
+            return EntityFox.bF.test((EntityLiving) entityliving) && !this.c(((EntityLiving) entityliving).getUniqueID()); // Paper - decompile fix
         }));
     }
 

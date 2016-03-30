@@ -37,7 +37,7 @@ public class WorldPersistentData {
         if (t0 != null) {
             return t0;
         } else {
-            T t1 = (PersistentBase) supplier.get();
+            T t1 = supplier.get(); // Paper - decompile fix
 
             this.a(t1);
             return t1;
@@ -64,7 +64,7 @@ public class WorldPersistentData {
             }
         }
 
-        return persistentbase;
+        return (T) persistentbase; // Paper - decompile fix
     }
 
     public void a(PersistentBase persistentbase) {

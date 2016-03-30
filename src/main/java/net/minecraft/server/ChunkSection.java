@@ -148,6 +148,6 @@ public class ChunkSection {
     }
 
     public boolean a(IBlockData iblockdata) {
-        return this.blockIds.a((Object) iblockdata);
+        return this.blockIds.a(iblockdata); // Paper - decompile fix
     }
 }

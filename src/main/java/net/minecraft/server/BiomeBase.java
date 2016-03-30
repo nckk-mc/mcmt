@@ -42,7 +42,7 @@ public abstract class BiomeBase {
 
     @Nullable
     public static BiomeBase a(BiomeBase biomebase) {
-        return (BiomeBase) BiomeBase.c.fromId(IRegistry.BIOME.a((Object) biomebase));
+        return (BiomeBase) BiomeBase.c.fromId(IRegistry.BIOME.a(biomebase)); // Paper - decompile fix
     }
 
     public static <C extends WorldGenCarverConfiguration> WorldGenCarverWrapper<C> a(WorldGenCarverAbstract<C> worldgencarverabstract, C c0) {
@@ -202,7 +202,7 @@ public abstract class BiomeBase {
 
     @Nullable
     public <C extends WorldGenFeatureConfiguration> C b(StructureGenerator<C> structuregenerator) {
-        return (WorldGenFeatureConfiguration) this.t.get(structuregenerator);
+        return (C) this.t.get(structuregenerator); // Paper - decompile fix
     }
 
     public List<WorldGenFeatureConfigured<?>> e() {

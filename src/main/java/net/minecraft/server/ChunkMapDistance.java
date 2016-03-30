@@ -79,7 +79,7 @@ public abstract class ChunkMapDistance {
         while (objectiterator.hasNext()) {
             Entry<ObjectSortedSet<Ticket<?>>> entry = (Entry) objectiterator.next();
 
-            if (((ObjectSortedSet) entry.getValue()).removeIf((ticket) -> {
+            if ((entry.getValue()).removeIf((ticket) -> { // Paper - decompile fix
                 return ticket.a(this.currentTick);
             })) {
                 this.f.b(entry.getLongKey(), this.a((ObjectSortedSet) entry.getValue()), false);
@@ -143,7 +143,7 @@ public abstract class ChunkMapDistance {
 
                         completablefuture.thenAccept((either) -> {
                             this.p.execute(() -> {
-                                this.n.a((Object) ChunkTaskQueueSorter.a(() -> {
+                                this.n.a(ChunkTaskQueueSorter.a(() -> { // Paper - decompile fix
                                 }, j, false));
                             });
                         });
@@ -367,7 +367,7 @@ public abstract class ChunkMapDistance {
                 Ticket<?> ticket = new Ticket<>(TicketType.PLAYER, ChunkMapDistance.b, new ChunkCoordIntPair(i), ChunkMapDistance.this.currentTick);
 
                 if (flag1) {
-                    ChunkMapDistance.this.m.a((Object) ChunkTaskQueueSorter.a(() -> {
+                    ChunkMapDistance.this.m.a(ChunkTaskQueueSorter.a(() -> { // Paper - decompile fix
                         ChunkMapDistance.this.p.execute(() -> {
                             ChunkMapDistance.this.a(i, ticket);
                             ChunkMapDistance.this.o.add(i);
@@ -376,7 +376,7 @@ public abstract class ChunkMapDistance {
                         return j;
                     }));
                 } else {
-                    ChunkMapDistance.this.n.a((Object) ChunkTaskQueueSorter.a(() -> {
+                    ChunkMapDistance.this.n.a(ChunkTaskQueueSorter.a(() -> { // Paper - decompile fix
                         ChunkMapDistance.this.p.execute(() -> {
                             ChunkMapDistance.this.b(i, ticket);
                         });

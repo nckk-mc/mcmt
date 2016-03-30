@@ -96,7 +96,7 @@ public interface IBlockAccess {
                 double d13 = d10 * (i1 > 0 ? 1.0D - MathHelper.h(d4) : MathHelper.h(d4));
                 double d14 = d11 * (j1 > 0 ? 1.0D - MathHelper.h(d5) : MathHelper.h(d5));
 
-                Object object;
+                T object; // Paper - decompile fix
 
                 do {
                     if (d12 > 1.0D && d13 > 1.0D && d14 > 1.0D) {
