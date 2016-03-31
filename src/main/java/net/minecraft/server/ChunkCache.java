@@ -25,7 +25,7 @@ public class ChunkCache implements IWorldReader {
 
         for (k = this.a; k <= i; ++k) {
             for (l = this.b; l <= j; ++l) {
-                this.c[k - this.a][l - this.b] = world.getChunkAt(k, l, ChunkStatus.FULL, false);
+                this.c[k - this.a][l - this.b] = world.getChunkIfLoadedImmediately(k, l); // Paper
             }
         }
 
@@ -91,7 +91,7 @@ public class ChunkCache implements IWorldReader {
         int k = i - this.a;
         int l = j - this.b;
 
-        return k >= 0 && k < this.c.length && l >= 0 && l < this.c[k].length;
+        return k >= 0 && k < this.c.length && l >= 0 && l < this.c[k].length && this.c[k][l] != null; // Paper - We don't always load chunks
     }
 
     @Override

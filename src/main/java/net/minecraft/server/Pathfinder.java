@@ -12,7 +12,7 @@ public class Pathfinder {
     private final Set<PathPoint> b = Sets.newHashSet();
     private final PathPoint[] c = new PathPoint[32];
     private final int d;
-    private PathfinderAbstract e;
+    private PathfinderAbstract e; public PathfinderAbstract getPathfinder() { return this.e; }  // Paper - OBFHELPER
 
     public Pathfinder(PathfinderAbstract pathfinderabstract, int i) {
         this.e = pathfinderabstract;

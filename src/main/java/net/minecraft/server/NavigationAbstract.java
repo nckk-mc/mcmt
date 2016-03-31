@@ -22,7 +22,7 @@ public abstract class NavigationAbstract {
     protected long n;
     protected PathfinderAbstract o;
     private BlockPosition q;
-    private Pathfinder r;
+    private Pathfinder r; public Pathfinder getPathfinder() { return r; } // Paper - OBFHELPER
 
     public NavigationAbstract(EntityInsentient entityinsentient, World world) {
         this.g = Vec3D.a;
