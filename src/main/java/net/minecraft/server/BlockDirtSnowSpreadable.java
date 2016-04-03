@@ -29,6 +29,7 @@ public abstract class BlockDirtSnowSpreadable extends BlockDirtSnow {
 
     @Override
     public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+        if (this instanceof BlockGrass && world.paperConfig.grassUpdateRate != 1 && (world.paperConfig.grassUpdateRate < 1 || (MinecraftServer.currentTick + blockposition.hashCode()) % world.paperConfig.grassUpdateRate != 0)) { return; } // Paper
         if (!world.isClientSide) {
             if (!b(iblockdata, (IWorldReader) world, blockposition)) {
                 // CraftBukkit start
