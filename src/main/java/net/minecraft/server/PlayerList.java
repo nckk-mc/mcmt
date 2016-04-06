@@ -177,7 +177,7 @@ public abstract class PlayerList {
         }
         // CraftBukkit start
         chatmessage.a(EnumChatFormat.YELLOW);
-        String joinMessage = CraftChatMessage.fromComponent(chatmessage);
+        String joinMessage = CraftChatMessage.fromComponent(chatmessage, EnumChatFormat.WHITE);
 
         playerconnection.a(entityplayer.locX, entityplayer.locY, entityplayer.locZ, entityplayer.yaw, entityplayer.pitch);
         this.players.add(entityplayer);

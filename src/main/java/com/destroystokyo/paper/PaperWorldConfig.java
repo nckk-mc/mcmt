@@ -250,4 +250,9 @@ public class PaperWorldConfig {
         grassUpdateRate = Math.max(0, getInt("grass-spread-tick-rate", grassUpdateRate));
         log("Grass Spread Tick Rate: " + grassUpdateRate);
     }
+
+    public boolean useVanillaScoreboardColoring;
+    private void useVanillaScoreboardColoring() {
+        useVanillaScoreboardColoring = getBoolean("use-vanilla-world-scoreboard-name-coloring", false);
+    }
 }
