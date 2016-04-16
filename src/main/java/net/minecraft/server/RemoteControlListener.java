@@ -25,7 +25,7 @@ public class RemoteControlListener extends RemoteConnectionThread {
 
         this.h = dedicatedserverproperties.rconPort;
         this.k = dedicatedserverproperties.rconPassword;
-        this.i = iminecraftserver.e_();
+        this.i = dedicatedserverproperties.rconIp; // Paper - Configurable rcon ip
         if (this.i.isEmpty()) {
             this.i = "0.0.0.0";
         }
