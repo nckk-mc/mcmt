@@ -61,6 +61,7 @@ import co.aikar.timings.MinecraftTimings; // Paper
 
 public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTask> implements IMojangStatistics, ICommandListener, AutoCloseable, Runnable {
 
+    private static MinecraftServer SERVER; // Paper
     public static final Logger LOGGER = LogManager.getLogger();
     public static final File b = new File("usercache.json");
     public static final WorldSettings c = (new WorldSettings((long) "North Carolina".hashCode(), EnumGamemode.SURVIVAL, true, false, WorldType.NORMAL)).a();
@@ -167,6 +168,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
     public MinecraftServer(OptionSet options, Proxy proxy, DataFixer datafixer, CommandDispatcher commanddispatcher, YggdrasilAuthenticationService yggdrasilauthenticationservice, MinecraftSessionService minecraftsessionservice, GameProfileRepository gameprofilerepository, UserCache usercache, WorldLoadListenerFactory worldloadlistenerfactory, String s) {
         super("Server");
+        SERVER = this; // Paper - better singleton
         this.ae = new ResourceManager(EnumResourcePackType.SERVER_DATA, this.serverThread);
         this.resourcePackRepository = new ResourcePackRepository<>(ResourcePackLoader::new);
         this.ai = new CraftingManager();
@@ -1906,7 +1908,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
     @Deprecated
     public static MinecraftServer getServer() {
-        return (Bukkit.getServer() instanceof CraftServer) ? ((CraftServer) Bukkit.getServer()).getServer() : null;
+        return SERVER; // Paper
     }
     // CraftBukkit end
 }
