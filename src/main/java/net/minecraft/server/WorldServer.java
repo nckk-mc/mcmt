@@ -1038,6 +1038,7 @@ public class WorldServer extends World {
                         {
                             if ( iter.next().trackee == entity )
                             {
+                                map.decorations.remove(entity.getDisplayName().getString()); // Paper
                                 iter.remove();
                             }
                         }
