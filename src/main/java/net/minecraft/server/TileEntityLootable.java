@@ -6,8 +6,9 @@ import javax.annotation.Nullable;
 public abstract class TileEntityLootable extends TileEntityContainer {
 
     @Nullable
-    public MinecraftKey lootTable;
-    public long lootTableSeed;
+    public MinecraftKey lootTable; public MinecraftKey getLootTableKey() { return this.lootTable; } public void setLootTable(final MinecraftKey key) { this.lootTable = key; } // Paper - OBFHELPER
+    public long lootTableSeed; public long getSeed() { return this.lootTableSeed; } public void setSeed(final long seed) { this.lootTableSeed = seed; } // Paper - OBFHELPER
+    public final com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData = new com.destroystokyo.paper.loottable.PaperLootableInventoryData(new com.destroystokyo.paper.loottable.PaperTileEntityLootableInventory(this)); // Paper
 
     protected TileEntityLootable(TileEntityTypes<?> tileentitytypes) {
         super(tileentitytypes);
@@ -23,16 +24,18 @@ public abstract class TileEntityLootable extends TileEntityContainer {
     }
 
     protected boolean d(NBTTagCompound nbttagcompound) {
+        this.lootableData.loadNbt(nbttagcompound); // Paper
         if (nbttagcompound.hasKeyOfType("LootTable", 8)) {
             this.lootTable = new MinecraftKey(nbttagcompound.getString("LootTable"));
             this.lootTableSeed = nbttagcompound.getLong("LootTableSeed");
-            return true;
+            return false; // Paper - always load the items, table may still remain
         } else {
             return false;
         }
     }
 
     protected boolean e(NBTTagCompound nbttagcompound) {
+        this.lootableData.saveNbt(nbttagcompound); // Paper
         if (this.lootTable == null) {
             return false;
         } else {
@@ -41,15 +44,15 @@ public abstract class TileEntityLootable extends TileEntityContainer {
                 nbttagcompound.setLong("LootTableSeed", this.lootTableSeed);
             }
 
-            return true;
+            return false; // Paper - always save the items, table may still remain
         }
     }
 
     public void d(@Nullable EntityHuman entityhuman) {
-        if (this.lootTable != null && this.world.getMinecraftServer() != null) {
+        if (this.lootableData.shouldReplenish(entityhuman) && this.world.getMinecraftServer() != null) { // Paper
             LootTable loottable = this.world.getMinecraftServer().getLootTableRegistry().getLootTable(this.lootTable);
 
-            this.lootTable = null;
+            this.lootableData.processRefill(entityhuman); // Paper
             LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.world)).set(LootContextParameters.POSITION, new BlockPosition(this.position)).a(this.lootTableSeed);
 
             if (entityhuman != null) {
