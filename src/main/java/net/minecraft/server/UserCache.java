@@ -43,8 +43,8 @@ public class UserCache {
 
     public static final SimpleDateFormat a = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
     private static boolean c;
-    private final Map<String, UserCache.UserCacheEntry> d = Maps.newHashMap();
-    private final Map<UUID, UserCache.UserCacheEntry> e = Maps.newHashMap();
+    private final Map<String, UserCache.UserCacheEntry> d = new java.util.concurrent.ConcurrentHashMap<>(); // Paper
+    private final Map<UUID, UserCache.UserCacheEntry> e = new java.util.concurrent.ConcurrentHashMap<>(); // Paper
     private final Deque<GameProfile> f = new java.util.concurrent.LinkedBlockingDeque<GameProfile>(); // CraftBukkit
     private final GameProfileRepository g;
     protected final Gson b;
@@ -108,7 +108,7 @@ public class UserCache {
         this.a(gameprofile, (Date) null);
     }
 
-    private void a(GameProfile gameprofile, Date date) {
+    private synchronized void a(GameProfile gameprofile, Date date) { // Paper - synchronize
         UUID uuid = gameprofile.getId();
 
         if (date == null) {
@@ -121,8 +121,9 @@ public class UserCache {
 
         UserCache.UserCacheEntry usercache_usercacheentry = new UserCache.UserCacheEntry(gameprofile, date);
 
-        if (this.e.containsKey(uuid)) {
+        //if (this.e.containsKey(uuid)) { // Paper
             UserCache.UserCacheEntry usercache_usercacheentry1 = (UserCache.UserCacheEntry) this.e.get(uuid);
+        if (usercache_usercacheentry1 != null) { // Paper
 
             this.d.remove(usercache_usercacheentry1.a().getName().toLowerCase(Locale.ROOT));
             this.f.remove(gameprofile);
@@ -135,7 +136,7 @@ public class UserCache {
     }
 
     @Nullable
-    public GameProfile getProfile(String s) {
+    public synchronized GameProfile getProfile(String s) { // Paper - synchronize
         String s1 = s.toLowerCase(Locale.ROOT);
         UserCache.UserCacheEntry usercache_usercacheentry = (UserCache.UserCacheEntry) this.d.get(s1);
 
@@ -164,6 +165,7 @@ public class UserCache {
         return usercache_usercacheentry == null ? null : usercache_usercacheentry.a();
     }
 
+    @Nullable public GameProfile getProfile(UUID uuid) { return a(uuid);  } // Paper - OBFHELPER
     @Nullable
     public GameProfile a(UUID uuid) {
         UserCache.UserCacheEntry usercache_usercacheentry = (UserCache.UserCacheEntry) this.e.get(uuid);
@@ -220,8 +222,15 @@ public class UserCache {
 
     }
 
+    // Paper start
     public void c() {
+        c(true);
+    }
+    public void c(boolean asyncSave) {
+        // Paper end
         String s = this.b.toJson(this.a(org.spigotmc.SpigotConfig.userCacheCap));
+        Runnable save = () -> {
+
         BufferedWriter bufferedwriter = null;
 
         try {
@@ -235,6 +244,14 @@ public class UserCache {
         } finally {
             IOUtils.closeQuietly(bufferedwriter);
         }
+        // Paper start
+        };
+        if (asyncSave) {
+            MCUtil.scheduleAsyncTask(save);
+        } else {
+            save.run();
+        }
+        // Paper end
 
     }
 
