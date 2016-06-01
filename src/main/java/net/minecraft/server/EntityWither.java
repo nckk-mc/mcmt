@@ -207,8 +207,11 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
 
                 // CraftBukkit start - Use relative location for far away sounds
                 // this.world.b(1023, new BlockPosition(this), 0);
-                int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16;
-                for (EntityPlayer player : (List<EntityPlayer>) MinecraftServer.getServer().getPlayerList().players) {
+                // Paper start
+                //int viewDistance = ((WorldServer) this.world).spigotConfig.viewDistance * 16; // Paper - updated to use worlds actual view distance incase we have to uncomment this due to removal of player view distance API
+                for (EntityPlayer player : ((WorldServer)world).getPlayers()) {
+                    final int viewDistance = player.getViewDistance(); // TODO apply view distance api patch
+                    // Paper end
                     double deltaX = this.locX - player.locX;
                     double deltaZ = this.locZ - player.locZ;
                     double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
