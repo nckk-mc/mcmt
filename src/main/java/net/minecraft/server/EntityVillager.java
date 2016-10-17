@@ -584,6 +584,12 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
     public void onLightningStrike(EntityLightning entitylightning) {
         EntityWitch entitywitch = (EntityWitch) EntityTypes.WITCH.a(this.world);
 
+        // Paper start
+        if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityZapEvent(this, entitylightning, entitywitch).isCancelled()) {
+            return;
+        }
+        // Paper end
+
         entitywitch.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
         entitywitch.prepare(this.world, this.world.getDamageScaler(new BlockPosition(entitywitch)), EnumMobSpawn.CONVERSION, (GroupDataEntity) null, (NBTTagCompound) null);
         entitywitch.setNoAI(this.isNoAI());
