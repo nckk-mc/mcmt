@@ -227,7 +227,12 @@ public class BlockChest extends BlockTileEntity implements IBlockWaterlogged {
                 return blockchest_chestfinder.b(tileentitychest);
             } else {
                 BlockPosition blockposition1 = blockposition.shift(j(iblockdata));
-                IBlockData iblockdata1 = generatoraccess.getType(blockposition1);
+                // Paper start - don't load chunks if the other side of the chest is in unloaded chunk
+                IBlockData iblockdata1 = generatoraccess.getTypeIfLoaded(blockposition1);
+                if (iblockdata1 == null) {
+                    return null;
+                }
+                // Paper end
 
                 if (iblockdata1.getBlock() == iblockdata.getBlock()) {
                     BlockPropertyChestType blockpropertychesttype1 = (BlockPropertyChestType) iblockdata1.get(BlockChest.b);
