@@ -142,8 +142,36 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
     @Nullable
     @Override
     public PacketPlayOutTileEntityData getUpdatePacket() {
-        return new PacketPlayOutTileEntityData(this.position, 4, this.b());
+        return new PacketPlayOutTileEntityData(this.position, 4, sanitizeTileEntityUUID(this.b())); // Paper
     }
+
+    // Paper start
+    static NBTTagCompound sanitizeTileEntityUUID(NBTTagCompound cmp) {
+        NBTTagCompound owner = cmp.getCompound("Owner");
+        if (!owner.isEmpty()) {
+            sanitizeUUID(owner);
+        }
+        return cmp;
+    }
+
+    static void sanitizeUUID(NBTTagCompound owner) {
+        NBTTagCompound properties = owner.getCompound("Properties");
+        NBTTagList list = null;
+        if (!properties.isEmpty()) {
+            list = properties.getList("textures", 10);
+        }
+
+        if (list != null && !list.isEmpty()) {
+            String textures = ((NBTTagCompound)list.get(0)).getString("Value");
+            if (textures != null && textures.length() > 3) {
+                String uuid = UUID.nameUUIDFromBytes(textures.getBytes()).toString();
+                owner.setString("Id", uuid);
+                return;
+            }
+        }
+        owner.setString("Id", UUID.randomUUID().toString());
+    }
+    // Paper end
 
     @Override
     public NBTTagCompound b() {
