@@ -335,11 +335,12 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
     }
 
     public static class MutableBlockPosition extends BlockPosition {
-
+        // Paper start - comment out
+        /*
         protected int b;
         protected int c;
         protected int d;
-        // Paper start
+
         @Override
         public boolean isValidLocation() {
             return b >= -30000000 && d >= -30000000 && b < 30000000 && d < 30000000 && c >= 0 && c < 256;
@@ -348,6 +349,7 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
         public boolean isInvalidYLocation() {
             return c < 0 || c >= 256;
         }
+        */
         // Paper end
 
         public MutableBlockPosition() {
@@ -359,10 +361,13 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
         }
 
         public MutableBlockPosition(int i, int j, int k) {
-            super(0, 0, 0);
+            // Paper start
+            super(i, j, k);
+            /*
             this.b = i;
             this.c = j;
-            this.d = k;
+            this.d = k;*/
+            // Paper end
         }
 
         public MutableBlockPosition(double d0, double d1, double d2) {
@@ -389,6 +394,9 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
             return super.a(enumblockrotation).immutableCopy();
         }
 
+
+        /*
+        // Paper start - use parent getters
         @Override
         public int getX() {
             return this.b;
@@ -402,13 +410,16 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
         @Override
         public int getZ() {
             return this.d;
-        }
+        }*/
+        // Paper end
 
         public BlockPosition.MutableBlockPosition setValues(int i, int j, int k) { return d(i, j, k);} // Paper - OBFHELPER
         public BlockPosition.MutableBlockPosition d(int i, int j, int k) {
-            this.b = i;
-            this.c = j;
-            this.d = k;
+            // Paper start - use xyz
+            this.x = i;
+            this.y = j;
+            this.z = k;
+            // Paper end
             return this;
         }
 
@@ -438,15 +449,15 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
         }
 
         public BlockPosition.MutableBlockPosition c(EnumDirection enumdirection, int i) {
-            return this.d(this.b + enumdirection.getAdjacentX() * i, this.c + enumdirection.getAdjacentY() * i, this.d + enumdirection.getAdjacentZ() * i);
+            return this.d(this.x + enumdirection.getAdjacentX() * i, this.y + enumdirection.getAdjacentY() * i, this.z + enumdirection.getAdjacentZ() * i);
         }
 
         public BlockPosition.MutableBlockPosition e(int i, int j, int k) {
-            return this.d(this.b + i, this.c + j, this.d + k);
+            return this.d(this.x + i, this.y + j, this.z + k);
         }
 
         public void p(int i) {
-            this.c = i;
+            this.y = i; // Paper change to y
         }
 
         @Override

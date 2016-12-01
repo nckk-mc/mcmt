@@ -7,22 +7,22 @@ import javax.annotation.concurrent.Immutable;
 public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
 
     public static final BaseBlockPosition ZERO = new BaseBlockPosition(0, 0, 0);
-    private final int a;
-    private final int b;
-    private final int c;
     // Paper start
+    protected int x;
+    protected int y;
+    protected int z;
     public boolean isValidLocation() {
-        return a >= -30000000 && c >= -30000000 && a < 30000000 && c < 30000000 && b >= 0 && b < 256;
+        return x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256;
     }
     public boolean isInvalidYLocation() {
-        return b < 0 || b >= 256;
+        return y < 0 || y >= 256;
     }
     // Paper end
 
     public BaseBlockPosition(int i, int j, int k) {
-        this.a = i;
-        this.b = j;
-        this.c = k;
+        this.x = i;
+        this.y = j;
+        this.z = k;
     }
 
     public BaseBlockPosition(double d0, double d1, double d2) {
@@ -49,24 +49,26 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
         return this.getY() == baseblockposition.getY() ? (this.getZ() == baseblockposition.getZ() ? this.getX() - baseblockposition.getX() : this.getZ() - baseblockposition.getZ()) : this.getY() - baseblockposition.getY();
     }
 
-    public int getX() {
-        return this.a;
+    // Paper start
+    public final int getX() {
+        return this.x;
     }
 
     public int getY() {
-        return this.b;
+        return this.y;
     }
 
     public int getZ() {
-        return this.c;
+        return this.z;
     }
+    // Paper end
 
     public BaseBlockPosition d(BaseBlockPosition baseblockposition) {
         return new BaseBlockPosition(this.getY() * baseblockposition.getZ() - this.getZ() * baseblockposition.getY(), this.getZ() * baseblockposition.getX() - this.getX() * baseblockposition.getZ(), this.getX() * baseblockposition.getY() - this.getY() * baseblockposition.getX());
     }
 
     public boolean a(BaseBlockPosition baseblockposition, double d0) {
-        return this.distanceSquared((double) baseblockposition.a, (double) baseblockposition.b, (double) baseblockposition.c, false) < d0 * d0;
+        return this.distanceSquared((double) baseblockposition.x, (double) baseblockposition.y, (double) baseblockposition.z, false) < d0 * d0; // Paper
     }
 
     public boolean a(IPosition iposition, double d0) {
@@ -91,9 +93,9 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
     }
 
     public int n(BaseBlockPosition baseblockposition) {
-        float f = (float) Math.abs(baseblockposition.getX() - this.a);
-        float f1 = (float) Math.abs(baseblockposition.getY() - this.b);
-        float f2 = (float) Math.abs(baseblockposition.getZ() - this.c);
+        float f = (float) Math.abs(baseblockposition.getX() - this.x); // Paper
+        float f1 = (float) Math.abs(baseblockposition.getY() - this.y); // Paper
+        float f2 = (float) Math.abs(baseblockposition.getZ() - this.z); // Paper
 
         return (int) (f + f1 + f2);
     }
