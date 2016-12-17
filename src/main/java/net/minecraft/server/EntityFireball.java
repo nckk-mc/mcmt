@@ -67,7 +67,16 @@ public abstract class EntityFireball extends Entity {
             ++this.g;
             MovingObjectPosition movingobjectposition = ProjectileHelper.a(this, true, this.g >= 25, this.shooter, RayTrace.BlockCollisionOption.COLLIDER);
 
-            if (movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS) {
+            // Paper start - Call ProjectileCollideEvent
+            if (movingobjectposition instanceof MovingObjectPositionEntity) {
+                com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = CraftEventFactory.callProjectileCollideEvent(this, (MovingObjectPositionEntity)movingobjectposition);
+                if (event.isCancelled()) {
+                    movingobjectposition = null;
+                }
+            }
+            // Paper end
+
+            if (movingobjectposition != null && movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS) { // Paper - add null check in case cancelled
                 this.a(movingobjectposition);
 
                 // CraftBukkit start - Fire ProjectileHitEvent

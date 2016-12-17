@@ -217,7 +217,16 @@ public class EntityFishingHook extends Entity {
             return !entity.isSpectator() && (entity.isInteractable() || entity instanceof EntityItem) && (entity != this.owner || this.g >= 5);
         }, RayTrace.BlockCollisionOption.COLLIDER, true);
 
-        if (movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS) {
+        // Paper start - Call ProjectileCollideEvent
+        if (movingobjectposition instanceof MovingObjectPositionEntity) {
+            com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideEvent(this, (MovingObjectPositionEntity)movingobjectposition);
+            if (event.isCancelled()) {
+                movingobjectposition = null;
+            }
+        }
+        // Paper end
+
+        if (movingobjectposition != null && movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS) { // Paper - add null check in case cancelled
             org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // Craftbukkit - Call event
             if (movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
                 this.hooked = ((MovingObjectPositionEntity) movingobjectposition).getEntity();

@@ -102,7 +102,16 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
             this.as = null;
         }
 
-        if (movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS) {
+        // Paper start - Call ProjectileCollideEvent
+        if (movingobjectposition instanceof MovingObjectPositionEntity) {
+            com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideEvent(this, (MovingObjectPositionEntity)movingobjectposition);
+            if (event.isCancelled()) {
+                movingobjectposition = null;
+            }
+        }
+        // Paper end
+
+        if (movingobjectposition != null && movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS) { // Paper - add null check in case cancelled
             if (movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.BLOCK && this.world.getType(((MovingObjectPositionBlock) movingobjectposition).getBlockPosition()).getBlock() == Blocks.NETHER_PORTAL) {
                 this.c(((MovingObjectPositionBlock) movingobjectposition).getBlockPosition());
             } else {
