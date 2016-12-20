@@ -24,6 +24,18 @@ public class WorldBorder {
         return (double) (blockposition.getX() + 1) > this.c() && (double) blockposition.getX() < this.e() && (double) (blockposition.getZ() + 1) > this.d() && (double) blockposition.getZ() < this.f();
     }
 
+    // Paper start
+    private final BlockPosition.MutableBlockPosition mutPos = new BlockPosition.MutableBlockPosition();
+    public boolean isBlockInBounds(int chunkX, int chunkZ) {
+        this.mutPos.setValues(chunkX, 64, chunkZ);
+        return this.isInBounds(this.mutPos);
+    }
+    public boolean isChunkInBounds(int chunkX, int chunkZ) {
+        this.mutPos.setValues(((chunkX << 4) + 15), 64, (chunkZ << 4) + 15);
+        return this.isInBounds(this.mutPos);
+    }
+    // Paper end
+
     public boolean isInBounds(ChunkCoordIntPair chunkcoordintpair) {
         return (double) chunkcoordintpair.f() > this.c() && (double) chunkcoordintpair.d() < this.e() && (double) chunkcoordintpair.g() > this.d() && (double) chunkcoordintpair.e() < this.f();
     }
