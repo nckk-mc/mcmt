@@ -95,6 +95,7 @@ public abstract class NavigationAbstract {
     @Nullable
     protected PathEntity a(BlockPosition blockposition, double d0, double d1, double d2, int i, boolean flag) { return this.a(blockposition, null, d0, d1, d2, i, flag); }
     @Nullable protected PathEntity a(BlockPosition blockposition, Entity target, double d0, double d1, double d2, int i, boolean flag) {
+        if (!getEntity().getWorld().getWorldBorder().isInBounds(blockposition)) return null; // Paper - don't path out of world border
         if (this.a.locY < 0.0D) {
             return null;
         } else if (!this.a()) {
