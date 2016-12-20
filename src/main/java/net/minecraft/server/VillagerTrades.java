@@ -89,6 +89,7 @@ public class VillagerTrades {
         @Override
         public MerchantRecipe a(Entity entity, Random random) {
             World world = entity.world;
+            if (!world.paperConfig.enableTreasureMaps) return null; //Paper
             BlockPosition blockposition = world.a(this.b, new BlockPosition(entity), 100, true);
 
             if (blockposition != null) {
