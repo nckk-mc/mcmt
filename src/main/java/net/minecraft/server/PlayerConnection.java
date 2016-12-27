@@ -2544,7 +2544,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
     }
 
     public final boolean isDisconnected() {
-        return !this.player.joining && !this.networkManager.isConnected();
+        return (!this.player.joining && !this.networkManager.isConnected()) || this.processedDisconnect; // Paper
     }
     // CraftBukkit end
 
