@@ -17,6 +17,7 @@ public class ItemFireworks extends Item {
             ItemStack itemstack = itemactioncontext.getItemStack();
             Vec3D vec3d = itemactioncontext.j();
             EntityFireworks entityfireworks = new EntityFireworks(world, vec3d.x, vec3d.y, vec3d.z, itemstack);
+            entityfireworks.spawningEntity = itemactioncontext.getEntity().getUniqueID(); // Paper
 
             world.addEntity(entityfireworks);
             itemstack.subtract(1);
@@ -31,7 +32,11 @@ public class ItemFireworks extends Item {
             ItemStack itemstack = entityhuman.b(enumhand);
 
             if (!world.isClientSide) {
-                world.addEntity(new EntityFireworks(world, itemstack, entityhuman));
+                // Paper start
+                final EntityFireworks entityfireworks = new EntityFireworks(world, itemstack, entityhuman);
+                entityfireworks.spawningEntity = entityhuman.getUniqueID();
+                world.addEntity(entityfireworks);
+                // Paper end
                 if (!entityhuman.abilities.canInstantlyBuild) {
                     itemstack.subtract(1);
                 }

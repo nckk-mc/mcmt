@@ -3,6 +3,8 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.UUID;
+
 import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 
 public class EntityFireworks extends Entity implements IProjectile {
@@ -12,7 +14,8 @@ public class EntityFireworks extends Entity implements IProjectile {
     private static final DataWatcherObject<Boolean> d = DataWatcher.a(EntityFireworks.class, DataWatcherRegistry.i);
     private int ticksFlown;
     public int expectedLifespan;
-    private EntityLiving ridingEntity;
+    private EntityLiving ridingEntity; public final EntityLiving getBoostedEntity() { return this.ridingEntity; } // Paper - OBFHELPER
+    public UUID spawningEntity; // Paper
 
     public EntityFireworks(EntityTypes<? extends EntityFireworks> entitytypes, World world) {
         super(entitytypes, world);
@@ -255,6 +258,11 @@ public class EntityFireworks extends Entity implements IProjectile {
         }
 
         nbttagcompound.setBoolean("ShotAtAngle", (Boolean) this.datawatcher.get(EntityFireworks.d));
+        // Paper start
+        if (this.spawningEntity != null) {
+            nbttagcompound.setUUID("SpawningEntity", this.spawningEntity);
+        }
+        // Paper end
     }
 
     @Override
@@ -270,7 +278,11 @@ public class EntityFireworks extends Entity implements IProjectile {
         if (nbttagcompound.hasKey("ShotAtAngle")) {
             this.datawatcher.set(EntityFireworks.d, nbttagcompound.getBoolean("ShotAtAngle"));
         }
-
+        // Paper start
+        if (nbttagcompound.hasUUID("SpawningEntity")) {
+            this.spawningEntity = nbttagcompound.getUUID("SpawningEntity");
+        }
+        // Paper end
     }
 
     @Override

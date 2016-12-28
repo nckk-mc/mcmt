@@ -112,7 +112,7 @@ public class NBTTagCompound implements NBTBase {
         return new UUID(this.getLong(s + "Most"), this.getLong(s + "Least"));
     }
 
-    public boolean b(String s) {
+    public final boolean hasUUID(String s) { return this.b(s); } public boolean b(String s) { // Paper - OBFHELPER
         return this.hasKeyOfType(s + "Most", 99) && this.hasKeyOfType(s + "Least", 99);
     }
 
