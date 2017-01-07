@@ -265,6 +265,35 @@ public class CraftWorld implements World {
     private int waterAnimalSpawn = -1;
     private int ambientSpawn = -1;
 
+    // Paper start - Provide fast information methods
+    // TODO review these changes
+    public int getEntityCount() {
+        return world.entitiesById.size();
+    }
+    public int getTileEntityCount() {
+        // We don't use the full world tile entity list, so we must iterate chunks
+        Long2ObjectLinkedOpenHashMap<PlayerChunk> chunks = world.getChunkProvider().playerChunkMap.visibleChunks;
+        int size = 0;
+        for (net.minecraft.server.PlayerChunk playerchunk : chunks.values()) {
+            net.minecraft.server.Chunk chunk = playerchunk.getChunk();
+            if (chunk == null) {
+                continue;
+            }
+            size += chunk.tileEntities.size();
+        }
+        return size;
+    }
+    public int getTickableTileEntityCount() {
+        return world.tileEntityListTick.size();
+    }
+    public int getChunkCount() {
+        return world.getChunkProvider().playerChunkMap.visibleChunks.size();
+    }
+    public int getPlayerCount() {
+        return world.players.size();
+    }
+    // Paper end
+
     private static final Random rand = new Random();
 
     public CraftWorld(WorldServer world, ChunkGenerator gen, Environment env) {
