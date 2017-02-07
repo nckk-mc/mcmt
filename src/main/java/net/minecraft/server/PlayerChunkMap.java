@@ -81,7 +81,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
         this.v = new AtomicInteger();
         this.playerMap = new PlayerMap();
         this.trackedEntities = new Int2ObjectOpenHashMap();
-        this.A = Queues.newConcurrentLinkedQueue();
+        this.A = new com.destroystokyo.paper.utils.CachedSizeConcurrentLinkedQueue<>(); // Paper
         this.definedStructureManager = definedstructuremanager;
         this.x = worldserver.getWorldProvider().getDimensionManager().a(file);
         this.world = worldserver;
@@ -324,7 +324,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
         // Spigot start
         org.spigotmc.SlackActivityAccountant activityAccountant = this.world.getMinecraftServer().slackActivityAccountant;
         activityAccountant.startActivity(0.5);
-        int targetSize = (int) (this.unloadQueue.size() * UNLOAD_QUEUE_RESIZE_FACTOR);
+            int targetSize = Math.min(this.unloadQueue.size() - 100,  (int) (this.unloadQueue.size() * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
         // Spigot end
         while (longiterator.hasNext()) { // Spigot
             long j = longiterator.nextLong();
@@ -346,7 +346,9 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
 
         Runnable runnable;
 
-        while (booleansupplier.getAsBoolean() && (runnable = (Runnable) this.A.poll()) != null) {
+        int queueTarget = Math.min(this.A.size() - 100, (int) (this.A.size() * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Target this queue as well
+
+        while ((booleansupplier.getAsBoolean() || this.A.size() > queueTarget) && (runnable = (Runnable) this.A.poll()) != null) { // Paper - Target this queue as well
             runnable.run();
         }
 
