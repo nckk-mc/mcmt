@@ -41,7 +41,6 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import jline.console.ConsoleReader;
 import net.minecraft.server.Advancement;
 import net.minecraft.server.ArgumentEntity;
 import net.minecraft.server.Block;
@@ -1087,9 +1086,13 @@ public final class CraftServer implements Server {
         return logger;
     }
 
+    // Paper start - JLine update
+    /*
     public ConsoleReader getReader() {
         return console.reader;
     }
+    */
+    // Paper end
 
     @Override
     public PluginCommand getPluginCommand(String name) {

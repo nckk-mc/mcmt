@@ -50,7 +50,7 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 // CraftBukkit start
-import jline.console.ConsoleReader;
+import joptsimple.OptionSet;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.Main;
@@ -151,7 +151,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
     public OptionSet options;
     public org.bukkit.command.ConsoleCommandSender console;
     public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
-    public ConsoleReader reader;
+    //public ConsoleReader reader; // Paper
     public static int currentTick = 0; // Paper - Further improve tick loop
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
     public int autosavePeriod;
@@ -200,7 +200,9 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
         this.K = s;
         // CraftBukkit start
         this.options = options;
+        // Paper start - Handled by TerminalConsoleAppender
         // Try to see if we're actually running in a terminal, disable jline if not
+        /*
         if (System.console() == null && System.getProperty("jline.terminal") == null) {
             System.setProperty("jline.terminal", "jline.UnsupportedTerminal");
             Main.useJline = false;
@@ -221,6 +223,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                 LOGGER.warn((String) null, ex);
             }
         }
+        */
+        // Paper end
         Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
     }
     // CraftBukkit end
@@ -930,7 +934,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
             } finally {
                 // CraftBukkit start - Restore terminal to original settings
                 try {
-                    reader.getTerminal().restore();
+                    net.minecrell.terminalconsole.TerminalConsoleAppender.close(); // Paper - Use TerminalConsoleAppender
                 } catch (Exception ignored) {
                 }
                 // CraftBukkit end
@@ -1415,7 +1419,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
     @Override
     public void sendMessage(IChatBaseComponent ichatbasecomponent) {
-        MinecraftServer.LOGGER.info(ichatbasecomponent.getString());
+        MinecraftServer.LOGGER.info(org.bukkit.craftbukkit.util.CraftChatMessage.fromComponent(ichatbasecomponent, net.minecraft.server.EnumChatFormat.WHITE));// Paper - Log message with colors
     }
 
     public KeyPair getKeyPair() {
