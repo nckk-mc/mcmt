@@ -259,4 +259,9 @@ public class PaperConfig {
         flyingKickPlayerMessage = getString("messages.kick.flying-player", flyingKickPlayerMessage);
         flyingKickVehicleMessage = getString("messages.kick.flying-vehicle", flyingKickVehicleMessage);
     }
+
+    public static boolean suggestPlayersWhenNullTabCompletions = true;
+    private static void suggestPlayersWhenNull() {
+        suggestPlayersWhenNullTabCompletions = getBoolean("settings.suggest-player-names-when-null-tab-completions", suggestPlayersWhenNullTabCompletions);
+    }
 }
