@@ -332,4 +332,10 @@ public class PaperWorldConfig {
         parrotsHangOnBetter = getBoolean("parrots-are-unaffected-by-player-movement", false);
         log("Parrots are unaffected by player movement: " + parrotsHangOnBetter);
     }
+
+    public boolean disableCreeperLingeringEffect;
+    private void setDisableCreeperLingeringEffect() {
+        disableCreeperLingeringEffect = getBoolean("disable-creeper-lingering-effect", false);
+        log("Creeper lingering effect: " + disableCreeperLingeringEffect);
+    }
 }
