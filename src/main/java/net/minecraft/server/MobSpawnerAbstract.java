@@ -133,6 +133,7 @@ public abstract class MobSpawnerAbstract {
                                 ((EntityInsentient) entity).prepare(world, world.getDamageScaler(new BlockPosition(entity)), EnumMobSpawn.SPAWNER, (GroupDataEntity) null, (NBTTagCompound) null);
                             }
                         }
+                        entity.spawnedViaMobSpawner = true; // Paper
                         // Spigot Start
                         if ( entity.world.spigotConfig.nerfSpawnerMobs )
                         {

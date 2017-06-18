@@ -184,6 +184,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     public final boolean defaultActivationState;
     public long activatedTick = Integer.MIN_VALUE;
     public boolean fromMobSpawner;
+    public boolean spawnedViaMobSpawner; // Paper - Yes this name is similar to above, upstream took the better one
     protected int numCollisions = 0; // Paper
     public void inactiveTick() { }
     // Spigot end
@@ -1585,6 +1586,10 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             if (this.origin != null) {
                 nbttagcompound.set("Paper.Origin", this.createList(origin.getX(), origin.getY(), origin.getZ()));
             }
+            // Save entity's from mob spawner status
+            if (spawnedViaMobSpawner) {
+                nbttagcompound.setBoolean("Paper.FromMobSpawner", true);
+            }
             // Paper end
             return nbttagcompound;
         } catch (Throwable throwable) {
@@ -1713,6 +1718,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             if (!originTag.isEmpty()) {
                 origin = new Location(world.getWorld(), originTag.getDoubleAt(0), originTag.getDoubleAt(1), originTag.getDoubleAt(2));
             }
+
+            spawnedViaMobSpawner = nbttagcompound.getBoolean("Paper.FromMobSpawner"); // Restore entity's from mob spawner status
             // Paper end
 
         } catch (Throwable throwable) {
