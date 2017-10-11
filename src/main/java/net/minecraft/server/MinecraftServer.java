@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import co.aikar.timings.Timings;
+import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -1046,7 +1047,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
         if (i - this.Z >= 5000000000L) {
             this.Z = i;
             this.serverPing.setPlayerSample(new ServerPing.ServerPingPlayerSample(this.getMaxPlayers(), this.getPlayerCount()));
-            GameProfile[] agameprofile = new GameProfile[Math.min(this.getPlayerCount(), 12)];
+            GameProfile[] agameprofile = new GameProfile[Math.min(this.getPlayerCount(), org.spigotmc.SpigotConfig.playerSample)]; // Paper
             int j = MathHelper.nextInt(this.q, 0, this.getPlayerCount() - agameprofile.length);
 
             for (int k = 0; k < agameprofile.length; ++k) {
