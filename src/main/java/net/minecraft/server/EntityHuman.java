@@ -941,6 +941,15 @@ public abstract class EntityHuman extends EntityLiving {
         return super.isFrozen() || this.isSleeping();
     }
 
+    // Paper start - send SoundEffect to everyone who can see fromEntity
+    private static void sendSoundEffect(EntityHuman fromEntity, double x, double y, double z, SoundEffect soundEffect, SoundCategory soundCategory, float volume, float pitch) {
+        fromEntity.world.sendSoundEffect(fromEntity, x, y, z, soundEffect, soundCategory, volume, pitch); // This will not send the effect to the entity himself
+        if (fromEntity instanceof EntityPlayer) {
+            ((EntityPlayer) fromEntity).playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect(soundEffect, soundCategory, x, y, z, volume, pitch));
+        }
+    }
+    // Paper end
+
     public void attack(Entity entity) {
         if (entity.br()) {
             if (!entity.t(this)) {
@@ -965,7 +974,7 @@ public abstract class EntityHuman extends EntityLiving {
                     int i = b0 + EnchantmentManager.b((EntityLiving) this);
 
                     if (this.isSprinting() && flag) {
-                        this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_KNOCKBACK, this.getSoundCategory(), 1.0F, 1.0F);
+                        sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_KNOCKBACK, this.getSoundCategory(), 1.0F, 1.0F);  // Paper - send while respecting visibility
                         ++i;
                         flag1 = true;
                     }
@@ -1040,7 +1049,7 @@ public abstract class EntityHuman extends EntityLiving {
                                 }
                             }
 
-                            this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_SWEEP, this.getSoundCategory(), 1.0F, 1.0F);
+                            sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_SWEEP, this.getSoundCategory(), 1.0F, 1.0F);  // Paper - send while respecting visibility
                             this.dE();
                         }
 
@@ -1068,15 +1077,15 @@ public abstract class EntityHuman extends EntityLiving {
                         }
 
                         if (flag2) {
-                            this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_CRIT, this.getSoundCategory(), 1.0F, 1.0F);
+                            sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_CRIT, this.getSoundCategory(), 1.0F, 1.0F);  // Paper - send while respecting visibility
                             this.a(entity);
                         }
 
                         if (!flag2 && !flag3) {
                             if (flag) {
-                                this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_STRONG, this.getSoundCategory(), 1.0F, 1.0F);
+                                sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_STRONG, this.getSoundCategory(), 1.0F, 1.0F);  // Paper - send while respecting visibility
                             } else {
-                                this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_WEAK, this.getSoundCategory(), 1.0F, 1.0F);
+                                sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_WEAK, this.getSoundCategory(), 1.0F, 1.0F);  // Paper - send while respecting visibility
                             }
                         }
 
@@ -1128,7 +1137,7 @@ public abstract class EntityHuman extends EntityLiving {
 
                         this.applyExhaustion(world.spigotConfig.combatExhaustion); // Spigot - Change to use configurable value
                     } else {
-                        this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_NODAMAGE, this.getSoundCategory(), 1.0F, 1.0F);
+                        sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_NODAMAGE, this.getSoundCategory(), 1.0F, 1.0F); // Paper - send while respecting visibility
                         if (flag4) {
                             entity.extinguish();
                         }

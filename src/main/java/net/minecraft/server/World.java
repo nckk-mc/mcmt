@@ -675,6 +675,10 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         this.a(entityhuman, (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, soundeffect, soundcategory, f, f1);
     }
 
+    // Paper start - OBFHELPER
+    public final void sendSoundEffect(@Nullable EntityHuman fromEntity, double x, double y, double z, SoundEffect soundeffect, SoundCategory soundcategory, float volume, float pitch) {
+        this.a(fromEntity, x, y, z, soundeffect, soundcategory, volume, pitch);
+    }
     public abstract void a(@Nullable EntityHuman entityhuman, double d0, double d1, double d2, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1);
 
     public abstract void a(@Nullable EntityHuman entityhuman, Entity entity, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1);
