@@ -117,7 +117,7 @@ public class PathfinderGoalBreed extends PathfinderGoal {
             if (this.b.getGameRules().getBoolean("doMobLoot")) {
                 // CraftBukkit start - use event experience
                 if (experience > 0) {
-                    this.b.addEntity(new EntityExperienceOrb(this.b, this.animal.locX, this.animal.locY, this.animal.locZ, experience));
+                    this.b.addEntity(new EntityExperienceOrb(this.b, this.animal.locX, this.animal.locY, this.animal.locZ, experience, org.bukkit.entity.ExperienceOrb.SpawnReason.BREED, entityplayer, entityageable)); // Paper
                 }
                 // CraftBukkit end
             }

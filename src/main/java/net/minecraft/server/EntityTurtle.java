@@ -512,7 +512,7 @@ public class EntityTurtle extends EntityAnimal {
             Random random = this.animal.getRandom();
 
             if (this.b.getGameRules().getBoolean("doMobLoot")) {
-                this.b.addEntity(new EntityExperienceOrb(this.b, this.animal.locX, this.animal.locY, this.animal.locZ, random.nextInt(7) + 1));
+                this.b.addEntity(new EntityExperienceOrb(this.b, this.animal.locX, this.animal.locY, this.animal.locZ, random.nextInt(7) + 1, org.bukkit.entity.ExperienceOrb.SpawnReason.BREED, entityplayer)); // Paper
             }
 
         }
