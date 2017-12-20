@@ -241,6 +241,11 @@ public class EnchantmentManager {
         return getEnchantmentLevel(Enchantments.CHANNELING, itemstack) > 0;
     }
 
+    // Paper - OBFHELPER
+    public static @Nullable ItemStack getRandomEquippedItemWithEnchant(Enchantment enchantment, EntityLiving entityliving) {
+        Entry<EnumItemSlot, ItemStack> entry = b(enchantment, entityliving);
+        return entry != null ? entry.getValue() : null;
+    }
     @Nullable
     public static Entry<EnumItemSlot, ItemStack> b(Enchantment enchantment, EntityLiving entityliving) {
         Map<EnumItemSlot, ItemStack> map = enchantment.a(entityliving);
