@@ -170,7 +170,8 @@ public class EntitySquid extends EntityWaterAnimal {
 
     @Override
     public boolean a(GeneratorAccess generatoraccess, EnumMobSpawn enummobspawn) {
-        return this.locY > this.world.spigotConfig.squidSpawnRangeMin && this.locY < (double) generatoraccess.getSeaLevel(); // Spigot
+        final double maxHeight = world.paperConfig.squidMaxSpawnHeight > 0 ? world.paperConfig.squidMaxSpawnHeight : world.getSeaLevel();
+        return this.locY > this.world.spigotConfig.squidSpawnRangeMin && this.locY < maxHeight; // Spigot // Paper
     }
 
     public void a(float f, float f1, float f2) {
