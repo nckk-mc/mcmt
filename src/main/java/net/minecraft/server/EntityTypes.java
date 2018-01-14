@@ -271,6 +271,7 @@ public class EntityTypes<T extends Entity> {
         return this.bf;
     }
 
+    public final MinecraftKey getKey() { return this.g(); } // Paper - OBFHELPER
     public MinecraftKey g() {
         if (this.bg == null) {
             MinecraftKey minecraftkey = IRegistry.ENTITY_TYPE.getKey(this);

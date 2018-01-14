@@ -103,6 +103,27 @@ public abstract class MobSpawnerAbstract {
                     double d4 = j >= 2 ? nbttaglist.h(1) : (double) (blockposition.getY() + world.random.nextInt(3) - 1);
                     double d5 = j >= 3 ? nbttaglist.h(2) : (double) blockposition.getZ() + (world.random.nextDouble() - world.random.nextDouble()) * (double) this.spawnRange + 0.5D;
 
+                    // Paper start
+                    EntityTypes entityType = optional.get();
+                    String key = entityType.getKey().getKey();
+                    org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.fromName(key);
+                    if (type != null) {
+                        com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
+                        event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
+                            MCUtil.toLocation(world, d3, d4, d5),
+                            type,
+                            org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER
+                        );
+                        if (!event.callEvent()) {
+                            flag = true;
+                            if (event.shouldAbortSpawn()) {
+                                break;
+                            }
+                            continue;
+                        }
+                    }
+                    // Paper end
+
                     if (world.c(((EntityTypes) optional.get()).a(d3, d4, d5))) {
                         Entity entity = EntityTypes.a(nbttagcompound, world, (entity1) -> {
                             entity1.setPositionRotation(d3, d4, d5, entity1.yaw, entity1.pitch);

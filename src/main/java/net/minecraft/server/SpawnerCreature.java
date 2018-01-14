@@ -38,7 +38,7 @@ public final class SpawnerCreature {
                     BiomeBase.BiomeMeta biomebase_biomemeta = null;
                     GroupDataEntity groupdataentity = null;
                     int l1 = MathHelper.f(Math.random() * 4.0D);
-                    int i2 = 0;
+                    int i2 = 0; // Paper - force diff on name change
                     int j2 = 0;
 
                     while (true) {
@@ -73,6 +73,25 @@ public final class SpawnerCreature {
 
                                                 if (entitypositiontypes_surface != null && a(entitypositiontypes_surface, (IWorldReader) world, (BlockPosition) blockposition_mutableblockposition, entitytypes) && world.c(entitytypes.a((double) f, (double) k, (double) f1))) {
                                                     EntityInsentient entityinsentient;
+
+                                                    // Paper start
+                                                    com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
+                                                    EntityTypes<?> cls = biomebase_biomemeta.b;
+                                                    org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.fromName(cls.getKey().getKey());
+                                                    if (type != null) {
+                                                        event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
+                                                            MCUtil.toLocation(world, blockposition_mutableblockposition),
+                                                            type, SpawnReason.NATURAL
+                                                        );
+                                                        if (!event.callEvent()) {
+                                                            if (event.shouldAbortSpawn()) {
+                                                                return;
+                                                            }
+                                                            ++i2;
+                                                            continue;
+                                                        }
+                                                    }
+                                                    // Paper end
 
                                                     try {
                                                         Entity entity = entitytypes.a(world);
