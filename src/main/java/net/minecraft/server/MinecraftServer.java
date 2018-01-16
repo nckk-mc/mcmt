@@ -1246,7 +1246,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
             DispenserRegistry.init();
             DispenserRegistry.c();
             String s = "."; // PAIL?
-            YggdrasilAuthenticationService yggdrasilauthenticationservice = new YggdrasilAuthenticationService(Proxy.NO_PROXY, UUID.randomUUID().toString());
+            YggdrasilAuthenticationService yggdrasilauthenticationservice = new com.destroystokyo.paper.profile.PaperAuthenticationService(Proxy.NO_PROXY, UUID.randomUUID().toString()); // Paper
             MinecraftSessionService minecraftsessionservice = yggdrasilauthenticationservice.createMinecraftSessionService();
             GameProfileRepository gameprofilerepository = yggdrasilauthenticationservice.createProfileRepository();
             UserCache usercache = new UserCache(gameprofilerepository, new File(s, MinecraftServer.b.getName()));
@@ -1706,6 +1706,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
         this.H = i;
     }
 
+    public final MinecraftSessionService getSessionService() { return this.getMinecraftSessionService(); } // Paper - OBFHELPER
     public MinecraftSessionService getMinecraftSessionService() {
         return this.minecraftSessionService;
     }
