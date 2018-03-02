@@ -160,6 +160,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             return false;
         }
         com.destroystokyo.paper.PaperConfig.registerCommands();
+        com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
         // Paper end
 
         this.setSpawnAnimals(dedicatedserverproperties.spawnAnimals);
