@@ -53,7 +53,7 @@ public class DragonControllerLandedFlame extends AbstractDragonControllerLanded 
             double d2 = this.a.bA.locY + (double) (this.a.bA.getHeight() / 2.0F);
             BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition(d0, d2, d1);
 
-            while (this.a.world.isEmpty(blockposition_mutableblockposition)) {
+            while (this.a.world.isEmpty(blockposition_mutableblockposition ) && d2 > 0) { // Paper
                 --d2;
                 blockposition_mutableblockposition.c(d0, d2, d1);
             }
