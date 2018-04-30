@@ -190,6 +190,7 @@ public class EntityEnderman extends EntityMonster {
         super.mobTick();
     }
 
+    public final boolean teleportRandomly() { return this.dW(); } // Paper - OBFHELPER
     protected boolean dW() {
         double d0 = this.locX + (this.random.nextDouble() - 0.5D) * 64.0D;
         double d1 = this.locY + (double) (this.random.nextInt(64) - 32);
