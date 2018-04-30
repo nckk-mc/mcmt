@@ -2,6 +2,7 @@ package net.minecraft.server;
 
 import java.util.EnumSet;
 import java.util.Optional;
+import com.destroystokyo.paper.event.entity.EndermanEscapeEvent; // Paper
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -54,6 +55,12 @@ public class EntityEnderman extends EntityMonster {
         // CraftBukkit start - fire event
         setGoalTarget(entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason.UNKNOWN, true);
     }
+
+    // Paper start
+    private boolean tryEscape(EndermanEscapeEvent.Reason reason) {
+        return new EndermanEscapeEvent((org.bukkit.craftbukkit.entity.CraftEnderman) this.getBukkitEntity(), reason).callEvent();
+    }
+    // Paper end
 
     @Override
     public boolean setGoalTarget(EntityLiving entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fireEvent) {
@@ -174,7 +181,7 @@ public class EntityEnderman extends EntityMonster {
         if (this.world.J() && this.ticksLived >= this.bC + 600) {
             float f = this.aE();
 
-            if (f > 0.5F && this.world.f(new BlockPosition(this)) && this.random.nextFloat() * 30.0F < (f - 0.4F) * 2.0F) {
+            if (f > 0.5F && this.world.f(new BlockPosition(this)) && this.random.nextFloat() * 30.0F < (f - 0.4F) * 2.0F && this.tryEscape(EndermanEscapeEvent.Reason.RUNAWAY)) { // Paper
                 this.setGoalTarget((EntityLiving) null);
                 this.dW();
             }
@@ -266,17 +273,19 @@ public class EntityEnderman extends EntityMonster {
         } else if (!(damagesource instanceof EntityDamageSourceIndirect) && damagesource != DamageSource.FIREWORKS) {
             boolean flag = super.damageEntity(damagesource, f);
 
-            if (damagesource.ignoresArmor() && this.random.nextInt(10) != 0) {
+            if (damagesource.ignoresArmor() && this.random.nextInt(10) != 0 && this.tryEscape(damagesource == DamageSource.DROWN ? EndermanEscapeEvent.Reason.DROWN : EndermanEscapeEvent.Reason.CRITICAL_HIT)) { // Paper
                 this.dW();
             }
 
             return flag;
         } else {
+            if (this.tryEscape(EndermanEscapeEvent.Reason.INDIRECT)) { // Paper start
             for (int i = 0; i < 64; ++i) {
                 if (this.dW()) {
                     return true;
                 }
             }
+            } // Paper end
 
             return false;
         }
@@ -398,7 +407,7 @@ public class EntityEnderman extends EntityMonster {
 
     static class PathfinderGoalPlayerWhoLookedAtTarget extends PathfinderGoalNearestAttackableTarget<EntityHuman> {
 
-        private final EntityEnderman i;
+        private final EntityEnderman i; public final EntityEnderman getEnderman() { return this.i; } // Paper - OBFHELPER
         private EntityHuman j;
         private int k;
         private int l;
@@ -456,7 +465,7 @@ public class EntityEnderman extends EntityMonster {
             } else {
                 if (this.c != null && !this.i.isPassenger()) {
                     if (this.i.f((EntityHuman) this.c)) {
-                        if (this.c.h((Entity) this.i) < 16.0D) {
+                        if (this.c.h((Entity) this.i) < 16.0D && this.getEnderman().tryEscape(EndermanEscapeEvent.Reason.STARE)) {
                             this.i.dW();
                         }
 
