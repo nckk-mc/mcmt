@@ -545,6 +545,7 @@ public final class ItemStack {
         this.getItem().b(this, world, entityhuman);
     }
 
+    public int getItemUseMaxDuration() { return k(); } // Paper - OBFHELPER
     public int k() {
         return this.getItem().f_(this);
     }
