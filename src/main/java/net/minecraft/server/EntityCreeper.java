@@ -11,7 +11,7 @@ public class EntityCreeper extends EntityMonster {
 
     private static final DataWatcherObject<Integer> b = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.b);
     private static final DataWatcherObject<Boolean> POWERED = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i);
-    private static final DataWatcherObject<Boolean> d = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i);
+    private static final DataWatcherObject<Boolean> d = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i); private static final DataWatcherObject<Boolean> isIgnitedDW = d; // Paper OBFHELPER
     private int bz;
     private int fuseTicks;
     public int maxFuseTicks = 30;
@@ -216,6 +216,7 @@ public class EntityCreeper extends EntityMonster {
                 this.createEffectCloud();
             } else {
                 fuseTicks = 0;
+                this.datawatcher.set(isIgnitedDW, Boolean.valueOf(false)); // Paper
             }
             // CraftBukkit end
         }
