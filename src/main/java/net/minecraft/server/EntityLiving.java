@@ -109,7 +109,7 @@ public abstract class EntityLiving extends Entity {
     private float bD;
     private int jumpTicks;
     private float bF;
-    protected ItemStack activeItem;
+    public ItemStack activeItem; // Paper - public
     protected int bo;
     protected int bp;
     private BlockPosition bG;
@@ -2899,10 +2899,12 @@ public abstract class EntityLiving extends Entity {
         return this.activeItem;
     }
 
+    public int getItemUseRemainingTime() { return dm(); } // Paper - OBFHELPER
     public int dm() {
         return this.bo;
     }
 
+    public int getHandRaisedTime() { return dn(); } // Paper - OBFHELPER
     public int dn() {
         return this.isHandRaised() ? this.activeItem.k() - this.dm() : 0;
     }
