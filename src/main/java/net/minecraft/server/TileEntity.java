@@ -11,7 +11,7 @@ import org.bukkit.inventory.InventoryHolder;
 // CraftBukkit end
 import org.spigotmc.CustomTimingsHandler; // Spigot
 
-public abstract class TileEntity {
+public abstract class TileEntity implements KeyedObject { // Paper
 
     public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getTileEntityTimings(this); // Spigot
     // CraftBukkit start - data containers
@@ -19,7 +19,7 @@ public abstract class TileEntity {
     public final CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
     // CraftBukkit end
     private static final Logger LOGGER = LogManager.getLogger();
-    private final TileEntityTypes<?> b;
+    private final TileEntityTypes<?> b; public TileEntityTypes getTileEntityType() { return b; } // Paper - OBFHELPER
     @Nullable
     protected World world;
     protected BlockPosition position;
@@ -32,6 +32,26 @@ public abstract class TileEntity {
         this.position = BlockPosition.ZERO;
         this.b = tileentitytypes;
     }
+
+    // Paper start
+    private String tileEntityKeyString = null;
+    private MinecraftKey tileEntityKey = null;
+
+    @Override
+    public MinecraftKey getMinecraftKey() {
+        if (tileEntityKey == null) {
+            tileEntityKey = TileEntityTypes.a(this.getTileEntityType());
+            tileEntityKeyString = tileEntityKey != null ? tileEntityKey.toString() : null;
+        }
+        return tileEntityKey;
+    }
+
+    @Override
+    public String getMinecraftKeyString() {
+        getMinecraftKey(); // Try to load if it doesn't exists.
+        return tileEntityKeyString;
+    }
+    // Paper end
 
     @Nullable
     public World getWorld() {
