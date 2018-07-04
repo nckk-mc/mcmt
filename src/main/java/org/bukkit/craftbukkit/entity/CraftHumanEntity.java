@@ -616,8 +616,13 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
     @Override
     public void closeInventory() {
-        getHandle().closeInventory();
+        // Paper start
+        getHandle().closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason.PLUGIN);
     }
+    public void closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason reason) {
+        getHandle().closeInventory(reason);
+    }
+    // Paper end
 
     @Override
     public boolean isBlocking() {

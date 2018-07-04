@@ -2056,7 +2056,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
         PlayerConnectionUtils.ensureMainThread(packetplayinclosewindow, this, this.player.getWorldServer());
 
         if (this.player.isFrozen()) return; // CraftBukkit
-        CraftEventFactory.handleInventoryCloseEvent(this.player); // CraftBukkit
+        CraftEventFactory.handleInventoryCloseEvent(this.player, org.bukkit.event.inventory.InventoryCloseEvent.Reason.PLAYER); // CraftBukkit // Paper
 
         this.player.m();
     }
