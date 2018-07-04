@@ -171,6 +171,58 @@ public class BlockBed extends BlockFacingHorizontal implements ITileEntity {
 
     public static Optional<Vec3D> a(EntityTypes<?> entitytypes, IWorldReader iworldreader, BlockPosition blockposition, int i) {
         EnumDirection enumdirection = (EnumDirection) iworldreader.getType(blockposition).get(BlockBed.FACING);
+        // Paper -  configurable bed search radius
+        World world = (World) iworldreader;
+        int radius = world.paperConfig.bedSearchRadius;
+        if (radius > 0) {
+            for (int r = 1; r <= radius; r++) {
+                int x = -r;
+                int z = r;
+
+                // Iterates the edge of half of the box; then negates for other half.
+                while (x <= r && z > -r) {
+                    for (int y = -1; y <= 1; y++) {
+                        BlockPosition pos = blockposition.add(x, y, z);
+                        Optional<Vec3D> vector;
+                        vector = isSafeRespawn(entitytypes, world, pos);
+                        if (vector.isPresent()) {
+                            if (i-- <= 0) {
+                                return vector;
+                            }
+                        }
+                        pos = blockposition.add(-x, y, -z);
+                        vector = isSafeRespawn(entitytypes, world, pos);
+                        if (vector.isPresent()) {
+                            if (i-- <= 0) {
+                                return vector;
+                            }
+                        }
+
+                        vector = isSafeRespawn(entitytypes, world, pos);
+                        if (vector.isPresent()) {
+                            if (i-- <= 0) {
+                                return vector;
+                            }
+                        }
+
+                        vector = isSafeRespawn(entitytypes, world, pos);
+                        if (vector.isPresent()) {
+                            if (i-- <= 0) {
+                                return vector;
+                            }
+                        }
+                    }
+                    if (x < r) {
+                        x++;
+                    } else {
+                        z--;
+                    }
+                }
+            }
+
+            return Optional.empty();
+        }
+        // Paper end
         int j = blockposition.getX();
         int k = blockposition.getY();
         int l = blockposition.getZ();
@@ -200,6 +252,7 @@ public class BlockBed extends BlockFacingHorizontal implements ITileEntity {
         return Optional.empty();
     }
 
+    protected static Optional<Vec3D> isSafeRespawn(EntityTypes<?> entityTypes, IWorldReader iworldreader, BlockPosition blockPosition) { return a(entityTypes, iworldreader, blockPosition); } // Paper -- obfhelper
     protected static Optional<Vec3D> a(EntityTypes<?> entitytypes, IWorldReader iworldreader, BlockPosition blockposition) {
         VoxelShape voxelshape = iworldreader.getType(blockposition).getCollisionShape(iworldreader, blockposition);
 
