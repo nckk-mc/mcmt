@@ -29,7 +29,7 @@ public class Chunk implements IChunkAccess {
     private final ChunkSection[] sections;
     private final BiomeBase[] d;
     private final Map<BlockPosition, NBTTagCompound> e;
-    public boolean loaded;
+    public boolean loaded; public boolean isLoaded() { return loaded; } // Paper - OBFHELPER
     public final World world;
     public final Map<HeightMap.Type, HeightMap> heightMap;
     private final ChunkConverter i;
@@ -55,11 +55,36 @@ public class Chunk implements IChunkAccess {
         this(world, chunkcoordintpair, abiomebase, ChunkConverter.a, TickListEmpty.a(), TickListEmpty.a(), 0L, (ChunkSection[]) null, (Consumer) null);
     }
 
+    // Paper start
+    private class TileEntityHashMap extends java.util.HashMap<BlockPosition, TileEntity> {
+        @Override
+        public TileEntity put(BlockPosition key, TileEntity value) {
+            TileEntity replaced = super.put(key, value);
+            if (replaced != null) {
+                replaced.setCurrentChunk(null);
+            }
+            if (value != null) {
+                value.setCurrentChunk(Chunk.this);
+            }
+            return replaced;
+        }
+
+        @Override
+        public TileEntity remove(Object key) {
+            TileEntity removed = super.remove(key);
+            if (removed != null) {
+                removed.setCurrentChunk(null);
+            }
+            return removed;
+        }
+    }
+    // Paper end
+
     public Chunk(World world, ChunkCoordIntPair chunkcoordintpair, BiomeBase[] abiomebase, ChunkConverter chunkconverter, TickList<Block> ticklist, TickList<FluidType> ticklist1, long i, @Nullable ChunkSection[] achunksection, @Nullable Consumer<Chunk> consumer) {
         this.sections = new ChunkSection[16];
         this.e = Maps.newHashMap();
         this.heightMap = Maps.newEnumMap(HeightMap.Type.class);
-        this.tileEntities = Maps.newHashMap();
+        this.tileEntities = new TileEntityHashMap(); // Paper
         this.l = Maps.newHashMap();
         this.m = Maps.newHashMap();
         this.n = new ShortList[16];
@@ -366,6 +391,7 @@ public class Chunk implements IChunkAccess {
         }
 
         entity.inChunk = true;
+        entity.setCurrentChunk(this); // Paper
         entity.chunkX = this.loc.x;
         entity.chunkY = k;
         entity.chunkZ = this.loc.z;
@@ -377,6 +403,7 @@ public class Chunk implements IChunkAccess {
         ((HeightMap) this.heightMap.get(heightmap_type)).a(along);
     }
 
+    public void removeEntity(Entity entity) { this.b(entity); } // Paper - OBFHELPER
     public void b(Entity entity) {
         this.a(entity, entity.chunkY);
     }
@@ -389,8 +416,12 @@ public class Chunk implements IChunkAccess {
         if (i >= this.entitySlices.length) {
             i = this.entitySlices.length - 1;
         }
-
-        this.entitySlices[i].remove(entity);
+        // Paper start
+        if (entity.currentChunk != null && entity.currentChunk.get() == this) entity.setCurrentChunk(null);
+        if (!this.entitySlices[i].remove(entity)) {
+            return;
+        }
+        // Paper end
     }
 
     @Override
