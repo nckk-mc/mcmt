@@ -1970,6 +1970,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
                     }
 
                     if (event.isCancelled()) {
+                        this.player.updateInventory(this.player.activeContainer); // Paper - Refresh player inventory
                         return;
                     }
                     // CraftBukkit end
