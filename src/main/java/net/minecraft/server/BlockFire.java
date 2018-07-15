@@ -2,6 +2,7 @@ package net.minecraft.server;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import com.destroystokyo.paper.event.block.TNTPrimeEvent; // Paper - TNTPrimeEvent
 import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
@@ -237,7 +238,7 @@ public class BlockFire extends Block {
 
                 world.setTypeAndData(blockposition, (IBlockData) this.a((IBlockAccess) world, blockposition).set(BlockFire.AGE, l), 3);
             } else {
-                world.a(blockposition, false);
+                if(iblockdata.getBlock() != Blocks.TNT) world.a(blockposition, false); // Paper - TNTPrimeEvent - We might be cancelling it below, move the setAir down
             }
 
             Block block = iblockdata.getBlock();
@@ -245,6 +246,12 @@ public class BlockFire extends Block {
             if (block instanceof BlockTNT) {
                 BlockTNT blocktnt = (BlockTNT) block;
 
+                // Paper start - TNTPrimeEvent
+                org.bukkit.block.Block tntBlock = MCUtil.toBukkitBlock(world, blockposition);
+                if (!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.FIRE, null).callEvent()) {
+                    return;
+                }
+                // Paper end
                 BlockTNT.a(world, blockposition);
             }
         }
