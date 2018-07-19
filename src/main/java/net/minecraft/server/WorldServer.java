@@ -966,7 +966,8 @@ public class WorldServer extends World {
         if (entity1 == null) {
             return false;
         } else {
-            // WorldServer.LOGGER.warn("Keeping entity {} that already exists with UUID {}", EntityTypes.getName(entity1.getEntityType()), entity.getUniqueID().toString()); // CraftBukkit
+            WorldServer.LOGGER.error("Keeping entity {} that already exists with UUID {}", EntityTypes.getName(entity1.getEntityType()), entity.getUniqueID().toString()); // CraftBukkit // paper
+            WorldServer.LOGGER.error("Deleting duplicate entity {}", entity); // CraftBukkit // paper
             return true;
         }
     }
