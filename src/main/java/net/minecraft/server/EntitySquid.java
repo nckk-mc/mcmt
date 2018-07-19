@@ -19,7 +19,7 @@ public class EntitySquid extends EntityWaterAnimal {
 
     public EntitySquid(EntityTypes<? extends EntitySquid> entitytypes, World world) {
         super(entitytypes, world);
-        this.random.setSeed((long) this.getId());
+        //this.random.setSeed((long) this.getId()); // Paper
         this.bF = 1.0F / (this.random.nextFloat() + 1.0F) * 0.2F;
     }
 
