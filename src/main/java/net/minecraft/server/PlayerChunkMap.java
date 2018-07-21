@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import com.destroystokyo.paper.PaperWorldConfig; // Paper
 import com.google.common.collect.ImmutableList;
 import co.aikar.timings.Timing;
 import com.google.common.collect.ComparisonChain;
@@ -20,12 +21,15 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap; // Paper
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map; // Paper
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID; // Paper
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -559,12 +563,49 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
 
                     for (int j = 0; j < i; ++j) {
                         List<Entity> entityslice = aentityslice[j]; // Spigot
-                        Iterator iterator = entityslice.iterator();
 
-                        while (iterator.hasNext()) {
-                            Entity entity = (Entity) iterator.next();
+                        // Paper start
+                        PaperWorldConfig.DuplicateUUIDMode mode = world.paperConfig.duplicateUUIDMode;
+                        if (mode == PaperWorldConfig.DuplicateUUIDMode.WARN || mode == PaperWorldConfig.DuplicateUUIDMode.DELETE || mode == PaperWorldConfig.DuplicateUUIDMode.SAFE_REGEN) {
+                            Map<UUID, Entity> thisChunk = new HashMap<>();
+                            for (Iterator<Entity> iterator = ((List<Entity>) entityslice).iterator(); iterator.hasNext(); ) {
+                                Entity entity = iterator.next();
+                                if (entity.dead || entity.valid) continue;
+                                Entity other = ((WorldServer) world).getEntity(entity.uniqueID);
+                                if (other == null || other.dead) {
+                                    other = thisChunk.get(entity.uniqueID);
+                                }
 
-                            if (!(entity instanceof EntityHuman) && !this.world.addEntityChunk(entity)) {
+                                if (mode == PaperWorldConfig.DuplicateUUIDMode.SAFE_REGEN && other != null && !other.dead
+                                        && java.util.Objects.equals(other.getSaveID(), entity.getSaveID())
+                                        && entity.getBukkitEntity().getLocation().distance(other.getBukkitEntity().getLocation()) < world.paperConfig.duplicateUUIDDeleteRange
+                                ) {
+                                    if (World.DEBUG_ENTITIES) LOGGER.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", deleted entity " + entity + " because it was near the duplicate and likely an actual duplicate. See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                    entity.dead = true;
+                                    iterator.remove();
+                                    continue;
+                                }
+                                if (other != null && !other.dead) {
+                                    switch (mode) {
+                                        case SAFE_REGEN: {
+                                            entity.setUUID(UUID.randomUUID());
+                                            if (World.DEBUG_ENTITIES) LOGGER.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", regenerated UUID for " + entity + ". See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                            break;
+                                        }
+                                        case DELETE: {
+                                            if (World.DEBUG_ENTITIES) LOGGER.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", deleted entity " + entity + ". See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                            entity.dead = true;
+                                            iterator.remove();
+                                            break;
+                                        }
+                                        default:
+                                            if (World.DEBUG_ENTITIES) LOGGER.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", doing nothing to " + entity + ". See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                            break;
+                                    }
+                                }
+
+
+                            if (!(entity instanceof EntityHuman) && (entity.dead || !this.world.addEntityChunk(entity))) { // Paper
                                 if (list == null) {
                                     list = Lists.newArrayList(new Entity[]{entity});
                                 } else {
@@ -572,6 +613,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                                 }
                             }
                         }
+                        } // Paper
                     }
 
                     if (list != null) {

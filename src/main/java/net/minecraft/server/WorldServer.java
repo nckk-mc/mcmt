@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import co.aikar.timings.TimingHistory;
 import co.aikar.timings.Timings;
+
+import com.destroystokyo.paper.PaperWorldConfig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
@@ -977,8 +979,23 @@ public class WorldServer extends World {
         if (entity1 == null) {
             return false;
         } else {
-            WorldServer.LOGGER.error("Keeping entity {} that already exists with UUID {}", EntityTypes.getName(entity1.getEntityType()), entity.getUniqueID().toString()); // CraftBukkit // paper
-            WorldServer.LOGGER.error("Deleting duplicate entity {}", entity); // CraftBukkit // paper
+            // Paper start
+            if (entity1.dead) {
+                unregisterEntity(entity1); // remove the existing entity
+                return false;
+            }
+
+            if (DEBUG_ENTITIES && entity.world.paperConfig.duplicateUUIDMode != PaperWorldConfig.DuplicateUUIDMode.NOTHING) {
+                WorldServer.LOGGER.error("Keeping entity {} that already exists with UUID {}", EntityTypes.getName(entity1.getEntityType()), entity.getUniqueID().toString()); // CraftBukkit // paper
+                WorldServer.LOGGER.error("Deleting duplicate entity {}", entity); // CraftBukkit // paper
+
+                if (entity1.addedToWorldStack != null) {
+                    entity1.addedToWorldStack.printStackTrace();
+                }
+
+                getAddToWorldStackTrace(entity).printStackTrace();
+            }
+            // Paper end
             return true;
         }
     }
@@ -1109,7 +1126,7 @@ public class WorldServer extends World {
             }
 
             Entity old = this.entitiesByUUID.put(entity.getUniqueID(), entity);
-            if (old != null && old.getId() != entity.getId() && old.valid) {
+            if (old != null && old.getId() != entity.getId() && old.valid && entity.world.paperConfig.duplicateUUIDMode != com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode.NOTHING) { // Paper
                 Logger logger = LogManager.getLogger();
                 logger.error("Overwrote an existing entity " + old + " with " + entity);
                 if (DEBUG_ENTITIES) {
