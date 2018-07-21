@@ -931,6 +931,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                 } else {
                     PlayerChunkMap.EntityTracker playerchunkmap_entitytracker = new PlayerChunkMap.EntityTracker(entity, i, j, entitytypes.isDeltaTracking());
 
+                    entity.tracker = playerchunkmap_entitytracker; // Paper - Fast access to tracker
                     this.trackedEntities.put(entity.getId(), playerchunkmap_entitytracker);
                     playerchunkmap_entitytracker.track(this.world.getPlayers());
                     if (entity instanceof EntityPlayer) {
@@ -973,7 +974,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
         if (playerchunkmap_entitytracker1 != null) {
             playerchunkmap_entitytracker1.a();
         }
-
+        entity.tracker = null; // Paper - We're no longer tracked
     }
 
     protected void g() {

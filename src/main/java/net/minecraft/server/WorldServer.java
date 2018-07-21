@@ -69,6 +69,9 @@ public class WorldServer extends World {
     // CraftBukkit start
     private int tickPosition;
     boolean hasPhysicsEvent = true; // Paper
+    private static Throwable getAddToWorldStackTrace(Entity entity) {
+        return new Throwable(entity + " Added to world at " + new java.util.Date());
+    }
 
     // Add env and gen to constructor
     public WorldServer(MinecraftServer minecraftserver, Executor executor, WorldNBTStorage worldnbtstorage, WorldData worlddata, DimensionManager dimensionmanager, GameProfilerFiller gameprofilerfiller, WorldLoadListener worldloadlistener, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
@@ -930,6 +933,12 @@ public class WorldServer extends World {
         org.spigotmc.AsyncCatcher.catchOp( "entity add"); // Spigot
         if (entity.valid) { MinecraftServer.LOGGER.error("Attempted Double World add on " + entity, new Throwable()); return true; } // Paper
         if (entity.dead) {
+            // Paper start
+            if (DEBUG_ENTITIES) {
+                new Throwable("Tried to add entity " + entity + " but it was marked as removed already").printStackTrace(); // CraftBukkit
+                getAddToWorldStackTrace(entity).printStackTrace();
+            }
+            // Paper end
             // WorldServer.LOGGER.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.getName(entity.getEntityType())); // CraftBukkit
             return false;
         } else if (this.isUUIDTaken(entity)) {
@@ -1093,7 +1102,24 @@ public class WorldServer extends World {
                 }
             }
 
-            this.entitiesByUUID.put(entity.getUniqueID(), entity);
+            if (DEBUG_ENTITIES) {
+                entity.addedToWorldStack = getAddToWorldStackTrace(entity);
+            }
+
+            Entity old = this.entitiesByUUID.put(entity.getUniqueID(), entity);
+            if (old != null && old.getId() != entity.getId() && old.valid) {
+                Logger logger = LogManager.getLogger();
+                logger.error("Overwrote an existing entity " + old + " with " + entity);
+                if (DEBUG_ENTITIES) {
+                    if (old.addedToWorldStack != null) {
+                        old.addedToWorldStack.printStackTrace();
+                    } else {
+                        logger.error("Oddly, the old entity was not added to the world in the normal way. Plugins?");
+                    }
+                    entity.addedToWorldStack.printStackTrace();
+                }
+            }
+
             this.getChunkProvider().addEntity(entity);
             if (entity instanceof EntityInsentient) {
                 this.I.add(((EntityInsentient) entity).getNavigation());
