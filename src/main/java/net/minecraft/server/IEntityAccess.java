@@ -22,9 +22,18 @@ public interface IEntityAccess {
         return this.getEntities(entity, axisalignedbb, IEntitySelector.f);
     }
 
+    // Paper start
     default boolean a(@Nullable Entity entity, VoxelShape voxelshape) {
+        return this.checkEntityCollision(entity, voxelshape, false);
+    }
+    default boolean checkEntityCollision(Entity entity, VoxelShape voxelshape, boolean checkCanSee) {
         return voxelshape.isEmpty() ? true : this.getEntities(entity, voxelshape.getBoundingBox()).stream().filter((entity1) -> {
+            if (entity instanceof EntityPlayer && entity1 instanceof EntityPlayer
+                && !((EntityPlayer)entity).getBukkitEntity().canSee(((EntityPlayer)entity1).getBukkitEntity())) {
+                return false;
+            }
             return !entity1.dead && entity1.i && (entity == null || !entity1.x(entity));
+            // Paper end
         }).noneMatch((entity1) -> {
             return VoxelShapes.c(voxelshape, VoxelShapes.a(entity1.getBoundingBox()), OperatorBoolean.AND);
         });

@@ -84,7 +84,12 @@ public interface IWorldReader extends IIBlockAccess {
         return ChunkStatus.EMPTY;
     }
 
+    // Paper start
     default boolean a(IBlockData iblockdata, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
+        return this.checkEntityCollision(iblockdata, blockposition, voxelshapecollision, false);
+    }
+    default boolean checkEntityCollision(IBlockData iblockdata, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision, boolean checkCanSee) {
+        // Paper end
         VoxelShape voxelshape = iblockdata.b((IBlockAccess) this, blockposition, voxelshapecollision);
 
         return voxelshape.isEmpty() || this.a((Entity) null, voxelshape.a((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ()));
