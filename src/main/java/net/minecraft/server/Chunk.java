@@ -416,6 +416,7 @@ public class Chunk implements IChunkAccess {
         entity.chunkY = k;
         entity.chunkZ = this.loc.z;
         this.entitySlices[k].add(entity);
+        this.markDirty(); // Paper
     }
 
     @Override
@@ -442,6 +443,7 @@ public class Chunk implements IChunkAccess {
             return;
         }
         entityCounts.decrement(entity.getMinecraftKeyString());
+        this.markDirty(); // Paper
         // Paper end
     }
 
