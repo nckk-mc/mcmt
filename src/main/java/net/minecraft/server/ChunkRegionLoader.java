@@ -318,6 +318,7 @@ public class ChunkRegionLoader {
         nbttagcompound1.set("TileEntities", nbttaglist1);
         NBTTagList nbttaglist2 = new NBTTagList();
 
+        java.util.List<Entity> toUpdate = new java.util.ArrayList<>(); // Paper
         if (ichunkaccess.getChunkStatus().getType() == ChunkStatus.Type.LEVELCHUNK) {
             Chunk chunk = (Chunk) ichunkaccess;
 
@@ -329,13 +330,29 @@ public class ChunkRegionLoader {
                 while (iterator1.hasNext()) {
                     Entity entity = (Entity) iterator1.next();
                     NBTTagCompound nbttagcompound3 = new NBTTagCompound();
-
+                    // Paper start
+                    if ((int)Math.floor(entity.locX) >> 4 != chunk.getPos().x || (int)Math.floor(entity.locZ) >> 4 != chunk.getPos().z) {
+                        LogManager.getLogger().warn(entity + " is not in this chunk, skipping save. This a bug fix to a vanilla bug. Do not report this to PaperMC please.");
+                        toUpdate.add(entity);
+                        continue;
+                    }
+                    if (entity.dead) {
+                        continue;
+                    }
+                    // Paper end
                     if (entity.d(nbttagcompound3)) {
                         chunk.d(true);
                         nbttaglist2.add(nbttagcompound3);
                     }
                 }
             }
+
+            // Paper start - move entities to the correct chunk
+            for (Entity entity : toUpdate) {
+                worldserver.entityJoinedWorld(entity);
+            }
+            // Paper end
+
         } else {
             ProtoChunk protochunk = (ProtoChunk) ichunkaccess;
 
