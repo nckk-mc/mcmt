@@ -157,6 +157,7 @@ public class EntityZombieVillager extends EntityZombie implements VillagerDataHo
         if (CraftEventFactory.callEntityTransformEvent(this, entityvillager, EntityTransformEvent.TransformReason.CURED).isCancelled()) {
             return;
         }
+        if (!new com.destroystokyo.paper.event.entity.EntityTransformedEvent(this.getBukkitEntity(), entityvillager.getBukkitEntity(), com.destroystokyo.paper.event.entity.EntityTransformedEvent.TransformedReason.CURED).callEvent()) return; // Paper
         this.die(); // CraftBukkit - from above
         worldserver.addEntity(entityvillager, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CURED); // CraftBukkit - add SpawnReason
         // CraftBukkit end

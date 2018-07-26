@@ -602,6 +602,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
         if (CraftEventFactory.callEntityTransformEvent(this, entitywitch, EntityTransformEvent.TransformReason.LIGHTNING).isCancelled()) {
             return;
         }
+        if (!new com.destroystokyo.paper.event.entity.EntityTransformedEvent(this.getBukkitEntity(), entitywitch.getBukkitEntity(), com.destroystokyo.paper.event.entity.EntityTransformedEvent.TransformedReason.LIGHTNING).callEvent()) return; // Paper
         this.world.addEntity(entitywitch, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING);
         // CraftBukkit end
         this.die();
