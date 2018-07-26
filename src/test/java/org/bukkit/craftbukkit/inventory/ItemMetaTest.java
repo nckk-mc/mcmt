@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections; // Paper
 import java.util.List;
 import java.util.UUID;
 import com.destroystokyo.paper.inventory.meta.ArmorStandMeta; // Paper
@@ -180,7 +181,47 @@ public class ItemMetaTest extends AbstractTestingBase {
 
         assertThat("noTag and enchanted stacks should not be similar", noTag.isSimilar(enchanted), is(false));
         assertThat("noTag and enchanted stacks should not be equal", noTag.equals(enchanted), is(false));
+
+        // Paper start - test additional ItemMeta damage cases
+        ItemStack clone = CraftItemStack.asBukkitCopy(CraftItemStack.asNMSCopy(noDamage));
+        assertThat("Bukkit and craft stacks should be similar", noDamage.isSimilar(clone), is(true));
+        assertThat("Bukkit and craft stacks should be equal", noDamage.equals(clone), is(true));
+
+        ItemStack pureBukkit = new ItemStack(Material.DIAMOND_SWORD);
+        pureBukkit.setDurability((short) 2);
+        net.minecraft.server.ItemStack nms = CraftItemStack.asNMSCopy(pureBukkit);
+        ItemStack other = CraftItemStack.asBukkitCopy(nms);
+
+        assertThat("Bukkit and NMS ItemStack copies should be similar", pureBukkit.isSimilar(other), is(true));
+        assertThat("Bukkit and NMS ItemStack copies should be equal", pureBukkit.equals(other), is(true));
     }
+
+    private void testItemMeta(ItemStack stack) {
+        assertThat("Should not have ItemMeta", stack.hasItemMeta(), is(false));
+
+        stack.setDurability((short) 0);
+        assertThat("ItemStack with zero durability should not have ItemMeta", stack.hasItemMeta(), is(false));
+
+        stack.setDurability((short) 2);
+        assertThat("ItemStack with non-zero durability should have ItemMeta", stack.hasItemMeta(), is(true));
+
+        stack.setLore(Collections.singletonList("Lore"));
+        assertThat("ItemStack with lore and durability should have ItemMeta", stack.hasItemMeta(), is(true));
+
+        stack.setDurability((short) 0);
+        assertThat("ItemStack with lore should have ItemMeta", stack.hasItemMeta(), is(true));
+
+        stack.setLore(null);
+    }
+
+    @Test
+    public void testHasItemMeta() {
+        ItemStack itemStack = new ItemStack(Material.SHEARS);
+
+        testItemMeta(itemStack);
+        testItemMeta(CraftItemStack.asCraftCopy(itemStack));
+    }
+    // Paper end
 
     @Test
     public void testBlockStateMeta() {
