@@ -6,7 +6,7 @@ public class EntityHorseSkeleton extends EntityHorseAbstract {
 
     private final PathfinderGoalHorseTrap bJ = new PathfinderGoalHorseTrap(this);
     private boolean bK;
-    private int bL;
+    private int bL; public int getTrapTime() { return this.bL; } // Paper - OBFHELPER
 
     public EntityHorseSkeleton(EntityTypes<? extends EntityHorseSkeleton> entitytypes, World world) {
         super(entitytypes, world);
@@ -124,10 +124,12 @@ public class EntityHorseSkeleton extends EntityHorseAbstract {
         return 0.96F;
     }
 
+    public boolean isTrap() { return this.dV(); } // Paper - OBFHELPER
     public boolean dV() {
         return this.bK;
     }
 
+    public void setTrap(boolean trap) { this.r(trap); } // Paper - OBFHELPER
     public void r(boolean flag) {
         if (flag != this.bK) {
             this.bK = flag;
