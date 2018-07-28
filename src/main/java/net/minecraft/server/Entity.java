@@ -126,6 +126,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     public float D;
     public float E;
     public float F;
+    public boolean shouldBeRemoved; // Paper
     public float fallDistance;
     private float av;
     private float aw;

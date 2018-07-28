@@ -836,6 +836,7 @@ public class WorldServer extends World {
 
         while (objectiterator.hasNext()) {
             Entity entity = (Entity) objectiterator.next();
+            if (entity.shouldBeRemoved) continue; // Paper
             // CraftBukkit start - Split out persistent check, don't apply it to special persistent mobs
             if (entity instanceof EntityInsentient) {
                 EntityInsentient entityinsentient = (EntityInsentient) entity;
@@ -1130,6 +1131,7 @@ public class WorldServer extends World {
                 entity.origin = entity.getBukkitEntity().getLocation();
             }
             // Paper end
+            entity.shouldBeRemoved = false; // Paper - shouldn't be removed after being re-added
             new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
         }
 
@@ -1144,6 +1146,7 @@ public class WorldServer extends World {
             this.removeEntityFromChunk(entity);
             this.entitiesById.remove(entity.getId());
             this.unregisterEntity(entity);
+            entity.shouldBeRemoved = true; // Paper
         }
     }
 
