@@ -10,13 +10,41 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import com.destroystokyo.paper.PaperConfig; // Paper
 
+import org.apache.logging.log4j.LogManager;
+
 public abstract class RegionFileCache implements AutoCloseable {
 
     public final Long2ObjectLinkedOpenHashMap<RegionFile> cache = new Long2ObjectLinkedOpenHashMap();
     private final File a;
+    // Paper start
+    private final File templateWorld;
+    private final File actualWorld;
+    private boolean useAltWorld;
+    // Paper end
+
 
     protected RegionFileCache(File file) {
         this.a = file;
+        // Paper end
+
+        this.actualWorld = file;
+        if (com.destroystokyo.paper.PaperConfig.useVersionedWorld) {
+            this.useAltWorld = true;
+            String name = file.getName();
+            File container = file.getParentFile().getParentFile();
+            if (name.equals("DIM-1") || name.equals("DIM1")) {
+                container = container.getParentFile();
+            }
+            this.templateWorld = new File(container, name);
+            File region = new File(file, "region");
+            if (!region.exists()) {
+                region.mkdirs();
+            }
+        } else {
+            this.useAltWorld = false;
+            this.templateWorld = file;
+        }
+        // Paper start
     }
 
     private RegionFile a(ChunkCoordIntPair chunkcoordintpair, boolean existingOnly) throws IOException { // CraftBukkit
@@ -34,6 +62,7 @@ public abstract class RegionFileCache implements AutoCloseable {
                 this.a.mkdirs();
             }
 
+            copyIfNeeded(chunkcoordintpair.x, chunkcoordintpair.z); // Paper
             File file = new File(this.a, "r." + chunkcoordintpair.getRegionX() + "." + chunkcoordintpair.getRegionZ() + ".mca");
             if (existingOnly && !file.exists()) return null; // CraftBukkit
             RegionFile regionfile1 = new RegionFile(file);
@@ -42,6 +71,15 @@ public abstract class RegionFileCache implements AutoCloseable {
             return regionfile1;
         }
     }
+
+    public static File getRegionFileName(File file, int i, int j) {
+        File file1 = new File(file, "region");
+        return new File(file1, "r." + (i >> 5) + "." + (j >> 5) + ".mca");
+    }
+    public synchronized boolean hasRegionFile(File file, int i, int j) {
+        return cache.containsKey(ChunkCoordIntPair.pair(i, j));
+    }
+    // Paper End
 
     @Nullable
     public NBTTagCompound read(ChunkCoordIntPair chunkcoordintpair) throws IOException {
@@ -132,9 +170,33 @@ public abstract class RegionFileCache implements AutoCloseable {
 
     // CraftBukkit start
     public boolean chunkExists(ChunkCoordIntPair pos) throws IOException {
+        copyIfNeeded(pos.x, pos.z); // Paper
         RegionFile regionfile = a(pos, true);
 
         return regionfile != null ? regionfile.d(pos) : false;
     }
     // CraftBukkit end
+
+    private void copyIfNeeded(int x, int z) {
+        if (!useAltWorld) {
+            return;
+        }
+        synchronized (RegionFileCache.class) {
+            if (hasRegionFile(this.actualWorld, x, z)) {
+                return;
+            }
+            File actual = RegionFileCache.getRegionFileName(this.actualWorld, x, z);
+            File template = RegionFileCache.getRegionFileName(this.templateWorld, x, z);
+            if (!actual.exists() && template.exists()) {
+                try {
+                    net.minecraft.server.MinecraftServer.LOGGER.info("Copying" + template + " to " + actual);
+                    java.nio.file.Files.copy(template.toPath(), actual.toPath(), java.nio.file.StandardCopyOption.COPY_ATTRIBUTES);
+                } catch (IOException e1) {
+                    LogManager.getLogger().error("Error copying " + template + " to " + actual, e1);
+                    MinecraftServer.getServer().safeShutdown(false);
+                    com.destroystokyo.paper.util.SneakyThrow.sneaky(e1);
+                }
+            }
+        }
+    }
 }
