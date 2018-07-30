@@ -92,7 +92,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     // CraftBukkit end
 
     protected static final Logger LOGGER = LogManager.getLogger();
-    private static final AtomicInteger entityCount = new AtomicInteger();
+    private static final AtomicInteger entityCount = new AtomicInteger(1); // paper - start entity count from 1
     private static final List<ItemStack> c = Collections.emptyList();
     private static final AxisAlignedBB d = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     private static double e = 1.0D;
