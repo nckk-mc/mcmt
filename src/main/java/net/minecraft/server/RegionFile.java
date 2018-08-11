@@ -27,13 +27,13 @@ public class RegionFile implements AutoCloseable {
     // Spigot end
     private static final byte[] a = new byte[4096];
     private final RandomAccessFile b; private RandomAccessFile getDataFile() { return this.b; } // Paper - OBFHELPER
-    private final int[] c = new int[1024];
-    private final int[] d = new int[1024];
+    private final int[] c = new int[1024]; private int[] offsets = c; // Paper - OBFHELPER
+    private final int[] d = new int[1024];private int[] timestamps = d; // Paper - OBFHELPER
     private final List<Boolean> e;
 
     public RegionFile(File file) throws IOException {
         this.b = new RandomAccessFile(file, "rw");
-        if (this.b.length() < 4096L) {
+        if (this.b.length() < 8192L) { // Paper - headers should be 8192
             this.b.write(RegionFile.a);
             this.b.write(RegionFile.a);
         }
@@ -83,7 +83,7 @@ public class RegionFile implements AutoCloseable {
                     this.b.seek(j * 4 + 4); // Go back to where we were
                 }
             }
-            if (k != 0 && (k >> 8) + (length) <= this.e.size()) {
+            if (k > 0 && (k >> 8) > 1 && (k >> 8) + (k & 255) <= this.e.size()) { // Paper >= 1 as 0/1 are the headers, and negative isnt valid
                 for (int l = 0; l < (length); ++l) {
                     // Spigot end
                     this.e.set((k >> 8) + l, false);
@@ -92,13 +92,14 @@ public class RegionFile implements AutoCloseable {
             // Spigot start
             else if (length > 0) {
                 org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "Invalid chunk: ({0}, {1}) Offset: {2} Length: {3} runs off end file. {4}", new Object[]{j % 32, (int) (j / 32), k >> 8, length, file});
+                deleteChunk(j); // Paper
             }
             // Spigot end
         }
 
         for (j = 0; j < 1024; ++j) {
             k = headerAsInts.get(); // Paper
-            this.d[j] = k;
+            if (offsets[j] != 0) this.timestamps[j] = k; // Paper - don't set timestamp if it got 0'd above due to corruption
         }
 
         this.file = file; // Spigot
@@ -305,6 +306,53 @@ public class RegionFile implements AutoCloseable {
     public void close() throws IOException {
         this.b.close();
     }
+
+    // Paper start
+    public synchronized void deleteChunk(int j1) {
+        backup();
+        int k = offsets[j1];
+        int x = j1 & 1024;
+        int z = j1 >> 2;
+        int offset = (k >> 8);
+        int len = (k & 255);
+        String debug = "idx:" + + j1 + " - " + x + "," + z + " - offset: " + offset + " - len: " + len;
+        try {
+            timestamps[j1] = 0;
+            offsets[j1] = 0;
+            RandomAccessFile file = getDataFile();
+            file.seek(j1 * 4);
+            file.writeInt(0);
+            // clear the timestamp
+            file.seek(4096 + j1 * 4);
+            file.writeInt(0);
+            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.SEVERE, "Deleted corrupt chunk (" + debug + ") " + this.file.getAbsolutePath(), e);
+        } catch (IOException e) {
+
+            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.SEVERE, "Error deleting corrupt chunk (" + debug + ") " + this.file.getAbsolutePath(), e);
+        }
+    }
+    private boolean backedUp = false;
+    private synchronized void backup() {
+        if (backedUp) {
+            return;
+        }
+        backedUp = true;
+        java.text.DateFormat formatter = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        java.util.Date today = new java.util.Date();
+        File corrupt = new File(file.getParentFile(), file.getName() + "." + formatter.format(today) + ".corrupt");
+        if (corrupt.exists()) {
+            return;
+        }
+        org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger();
+        logger.error("Region file " + file.getAbsolutePath() + " was corrupt. Backing up to " + corrupt.getAbsolutePath() + " and repairing");
+        try {
+            java.nio.file.Files.copy(file.toPath(), corrupt.toPath());
+
+        } catch (IOException e) {
+            logger.error("Error backing up corrupt file" + file.getAbsolutePath(), e);
+        }
+    }
+    // Paper end
 
     class ChunkBuffer extends ByteArrayOutputStream {
 
