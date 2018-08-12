@@ -41,7 +41,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Pattern j = Pattern.compile("^[a-fA-F0-9]{40}$");
-    private final List<ServerCommand> serverCommandQueue = Collections.synchronizedList(Lists.newArrayList());
+    private final java.util.Queue<ServerCommand> serverCommandQueue = new java.util.concurrent.ConcurrentLinkedQueue<ServerCommand>(); // Paper - use a proper queue
     private RemoteStatusListener l;
     public final RemoteControlCommandListener remoteControlCommandListener;
     private RemoteControlListener remoteControlListener;
@@ -442,8 +442,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 
     public void handleCommandQueue() {
         MinecraftTimings.serverCommandTimer.startTiming(); // Spigot
-        while (!this.serverCommandQueue.isEmpty()) {
-            ServerCommand servercommand = (ServerCommand) this.serverCommandQueue.remove(0);
+        // Paper start - use proper queue
+        ServerCommand servercommand;
+        while ((servercommand = this.serverCommandQueue.poll()) != null) {
+            // Paper end
 
             // CraftBukkit start - ServerCommand for preprocessing
             ServerCommandEvent event = new ServerCommandEvent(console, servercommand.command);
