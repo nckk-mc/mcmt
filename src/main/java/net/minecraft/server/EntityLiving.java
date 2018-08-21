@@ -85,7 +85,7 @@ public abstract class EntityLiving extends Entity {
     protected float aV;
     protected float aW;
     protected float aX;
-    protected int aY;
+    protected int aY; protected int getKillCount() { return this.aY; } // Paper - OBFHELPER
     public float lastDamage;
     protected boolean jumping;
     public float bb;
@@ -128,6 +128,7 @@ public abstract class EntityLiving extends Entity {
     public boolean collides = true;
     public boolean canPickUpLoot;
     public org.bukkit.craftbukkit.entity.CraftLivingEntity getBukkitLivingEntity() { return (org.bukkit.craftbukkit.entity.CraftLivingEntity) super.getBukkitEntity(); } // Paper
+    public boolean silentDeath = false; // Paper - mark entity as dying silently for cancellable death event
 
     @Override
     public float getBukkitYaw() {
@@ -1185,13 +1186,17 @@ public abstract class EntityLiving extends Entity {
 
             if (this.getHealth() <= 0.0F) {
                 if (!this.f(damagesource)) {
-                    SoundEffect soundeffect = this.getSoundDeath();
+                    // Paper start - moved into CraftEventFactory event caller for cancellable death event
+                    //SoundEffect soundeffect = this.getSoundDeath();
 
-                    if (flag1 && soundeffect != null) {
-                        this.a(soundeffect, this.getSoundVolume(), this.cU());
-                    }
+                    //if (flag1 && soundeffect != null) {
+                    //    this.a(soundeffect, this.getSoundVolume(), this.cU());
+                    //}
+                    this.silentDeath = !flag1; // mark entity as dying silently
+                    // Paper end
 
                     this.die(damagesource);
+                    this.silentDeath = false; // Paper - cancellable death event - reset to default
                 }
             } else if (flag1) {
                 this.c(damagesource);
@@ -1329,22 +1334,40 @@ public abstract class EntityLiving extends Entity {
             Entity entity = damagesource.getEntity();
             EntityLiving entityliving = this.getKillingEntity();
 
-            if (this.aY >= 0 && entityliving != null) {
-                entityliving.a(this, this.aY, damagesource);
-            }
-
-            if (entity != null) {
-                entity.b(this);
-            }
-
-            if (this.isSleeping()) {
-                this.dy();
-            }
-
+            // Paper start - move down to make death event cancellable
+            //if (this.aY >= 0 && entityliving != null) {
+            //    entityliving.a(this, this.aY, damagesource);
+            //}
+            //
+            //if (entity != null) {
+            //    entity.b(this);
+            //}
+            //
+            //if (this.isSleeping()) {
+            //    this.dy();
+            //}
+            //
             this.killed = true;
-            this.getCombatTracker().g();
+            //this.getCombatTracker().g();
             if (!this.world.isClientSide) {
-                this.d(damagesource);
+                org.bukkit.event.entity.EntityDeathEvent deathEvent = this.d(damagesource);
+                if (deathEvent == null || !deathEvent.isCancelled()) {
+                    if (this.getKillCount() >= 0 && entityliving != null) {
+                        entityliving.runKillTrigger(this, this.getKillCount(), damagesource);
+                    }
+                    if (entity != null) {
+                        entity.onKill(this);
+                    }
+                    if (this.isSleeping()) {
+                        this.dy();
+                    }
+                    this.getCombatTracker().reset();
+                } else {
+                    this.killed = false;
+                    this.setHealth((float) deathEvent.getReviveHealth());
+                }
+                // Paper end
+
                 boolean flag = false;
 
                 if (entityliving instanceof EntityWither) {
@@ -1371,7 +1394,8 @@ public abstract class EntityLiving extends Entity {
         }
     }
 
-    protected void d(DamageSource damagesource) {
+    protected org.bukkit.event.entity.EntityDeathEvent processDeath(DamageSource damagesource) { return d(damagesource); }
+    protected org.bukkit.event.entity.EntityDeathEvent d(DamageSource damagesource) { // Paper
         Entity entity = damagesource.getEntity();
         int i;
 
@@ -1382,19 +1406,20 @@ public abstract class EntityLiving extends Entity {
         }
 
         boolean flag = this.lastDamageByPlayerTime > 0;
-
+        org.bukkit.event.entity.EntityDeathEvent deathEvent = null; // Paper
         if (this.isDropExperience() && this.world.getGameRules().getBoolean("doMobLoot")) {
             this.a(damagesource, flag);
             this.dropDeathLoot(damagesource, i, flag);
             // CraftBukkit start - Call death event
-            CraftEventFactory.callEntityDeathEvent(this, this.drops);
-            this.drops = new ArrayList<org.bukkit.inventory.ItemStack>();
+            deathEvent = CraftEventFactory.callEntityDeathEvent(this, this.drops); // Paper
+            if (!deathEvent.isCancelled()) this.drops = new ArrayList<org.bukkit.inventory.ItemStack>(); // Paper
         } else {
-            CraftEventFactory.callEntityDeathEvent(this);
+            deathEvent = CraftEventFactory.callEntityDeathEvent(this); // Paper
             // CraftBukkit end
         }
 
-        this.cE();
+        if (!deathEvent.isCancelled()) this.cE(); // Paper
+        return deathEvent; // Paper
     }
 
     protected void cE() {}
@@ -1448,6 +1473,7 @@ public abstract class EntityLiving extends Entity {
         return SoundEffects.ENTITY_GENERIC_HURT;
     }
 
+    public final SoundEffect getDeathSoundEffect() { return this.getSoundDeath(); } // Paper - OBFHELPER
     @Nullable
     protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_GENERIC_DEATH;
@@ -1897,10 +1923,12 @@ public abstract class EntityLiving extends Entity {
 
     }
 
+    public final float getDeathSoundVolume() { return this.getSoundVolume(); } // Paper - OBFHELPER
     protected float getSoundVolume() {
         return 1.0F;
     }
 
+    public float getSoundPitch() { return cU();} // Paper - OBFHELPER
     protected float cU() {
         return this.isBaby() ? (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.5F : (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F;
     }
