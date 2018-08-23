@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.types.DynamicOps;
 import com.mojang.datafixers.util.Pair;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +39,15 @@ public class IBlockData extends BlockDataAbstract<Block, IBlockData> implements 
     public Block getBlock() {
         return (Block) this.a;
     }
+
+    // Paper start - impl cached craft block data, lazy load to fix issue with loading at the wrong time
+    private CraftBlockData cachedCraftBlockData;
+
+    public CraftBlockData createCraftBlockData() {
+        if(cachedCraftBlockData == null) cachedCraftBlockData = CraftBlockData.createData(this);
+        return (CraftBlockData) cachedCraftBlockData.clone();
+    }
+    // Paper end
 
     public Material getMaterial() {
         return this.getBlock().l(this);
