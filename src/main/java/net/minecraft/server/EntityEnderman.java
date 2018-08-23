@@ -335,8 +335,9 @@ public class EntityEnderman extends EntityMonster {
             if (block.a(TagsBlock.ENDERMAN_HOLDABLE) && flag) {
                 // CraftBukkit start - Pickup event
                 if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.enderman, blockposition, Blocks.AIR.getBlockData()).isCancelled()) {
-                    this.enderman.setCarried(iblockdata);
+                    //this.enderman.setCarried(iblockdata); // Paper - moved down
                     world.a(blockposition, false);
+                    this.enderman.setCarried(Block.getValidBlockForPosition(iblockdata, this.enderman.world, blockposition)); // Paper - Fix MC-124320
                 }
                 // CraftBukkit end
             }
@@ -346,6 +347,7 @@ public class EntityEnderman extends EntityMonster {
 
     static class PathfinderGoalEndermanPlaceBlock extends PathfinderGoal {
 
+        private EntityEnderman getEnderman() { return this.a; } // Paper - OBFHELPER
         private final EntityEnderman a;
 
         public PathfinderGoalEndermanPlaceBlock(EntityEnderman entityenderman) {
@@ -368,7 +370,7 @@ public class EntityEnderman extends EntityMonster {
             IBlockData iblockdata = world.getType(blockposition);
             BlockPosition blockposition1 = blockposition.down();
             IBlockData iblockdata1 = world.getType(blockposition1);
-            IBlockData iblockdata2 = this.a.getCarried();
+            IBlockData iblockdata2 = Block.getValidBlockForPosition(getEnderman().getCarried(), getEnderman().world, blockposition); // Paper - Fix MC-124320
 
             if (iblockdata2 != null && this.a(world, blockposition, iblockdata2, iblockdata, iblockdata1, blockposition1)) {
                 // CraftBukkit start - Place event
