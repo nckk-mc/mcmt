@@ -13,7 +13,7 @@ public class EntityCreeper extends EntityMonster {
     private static final DataWatcherObject<Boolean> POWERED = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i);
     private static final DataWatcherObject<Boolean> d = DataWatcher.a(EntityCreeper.class, DataWatcherRegistry.i); private static final DataWatcherObject<Boolean> isIgnitedDW = d; // Paper OBFHELPER
     private int bz;
-    private int fuseTicks;
+    public int fuseTicks; // Paper - public
     public int maxFuseTicks = 30;
     public int explosionRadius = 3;
     private int bD;
@@ -201,6 +201,7 @@ public class EntityCreeper extends EntityMonster {
         return super.a(entityhuman, enumhand);
     }
 
+    public void explode() { this.eb(); } // Paper - OBFHELPER
     private void eb() {
         if (!this.world.isClientSide) {
             Explosion.Effect explosion_effect = this.world.getGameRules().getBoolean("mobGriefing") ? Explosion.Effect.DESTROY : Explosion.Effect.NONE;
@@ -252,8 +253,19 @@ public class EntityCreeper extends EntityMonster {
         return (Boolean) this.datawatcher.get(EntityCreeper.d);
     }
 
+    // Paper start
+    public void setIgnited(boolean ignited) {
+        if (isIgnited() != ignited) {
+            com.destroystokyo.paper.event.entity.CreeperIgniteEvent event = new com.destroystokyo.paper.event.entity.CreeperIgniteEvent((org.bukkit.entity.Creeper) getBukkitEntity(), ignited);
+            if (event.callEvent()) {
+                this.datawatcher.set(EntityCreeper.d, event.isIgnited());
+            }
+        }
+    }
+
     public void dY() {
-        this.datawatcher.set(EntityCreeper.d, true);
+        setIgnited(true);
+        // Paper end
     }
 
     public boolean canCauseHeadDrop() {
