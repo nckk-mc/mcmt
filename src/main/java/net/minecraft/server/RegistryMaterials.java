@@ -16,9 +16,9 @@ import org.apache.logging.log4j.Logger;
 public class RegistryMaterials<T> extends IRegistryWritable<T> {
 
     protected static final Logger LOGGER = LogManager.getLogger();
-    protected final RegistryID<T> b = new RegistryID<>(256);
-    protected final BiMap<MinecraftKey, T> c = HashBiMap.create();
-    protected Object[] d;
+    protected final RegistryID<T> b = new RegistryID<>(2048); // Paper - use bigger expected size to reduce collisions
+    protected final BiMap<MinecraftKey, T> c = HashBiMap.create(2048); // Paper - use bigger expected size to reduce collisions
+    protected T[] d; // Paper - Decompile fix
     private int R;
 
     public RegistryMaterials() {}
@@ -98,7 +98,7 @@ public class RegistryMaterials<T> extends IRegistryWritable<T> {
                 return null;
             }
 
-            this.d = collection.toArray(new Object[collection.size()]);
+            this.d = (T[]) collection.toArray(new Object[collection.size()]); // Paper - Decompile fix
         }
 
         return this.d[random.nextInt(this.d.length)];
