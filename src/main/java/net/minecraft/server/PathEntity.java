@@ -5,11 +5,12 @@ import javax.annotation.Nullable;
 
 public class PathEntity {
 
-    private final List<PathPoint> a;
+    private final List<PathPoint> a; public List<PathPoint> getPoints() { return a; } // Paper - OBFHELPER
     private PathPoint[] b = new PathPoint[0];
     private PathPoint[] c = new PathPoint[0];
     private PathPoint d;
-    private int e;
+    private int e; public int getNextIndex() { return e; } // Paper - OBFHELPER
+    public boolean hasNext() { return getNextIndex() < getPoints().size(); } // Paper
 
     public PathEntity(List<PathPoint> list) {
         this.a = list;
@@ -23,8 +24,7 @@ public class PathEntity {
         return this.e >= this.a.size();
     }
 
-    @Nullable
-    public PathPoint c() {
+    public PathPoint getFinalPoint() { return c(); } @Nullable public PathPoint c() { // Paper - OBFHELPER
         return !this.a.isEmpty() ? (PathPoint) this.a.get(this.a.size() - 1) : null;
     }
 
@@ -72,7 +72,7 @@ public class PathEntity {
         return this.a(entity, this.e);
     }
 
-    public Vec3D g() {
+    public Vec3D getNext() { return g(); } public Vec3D g() { // Paper - OBFHELPER
         PathPoint pathpoint = (PathPoint) this.a.get(this.e);
 
         return new Vec3D((double) pathpoint.a, (double) pathpoint.b, (double) pathpoint.c);

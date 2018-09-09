@@ -67,7 +67,7 @@ public abstract class NavigationAbstract {
     }
 
     @Nullable
-    public final PathEntity a(double d0, double d1, double d2) {
+    public final PathEntity calculateDestination(double d0, double d1, double d2) { return a(d0, d1, d2); } @Nullable public final PathEntity a(double d0, double d1, double d2) { // Paper - OBFHELPER
         return this.b(new BlockPosition(d0, d1, d2));
     }
 
@@ -83,7 +83,7 @@ public abstract class NavigationAbstract {
     }
 
     @Nullable
-    public PathEntity a(Entity entity) {
+    public PathEntity calculateDestination(Entity entity) { return a(entity); } @Nullable public PathEntity a(Entity entity) { // Paper - OBFHELPER
         BlockPosition blockposition = new BlockPosition(entity);
         double d0 = entity.locX;
         double d1 = entity.getBoundingBox().minY;
@@ -149,6 +149,7 @@ public abstract class NavigationAbstract {
     private int pathfindFailures = 0;
     // Paper end
 
+    public boolean setDestination(@Nullable PathEntity pathentity, double speed) { return a(pathentity, speed); } // Paper - OBFHELPER
     public boolean a(@Nullable PathEntity pathentity, double d0) {
         if (pathentity == null) {
             this.c = null;
@@ -172,7 +173,7 @@ public abstract class NavigationAbstract {
         }
     }
 
-    @Nullable
+    @Nullable public PathEntity getPathEntity() { return l(); } @Nullable // Paper - OBFHELPER
     public PathEntity l() {
         return this.c;
     }
@@ -258,6 +259,7 @@ public abstract class NavigationAbstract {
         return this.c == null || this.c.b();
     }
 
+    public void stopPathfinding() { o(); } // Paper - OBFHELPER
     public void o() {
         this.pathfindFailures = 0; this.lastFailure = 0; // Paper - Pathfinding optimizations
         this.c = null;
