@@ -12,11 +12,13 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
     private final Block g;
     private final EntityInsentient entity;
     private int i;
+    private World world; // Paper
 
     public PathfinderGoalRemoveBlock(Block block, EntityCreature entitycreature, double d0, int i) {
         super(entitycreature, d0, 24, i);
         this.g = block;
         this.entity = entitycreature;
+        this.world = entitycreature.world; // Paper
     }
 
     @Override
@@ -114,7 +116,9 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
 
     @Nullable
     private BlockPosition a(BlockPosition blockposition, IBlockAccess iblockaccess) {
-        if (iblockaccess.getType(blockposition).getBlock() == this.g) {
+        Block block = world.getBlockIfLoaded(blockposition); // Paper
+        if (block == null) return null; // Paper
+        if (block == this.g) { // Paper
             return blockposition;
         } else {
             BlockPosition[] ablockposition = new BlockPosition[]{blockposition.down(), blockposition.west(), blockposition.east(), blockposition.north(), blockposition.south(), blockposition.down().down()};
@@ -124,7 +128,7 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
             for (int j = 0; j < i; ++j) {
                 BlockPosition blockposition1 = ablockposition1[j];
 
-                if (iblockaccess.getType(blockposition1).getBlock() == this.g) {
+                if (world.getBlockIfLoaded(blockposition1) == this.g) { // Paper
                     return blockposition1;
                 }
             }
@@ -135,7 +139,8 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
 
     @Override
     protected boolean a(IWorldReader iworldreader, BlockPosition blockposition) {
-        Block block = iworldreader.getType(blockposition).getBlock();
+        Block block = world.getBlockIfLoaded(blockposition); // Paper
+        if (block == null) return false; // Paper
 
         return block == this.g && iworldreader.getType(blockposition.up()).isAir() && iworldreader.getType(blockposition.up(2)).isAir();
     }
