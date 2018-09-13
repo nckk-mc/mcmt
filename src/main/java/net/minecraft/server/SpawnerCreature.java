@@ -25,9 +25,9 @@ public final class SpawnerCreature {
         int l = blockposition1.getZ();
 
         if (k >= 1) {
-            IBlockData iblockdata = chunk.getType(blockposition1);
+            IBlockData iblockdata = world.getTypeIfLoadedAndInBounds(blockposition1);  // Paper - don't load chunks for mob spawn
 
-            if (!iblockdata.isOccluding(chunk, blockposition1)) {
+            if (iblockdata != null && !iblockdata.isOccluding(chunk, blockposition1)) { // Paper - don't load chunks for mob spawn
                 BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
                 int i1 = 0;
 
@@ -52,7 +52,7 @@ public final class SpawnerCreature {
                                 float f1 = (float) k1 + 0.5F;
                                 EntityHuman entityhuman = world.a((double) f, (double) f1, -1.0D);
 
-                                if (entityhuman != null && entityhuman.e((double) f, (double) k, (double) f1) > 576.0D && !blockposition.a((IPosition) (new Vec3D((double) f, (double) k, (double) f1)), 24.0D)) {
+                                if (entityhuman != null && entityhuman.e((double) f, (double) k, (double) f1) > 576.0D && !blockposition.a((IPosition) (new Vec3D((double) f, (double) k, (double) f1)), 24.0D) && world.isLoadedAndInBounds(blockposition_mutableblockposition)) { // Paper - don't load chunks for mob spawn
                                     ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(blockposition_mutableblockposition);
 
                                     if (Objects.equals(chunkcoordintpair, chunk.getPos()) || world.getChunkProvider().a(chunkcoordintpair)) {
