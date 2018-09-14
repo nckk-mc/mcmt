@@ -1179,7 +1179,7 @@ public class WorldServer extends World {
         }
         // CraftBukkit end
         this.globalEntityList.add(entitylightning);
-        this.server.getPlayerList().sendPacketNearby((EntityHuman) null, entitylightning.locX, entitylightning.locY, entitylightning.locZ, 512.0D, this, new PacketPlayOutSpawnEntityWeather(entitylightning)); // Paper - use world instead of dimension
+        this.server.getPlayerList().sendPacketNearby((EntityHuman) null, entitylightning.locX, entitylightning.locY, entitylightning.locZ, paperConfig.maxLightningFlashDistance, this, new PacketPlayOutSpawnEntityWeather(entitylightning)); // Paper - use world instead of dimension, limit lightning strike effect distance
     }
 
     @Override
