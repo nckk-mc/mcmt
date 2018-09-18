@@ -78,7 +78,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
     public final DataFixer dataConverterManager;
     private String serverIp;
     private int serverPort = -1;
-    public final Map<DimensionManager, WorldServer> worldServer = Maps.newLinkedHashMap(); // CraftBukkit - keep order, k+v already use identity methods
+    public final Map<DimensionManager, WorldServer> worldServer = new com.destroystokyo.paper.PaperWorldMap(); // Paper;
     private PlayerList playerList;
     private volatile boolean isRunning = true;
     private volatile boolean isRestarting = false; // Paper - flag to signify we're attempting to restart
@@ -442,7 +442,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
             }
         }
         this.a(this.getDifficulty(), true);
-        for (WorldServer worldserver : this.getWorlds()) {
+        for (WorldServer worldserver : com.google.common.collect.Lists.newArrayList(this.getWorlds())) { // Paper - avoid como if 1 world triggers another world
             this.loadSpawn(worldserver.getChunkProvider().playerChunkMap.worldLoadListener, worldserver);
             this.server.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(worldserver.getWorld()));
         }
@@ -590,7 +590,6 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
         // this.nextTick = SystemUtils.getMonotonicMillis() + 10L;
         this.executeModerately();
         // Iterator iterator = DimensionManager.a().iterator();
-
         if (true) {
             DimensionManager dimensionmanager = worldserver.worldProvider.getDimensionManager();
             ForcedChunk forcedchunk = (ForcedChunk) worldserver.getWorldPersistentData().b(ForcedChunk::new, "chunks");
