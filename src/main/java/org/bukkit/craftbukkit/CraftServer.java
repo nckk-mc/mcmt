@@ -985,7 +985,7 @@ public final class CraftServer implements Server {
         WorldSettings worldSettings;
         // See MinecraftServer.a(String, String, long, WorldType, JsonElement)
         if (worlddata == null) {
-            worldSettings = new WorldSettings(creator.seed(), EnumGamemode.getById(getDefaultGameMode().getValue()), generateStructures, hardcore, type);
+            worldSettings = new WorldSettings(com.destroystokyo.paper.PaperConfig.seedOverride.getOrDefault(name, creator.seed()), EnumGamemode.getById(getDefaultGameMode().getValue()), generateStructures, hardcore, type); // Paper
             JsonElement parsedSettings = new JsonParser().parse(creator.generatorSettings());
             if (parsedSettings.isJsonObject()) {
                 worldSettings.setGeneratorSettings(parsedSettings.getAsJsonObject());
