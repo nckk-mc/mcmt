@@ -635,7 +635,7 @@ public class WorldServer extends World {
                 this.getChunkAt(entity.chunkX, entity.chunkZ).a(entity, entity.chunkY);
             }
 
-            if (!entity.bT() && !this.isChunkLoaded(i, k)) {
+            if (!entity.valid && !entity.bT() && !this.isChunkLoaded(i, k)) { // Paper - always load chunks to register valid entities location
                 entity.inChunk = false;
             } else {
                 this.getChunkAt(i, k).a(entity);
@@ -950,7 +950,7 @@ public class WorldServer extends World {
                 return false;
             }
             // CraftBukkit end
-            IChunkAccess ichunkaccess = this.getChunkAt(MathHelper.floor(entity.locX / 16.0D), MathHelper.floor(entity.locZ / 16.0D), ChunkStatus.FULL, entity.attachedToPlayer);
+            IChunkAccess ichunkaccess = this.getChunkAt(MathHelper.floor(entity.locX / 16.0D), MathHelper.floor(entity.locZ / 16.0D), ChunkStatus.FULL, true); // Paper - always load chunks for entity adds
 
             if (!(ichunkaccess instanceof Chunk)) {
                 return false;
