@@ -31,6 +31,7 @@ public class EntityZombie extends EntityMonster {
     private int bF;
     public int drownedConversionTime;
     private int lastTick = MinecraftServer.currentTick; // CraftBukkit - add field
+    private boolean shouldBurnInDay = true; // Paper
 
     public EntityZombie(EntityTypes<? extends EntityZombie> entitytypes, World world) {
         super(entitytypes, world);
@@ -78,6 +79,7 @@ public class EntityZombie extends EntityMonster {
         this.getDataWatcher().register(EntityZombie.DROWN_CONVERTING, false);
     }
 
+    public boolean isDrowning() { return isDrownConverting(); } // Paper - OBFHELPER
     public boolean isDrownConverting() {
         return (Boolean) this.getDataWatcher().get(EntityZombie.DROWN_CONVERTING);
     }
@@ -209,6 +211,13 @@ public class EntityZombie extends EntityMonster {
         this.getDataWatcher().set(EntityZombie.DROWN_CONVERTING, true);
     }
 
+    // Paper start
+    public void stopDrowning() {
+        this.drownedConversionTime = -1;
+        this.getDataWatcher().set(EntityZombie.DROWN_CONVERTING, false);
+    }
+    // Paper end
+
     protected void eb() {
         this.b(EntityTypes.DROWNED);
         this.world.a((EntityHuman) null, 1040, new BlockPosition(this), 0);
@@ -253,9 +262,16 @@ public class EntityZombie extends EntityMonster {
         }
     }
 
+    public boolean shouldBurnInDay() { return J_(); } // Paper - OBFHELPER
     protected boolean J_() {
-        return true;
+        return shouldBurnInDay;
     }
+
+    // Paper start
+    public void setShouldBurnInDay(boolean shouldBurnInDay) {
+        this.shouldBurnInDay = shouldBurnInDay;
+    }
+    // Paper end
 
     @Override
     public boolean damageEntity(DamageSource damagesource, float f) {
@@ -374,6 +390,7 @@ public class EntityZombie extends EntityMonster {
         nbttagcompound.setBoolean("CanBreakDoors", this.ef());
         nbttagcompound.setInt("InWaterTime", this.isInWater() ? this.bF : -1);
         nbttagcompound.setInt("DrownedConversionTime", this.isDrownConverting() ? this.drownedConversionTime : -1);
+        nbttagcompound.setBoolean("Paper.ShouldBurnInDay", shouldBurnInDay); // Paper
     }
 
     @Override
@@ -388,7 +405,11 @@ public class EntityZombie extends EntityMonster {
         if (nbttagcompound.hasKeyOfType("DrownedConversionTime", 99) && nbttagcompound.getInt("DrownedConversionTime") > -1) {
             this.startDrownedConversion(nbttagcompound.getInt("DrownedConversionTime"));
         }
-
+        // Paper start
+        if (nbttagcompound.hasKey("Paper.ShouldBurnInDay")) {
+            shouldBurnInDay = nbttagcompound.getBoolean("Paper.ShouldBurnInDay");
+        }
+        // Paper end
     }
 
     @Override

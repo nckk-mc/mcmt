@@ -1246,6 +1246,8 @@ public abstract class EntityInsentient extends EntityLiving {
         this.datawatcher.set(EntityInsentient.b, flag ? (byte) (b0 | 2) : (byte) (b0 & -3));
     }
 
+    public boolean isArmsRaisedZombie() { return (this.datawatcher.get(EntityInsentient.b) & 4) != 0; } // Paper - OBFHELPER
+    public void setArmsRaisedZombie(boolean flag) { this.q(flag); } // Paper - OBFHELPER
     public void q(boolean flag) {
         byte b0 = (Byte) this.datawatcher.get(EntityInsentient.b);
 
