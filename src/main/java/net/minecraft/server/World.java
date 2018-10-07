@@ -667,6 +667,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         }
     }
 
+    public boolean isDayTime() { return J(); } // Paper - OBFHELPER
     public boolean J() {
         return this.d < 4;
     }
