@@ -2273,7 +2273,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
     }
 
-    public int bo() {
+    public int getMaxAirTicks() { return bo(); } public int bo() {
         return 300;
     }
 
