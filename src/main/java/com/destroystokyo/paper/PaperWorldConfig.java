@@ -434,4 +434,9 @@ public class PaperWorldConfig {
         this.armorStandTick = this.getBoolean("armor-stands-tick", this.armorStandTick);
         log("ArmorStand ticking is " + (this.armorStandTick ? "enabled" : "disabled") + " by default");
     }
+
+    public boolean preventMovingIntoUnloadedChunks = false;
+    private void preventMovingIntoUnloadedChunks() {
+        preventMovingIntoUnloadedChunks = getBoolean("prevent-moving-into-unloaded-chunks", false);
+    }
 }
