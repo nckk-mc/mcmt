@@ -66,7 +66,7 @@ public class SystemUtils {
     }
 
     private static ExecutorService k() {
-        int i = MathHelper.clamp(Runtime.getRuntime().availableProcessors() - 1, 1, 7);
+        int i = Math.min(6, Math.max(Runtime.getRuntime().availableProcessors() - 2, 2)); // Paper - use more reasonable default - 2 is hard minimum to avoid using unlimited threads
         Object object;
 
         if (i <= 0) {
