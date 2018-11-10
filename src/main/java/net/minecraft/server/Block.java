@@ -472,7 +472,7 @@ public class Block implements IMaterial {
 
         iblockdata.dropNaturally(world, blockposition, ItemStack.a);
     }
-
+    public static void dropNaturally(IBlockData iblockdata, World world, BlockPosition blockposition, @Nullable TileEntity tileentity) { a(iblockdata, world, blockposition, tileentity); }
     public static void a(IBlockData iblockdata, World world, BlockPosition blockposition, @Nullable TileEntity tileentity) {
         if (world instanceof WorldServer) {
             a(iblockdata, (WorldServer) world, blockposition, tileentity).forEach((itemstack) -> {
