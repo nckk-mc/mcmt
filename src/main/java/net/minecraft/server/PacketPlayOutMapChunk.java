@@ -68,7 +68,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         this.d = packetdataserializer.l();
         int i = packetdataserializer.i();
 
-        if (i > 2097152) {
+        if (i > 2097152) { // Paper - if this changes, update PacketEncoder
             throw new RuntimeException("Chunk Packet trying to allocate too much memory on read.");
         } else {
             this.e = new byte[i];
