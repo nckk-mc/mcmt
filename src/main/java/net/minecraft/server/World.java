@@ -625,8 +625,8 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         }
     }
 
-    @Override
-    public int a(HeightMap.Type heightmap_type, int i, int j) {
+    public final int getHighestBlockY(final HeightMap.Type heightmap, final int x, final int z) { return this.a(heightmap, x, z); } // Paper - OBFHELPER
+    @Override public int a(HeightMap.Type heightmap_type, int i, int j) { // Paper - OBFHELPER
         int k;
 
         if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
