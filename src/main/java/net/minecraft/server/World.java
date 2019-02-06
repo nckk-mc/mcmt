@@ -486,8 +486,20 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
             return false;
         } else {
             Fluid fluid = this.getFluid(blockposition);
+            // Paper start - while the above setAir method is named same and looks very similar
+            // they are NOT used with same intent and the above should not fire this event. The above method is more of a BlockSetToAirEvent,
+            // it doesn't imply destruction of a block that plays a sound effect / drops an item.
+            boolean playEffect = true;
+            if (com.destroystokyo.paper.event.block.BlockDestroyEvent.getHandlerList().getRegisteredListeners().length > 0) {
+                com.destroystokyo.paper.event.block.BlockDestroyEvent event = new com.destroystokyo.paper.event.block.BlockDestroyEvent(MCUtil.toBukkitBlock(this, blockposition), fluid.getBlockData().createCraftBlockData(), flag);
+                if (!event.callEvent()) {
+                    return false;
+                }
+                playEffect = event.playEffect();
+            }
+            // Paper end
 
-            this.triggerEffect(2001, blockposition, Block.getCombinedId(iblockdata));
+            if (playEffect) this.triggerEffect(2001, blockposition, Block.getCombinedId(iblockdata)); // Paper
             if (flag) {
                 TileEntity tileentity = iblockdata.getBlock().isTileEntity() ? this.getTileEntity(blockposition) : null;
 
