@@ -23,7 +23,7 @@ public class RegionFile implements AutoCloseable {
     // Minecraft is limited to 256 sections per chunk. So 1MB. This can easily be overriden.
     // So we extend this to use the REAL size when the count is maxed by seeking to that section and reading the length.
     private static final boolean ENABLE_EXTENDED_SAVE = Boolean.parseBoolean(System.getProperty("net.minecraft.server.RegionFile.enableExtendedSave", "true"));
-    private final File file;
+    final File file; // Paper - private -> package
     // Spigot end
     private static final byte[] a = new byte[4096];
     private final RandomAccessFile b; private RandomAccessFile getDataFile() { return this.b; } // Paper - OBFHELPER
@@ -33,6 +33,7 @@ public class RegionFile implements AutoCloseable {
 
     public RegionFile(File file) throws IOException {
         this.b = new RandomAccessFile(file, "rw");
+        this.file = file; // Spigot // Paper - We need this earlier
         if (this.b.length() < 8192L) { // Paper - headers should be 8192
             this.b.write(RegionFile.a);
             this.b.write(RegionFile.a);
@@ -66,6 +67,7 @@ public class RegionFile implements AutoCloseable {
         }
         header.clear();
         java.nio.IntBuffer headerAsInts = header.asIntBuffer();
+        initOversizedState();
         // Paper End
 
         int k;
@@ -83,7 +85,7 @@ public class RegionFile implements AutoCloseable {
                     this.b.seek(j * 4 + 4); // Go back to where we were
                 }
             }
-            if (k > 0 && (k >> 8) > 1 && (k >> 8) + (k & 255) <= this.e.size()) { // Paper >= 1 as 0/1 are the headers, and negative isnt valid
+            if (k > 0 && (k >> 8) > 1 && (k >> 8) + (length) <= this.e.size()) { // Paper >= 1 as 0/1 are the headers, and negative isnt valid
                 for (int l = 0; l < (length); ++l) {
                     // Spigot end
                     this.e.set((k >> 8) + l, false);
@@ -102,11 +104,11 @@ public class RegionFile implements AutoCloseable {
             if (offsets[j] != 0) this.timestamps[j] = k; // Paper - don't set timestamp if it got 0'd above due to corruption
         }
 
-        this.file = file; // Spigot
+        // Paper - we need this earlier
     }
 
     @Nullable
-    public synchronized DataInputStream a(ChunkCoordIntPair chunkcoordintpair) {
+    public synchronized DataInputStream getReadStream(ChunkCoordIntPair chunkcoordintpair) { return this.a(chunkcoordintpair); } public synchronized DataInputStream a(ChunkCoordIntPair chunkcoordintpair) { // Paper - OBFHELPER
         try {
             int i = this.getOffset(chunkcoordintpair);
 
@@ -182,8 +184,8 @@ public class RegionFile implements AutoCloseable {
         }
     }
 
-    public DataOutputStream c(ChunkCoordIntPair chunkcoordintpair) {
-        return new DataOutputStream(new BufferedOutputStream(new DeflaterOutputStream(new RegionFile.ChunkBuffer(chunkcoordintpair))));
+    public DataOutputStream getWriteStream(ChunkCoordIntPair chunkcoordintpair) { return this.c(chunkcoordintpair); } public DataOutputStream c(ChunkCoordIntPair chunkcoordintpair) { // Paper - OBFHELPER
+        return new DataOutputStream(new RegionFile.ChunkBuffer(chunkcoordintpair)); // Paper - remove middleware, move deflate to .close() for dynamic levels
     }
 
     protected synchronized void a(ChunkCoordIntPair chunkcoordintpair, byte[] abyte, int i) {
@@ -201,8 +203,9 @@ public class RegionFile implements AutoCloseable {
 
             if (i1 >= 256) {
                 // Spigot start
-                if (!ENABLE_EXTENDED_SAVE) throw new RuntimeException(String.format("Too big to save, %d > 1048576", i));
+                if (!USE_SPIGOT_OVERSIZED_METHOD && !RegionFileCache.isOverzealous()) throw new ChunkTooLargeException(chunkcoordintpair.x, chunkcoordintpair.z, l); // Paper - throw error instead
                 org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING,"Large Chunk Detected: ({0}) Size: {1} {2}", new Object[]{chunkcoordintpair, i1, this.file});
+                if (!ENABLE_EXTENDED_SAVE) throw new RuntimeException(String.format("Too big to save, %d > 1048576", i)); // Paper - move after our check
                 // Spigot end
             }
 
@@ -352,6 +355,109 @@ public class RegionFile implements AutoCloseable {
             logger.error("Error backing up corrupt file" + file.getAbsolutePath(), e);
         }
     }
+
+    private final byte[] oversized = new byte[1024];
+    private int oversizedCount = 0;
+
+    private synchronized void initOversizedState() throws IOException {
+        File metaFile = getOversizedMetaFile();
+        if (metaFile.exists()) {
+            final byte[] read = java.nio.file.Files.readAllBytes(metaFile.toPath());
+            System.arraycopy(read, 0, oversized, 0, oversized.length);
+            for (byte temp : oversized) {
+                oversizedCount += temp;
+            }
+        }
+    }
+
+    private static int getChunkIndex(int x, int z) {
+        return (x & 31) + (z & 31) * 32;
+    }
+    synchronized boolean isOversized(int x, int z) {
+        return this.oversized[getChunkIndex(x, z)] == 1;
+    }
+    synchronized void setOversized(int x, int z, boolean oversized) throws IOException {
+        final int offset = getChunkIndex(x, z);
+        boolean previous = this.oversized[offset] == 1;
+        this.oversized[offset] = (byte) (oversized ? 1 : 0);
+        if (!previous && oversized) {
+            oversizedCount++;
+        } else if (!oversized && previous) {
+            oversizedCount--;
+        }
+        if (previous && !oversized) {
+            File oversizedFile = getOversizedFile(x, z);
+            if (oversizedFile.exists()) {
+                oversizedFile.delete();
+            }
+        }
+        if (oversizedCount > 0) {
+            if (previous != oversized) {
+                writeOversizedMeta();
+            }
+        } else if (previous) {
+            File oversizedMetaFile = getOversizedMetaFile();
+            if (oversizedMetaFile.exists()) {
+                oversizedMetaFile.delete();
+            }
+        }
+    }
+
+    private void writeOversizedMeta() throws IOException {
+        java.nio.file.Files.write(getOversizedMetaFile().toPath(), oversized);
+    }
+
+    private File getOversizedMetaFile() {
+        return new File(this.file.getParentFile(), this.file.getName().replaceAll("\\.mca$", "") + ".oversized.nbt");
+    }
+
+    private File getOversizedFile(int x, int z) {
+        return new File(this.file.getParentFile(), this.file.getName().replaceAll("\\.mca$", "") + "_oversized_" + x + "_" + z + ".nbt");
+    }
+
+    void writeOversizedData(int x, int z, NBTTagCompound oversizedData) throws IOException {
+        File file = getOversizedFile(x, z);
+        try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new DeflaterOutputStream(new java.io.FileOutputStream(file), new java.util.zip.Deflater(java.util.zip.Deflater.BEST_COMPRESSION), 32 * 1024), 32 * 1024))) {
+            NBTCompressedStreamTools.writeNBT(oversizedData, out);
+        }
+        this.setOversized(x, z, true);
+
+    }
+
+    synchronized NBTTagCompound getOversizedData(int x, int z) throws IOException {
+        File file = getOversizedFile(x, z);
+        try (DataInputStream out = new DataInputStream(new BufferedInputStream(new InflaterInputStream(new java.io.FileInputStream(file))))) {
+            return NBTCompressedStreamTools.readNBT(out);
+        }
+
+    }
+
+    private static final boolean USE_SPIGOT_OVERSIZED_METHOD = Boolean.getBoolean("Paper.useSpigotExtendedSaveMethod"); // Paper
+    static {
+        if (USE_SPIGOT_OVERSIZED_METHOD) {
+            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.SEVERE, "====================================");
+            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.SEVERE, "Using Spigot Oversized Chunk save method. Warning this will result in extremely fragmented chunks, as well as making the entire region file unable to be to used in any other software but Forge or Spigot (not usable in Vanilla or CraftBukkit). Paper's method is highly recommended.");
+            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.SEVERE, "====================================");
+        }
+    }
+    public class ChunkTooLargeException extends RuntimeException {
+        public ChunkTooLargeException(int x, int z, int sectors) {
+            super("Chunk " + x + "," + z + " of " + RegionFile.this.file.toString() + " is too large (" + sectors + "/255)");
+        }
+    }
+    private static class DirectByteArrayOutputStream extends ByteArrayOutputStream {
+        public DirectByteArrayOutputStream() {
+            super();
+        }
+
+        public DirectByteArrayOutputStream(int size) {
+            super(size);
+        }
+
+        public byte[] getBuffer() {
+            return this.buf;
+        }
+    }
     // Paper end
 
     class ChunkBuffer extends ByteArrayOutputStream {
@@ -363,8 +469,35 @@ public class RegionFile implements AutoCloseable {
             this.b = chunkcoordintpair;
         }
 
-        public void close() {
-            RegionFile.this.a(this.b, this.buf, this.count);
+        public void close() throws IOException {
+            // Paper start - apply dynamic compression
+            int origLength = this.count;
+            byte[] buf = this.buf;
+            DirectByteArrayOutputStream out = compressData(buf, origLength);
+            byte[] bytes = out.getBuffer();
+            int length = out.size();
+
+            RegionFile.this.a(this.b, bytes, length); // Paper - change to bytes/length
         }
     }
+
+    private static final byte[] compressionBuffer = new byte[1024 * 64]; // 64k fits most standard chunks input size even, ideally 1 pass through zlib
+    private static final java.util.zip.Deflater deflater = new java.util.zip.Deflater();
+    // since file IO is single threaded, no benefit to using per-region file buffers/synchronization, we can change that later if it becomes viable.
+    private static DirectByteArrayOutputStream compressData(byte[] buf, int length) throws IOException {
+        synchronized (deflater) {
+            deflater.setInput(buf, 0, length);
+            deflater.finish();
+
+            DirectByteArrayOutputStream out = new DirectByteArrayOutputStream(length);
+            while (!deflater.finished()) {
+                out.write(compressionBuffer, 0, deflater.deflate(compressionBuffer));
+            }
+            out.close();
+            deflater.reset();
+            return out;
+        }
+    }
+    // Paper end
+
 }

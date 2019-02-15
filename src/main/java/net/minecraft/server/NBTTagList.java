@@ -11,7 +11,7 @@ import java.util.Objects;
 
 public class NBTTagList extends NBTList<NBTBase> {
 
-    private List<NBTBase> list = Lists.newArrayList();
+    List<NBTBase> list = Lists.newArrayList(); // Paper - private -> package
     private byte type = 0;
 
     public NBTTagList() {}
