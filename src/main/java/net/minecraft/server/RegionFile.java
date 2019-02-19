@@ -18,6 +18,12 @@ import javax.annotation.Nullable;
 
 public class RegionFile implements AutoCloseable {
 
+    // Spigot start
+    // Minecraft is limited to 256 sections per chunk. So 1MB. This can easily be overriden.
+    // So we extend this to use the REAL size when the count is maxed by seeking to that section and reading the length.
+    private static final boolean ENABLE_EXTENDED_SAVE = Boolean.parseBoolean(System.getProperty("net.minecraft.server.RegionFile.enableExtendedSave", "true"));
+    private final File file;
+    // Spigot end
     private static final byte[] a = new byte[4096];
     private final RandomAccessFile b;
     private final int[] c = new int[1024];
@@ -57,11 +63,27 @@ public class RegionFile implements AutoCloseable {
         for (j = 0; j < 1024; ++j) {
             k = this.b.readInt();
             this.c[j] = k;
-            if (k != 0 && (k >> 8) + (k & 255) <= this.e.size()) {
-                for (int l = 0; l < (k & 255); ++l) {
+            // Spigot start
+            int length = k & 255;
+            if (length == 255) {
+                if ((k >> 8) <= this.e.size()) {
+                     // We're maxed out, so we need to read the proper length from the section
+                    this.b.seek((k >> 8) * 4096);
+                    length = (this.b.readInt() + 4) / 4096 + 1;
+                    this.b.seek(j * 4 + 4); // Go back to where we were
+                }
+            }
+            if (k != 0 && (k >> 8) + (length) <= this.e.size()) {
+                for (int l = 0; l < (length); ++l) {
+                    // Spigot end
                     this.e.set((k >> 8) + l, false);
                 }
             }
+            // Spigot start
+            else if (length > 0) {
+                org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "Invalid chunk: ({0}, {1}) Offset: {2} Length: {3} runs off end file. {4}", new Object[]{j % 32, (int) (j / 32), k >> 8, length, file});
+            }
+            // Spigot end
         }
 
         for (j = 0; j < 1024; ++j) {
@@ -69,6 +91,7 @@ public class RegionFile implements AutoCloseable {
             this.d[j] = k;
         }
 
+        this.file = file; // Spigot
     }
 
     @Nullable
@@ -81,6 +104,12 @@ public class RegionFile implements AutoCloseable {
             } else {
                 int j = i >> 8;
                 int k = i & 255;
+                // Spigot start
+                if (k == 255) {
+                    this.b.seek(j * 4096);
+                    k = (this.b.readInt() + 4) / 4096 + 1;
+                }
+                // Spigot end
 
                 if (j + k > this.e.size()) {
                     return null;
@@ -89,8 +118,10 @@ public class RegionFile implements AutoCloseable {
                     int l = this.b.readInt();
 
                     if (l > 4096 * k) {
+                        org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "Invalid chunk: ({0}) Offset: {1} Invalid Size: {2}>{3} {4}", new Object[]{chunkcoordintpair, j, l, k * 4096, this.file}); // Spigot
                         return null;
                     } else if (l <= 0) {
+                        org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "Invalid chunk: ({0}) Offset: {1} Invalid Size: {2} {3}", new Object[]{chunkcoordintpair, j, l, this.file}); // Spigot
                         return null;
                     } else {
                         byte b0 = this.b.readByte();
@@ -148,10 +179,19 @@ public class RegionFile implements AutoCloseable {
             int j = this.getOffset(chunkcoordintpair);
             int k = j >> 8;
             int l = j & 255;
+            // Spigot start
+            if (l == 255) {
+                this.b.seek(k * 4096);
+                l = (this.b.readInt() + 4) / 4096 + 1;
+            }
+            // Spigot end
             int i1 = (i + 5) / 4096 + 1;
 
             if (i1 >= 256) {
-                throw new RuntimeException(String.format("Too big to save, %d > 1048576", i));
+                // Spigot start
+                if (!ENABLE_EXTENDED_SAVE) throw new RuntimeException(String.format("Too big to save, %d > 1048576", i));
+                org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING,"Large Chunk Detected: ({0}) Size: {1} {2}", new Object[]{chunkcoordintpair, i1, this.file});
+                // Spigot end
             }
 
             if (k != 0 && l == i1) {
@@ -188,7 +228,7 @@ public class RegionFile implements AutoCloseable {
 
                 if (k1 >= i1) {
                     k = j1;
-                    this.a(chunkcoordintpair, j1 << 8 | i1);
+                    this.a(chunkcoordintpair, j1 << 8 | (i1 > 255 ? 255 : i1)); // Spigot
 
                     for (l1 = 0; l1 < i1; ++l1) {
                         this.e.set(k + l1, false);
@@ -205,7 +245,7 @@ public class RegionFile implements AutoCloseable {
                     }
 
                     this.a(k, abyte, i);
-                    this.a(chunkcoordintpair, k << 8 | i1);
+                    this.a(chunkcoordintpair, k << 8 | (i1 > 255 ? 255 : i1)); // Spigot
                 }
             }
 
