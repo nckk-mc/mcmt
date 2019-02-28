@@ -17,6 +17,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { // 
     // Paper start - Strip invalid unicode from signs on load
     private static final boolean keepInvalidUnicode = Boolean.getBoolean("Paper.keepInvalidUnicode"); // Allow people to keep their bad unicode if they really want it
     private boolean privateUnicodeRemoved = false;
+    public java.util.UUID signEditor;
     // Paper end
 
     public TileEntitySign() {
@@ -141,7 +142,10 @@ public class TileEntitySign extends TileEntity implements ICommandListener { // 
     }
 
     public void a(EntityHuman entityhuman) {
-        this.j = entityhuman;
+        // Paper start
+        //this.g = entityhuman;
+        signEditor = entityhuman != null ? entityhuman.getUniqueID() : null;
+        // Paper end
     }
 
     public EntityHuman f() {
