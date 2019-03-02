@@ -220,6 +220,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
             });
         }
 
+        // Paper start
+        java.util.List<Packet> extraPackets = packet.getExtraPackets();
+        if (extraPackets != null && !extraPackets.isEmpty()) {
+            for (Packet extraPacket : extraPackets) {
+                this.dispatchPacket(extraPacket, genericfuturelistener);
+            }
+        }
+        // Paper end
+
     }
 
     private void sendPacketQueue() { this.o(); } // Paper - OBFHELPER

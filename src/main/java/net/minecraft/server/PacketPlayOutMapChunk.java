@@ -20,6 +20,15 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
 
     public PacketPlayOutMapChunk() {}
 
+    // Paper start
+    private final java.util.List<Packet> extraPackets = new java.util.ArrayList<>();
+    private static final int SKIP_EXCESSIVE_SIGNS_LIMIT = Integer.getInteger("Paper.excessiveSignsLimit", 500);
+
+    @Override
+    public java.util.List<Packet> getExtraPackets() {
+        return extraPackets;
+    }
+    // Paper end
     public PacketPlayOutMapChunk(Chunk chunk, int i) {
         ChunkCoordIntPair chunkcoordintpair = chunk.getPos();
 
@@ -42,6 +51,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         this.c = this.a(new PacketDataSerializer(this.i()), chunk, i);
         this.f = Lists.newArrayList();
         iterator = chunk.getTileEntities().entrySet().iterator();
+        int totalSigns = 0; // Paper
 
         while (iterator.hasNext()) {
             entry = (Entry) iterator.next();
@@ -50,6 +60,14 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
             int j = blockposition.getY() >> 4;
 
             if (this.f() || (i & 1 << j) != 0) {
+                // Paper start - send signs separately
+                if (tileentity instanceof TileEntitySign) {
+                    if (SKIP_EXCESSIVE_SIGNS_LIMIT < 0 || ++totalSigns < SKIP_EXCESSIVE_SIGNS_LIMIT) {
+                        this.extraPackets.add(tileentity.getUpdatePacket());
+                    }
+                    continue;
+                }
+                // Paper end
                 NBTTagCompound nbttagcompound = tileentity.b();
                 if (tileentity instanceof TileEntitySkull) { TileEntitySkull.sanitizeTileEntityUUID(nbttagcompound); } // Paper
 
