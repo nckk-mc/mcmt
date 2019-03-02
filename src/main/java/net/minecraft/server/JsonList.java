@@ -64,6 +64,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         return this.e;
     }
 
+    public void setEnabled(boolean flag) { this.a(flag); } // Paper - OBFHeLPER
     public void a(boolean flag) {
         this.e = flag;
     }
