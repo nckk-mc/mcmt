@@ -18,6 +18,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { // 
     private static final boolean keepInvalidUnicode = Boolean.getBoolean("Paper.keepInvalidUnicode"); // Allow people to keep their bad unicode if they really want it
     private boolean privateUnicodeRemoved = false;
     public java.util.UUID signEditor;
+    private static final boolean CONVERT_LEGACY_SIGNS = Boolean.getBoolean("convertLegacySigns");
     // Paper end
 
     public TileEntitySign() {
@@ -36,7 +37,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener { // 
         }
 
         // CraftBukkit start
-        if (Boolean.getBoolean("convertLegacySigns")) {
+        if (CONVERT_LEGACY_SIGNS) { // Paper
             nbttagcompound.setBoolean("Bukkit.isConverted", true);
         }
         // CraftBukkit end
