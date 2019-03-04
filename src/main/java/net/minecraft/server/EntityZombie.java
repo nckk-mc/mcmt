@@ -167,6 +167,7 @@ public class EntityZombie extends EntityMonster {
                     ++this.bF;
                     if (this.bF >= 600) {
                         this.startDrownedConversion(300);
+                        this.lastTick = MinecraftServer.currentTick; // Paper - Make sure this is set at start of process - GH-1887
                     }
                 } else {
                     this.bF = -1;
