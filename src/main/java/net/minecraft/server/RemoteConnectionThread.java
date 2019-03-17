@@ -15,7 +15,7 @@ public abstract class RemoteConnectionThread implements Runnable {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final AtomicInteger i = new AtomicInteger(0);
     protected boolean a;
-    protected final IMinecraftServer b;
+    protected final IMinecraftServer b; protected IMinecraftServer getServer() { return this.b; } // Paper - OBFHELPER
     protected final String c;
     protected Thread d;
     protected final int e = 5;
@@ -94,6 +94,7 @@ public abstract class RemoteConnectionThread implements Runnable {
         this.b.g(s);
     }
 
+    protected int getPlayerCount() { return this.d(); } // Paper - OBFHELPER
     protected int d() {
         return this.b.getPlayerCount();
     }
