@@ -2027,7 +2027,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
 
                     if (event.isCancelled() || this.player.inventory.getItemInHand() == null || this.player.inventory.getItemInHand().getItem() != origItem) {
                         // Refresh the current entity metadata
-                        this.sendPacket(new PacketPlayOutEntityMetadata(entity.getId(), entity.datawatcher, true));
+                        entity.tracker.broadcast(new PacketPlayOutEntityMetadata(entity.getId(), entity.datawatcher, true)); // Paper - update entity for all players
                     }
 
                     if (event.isCancelled()) {
