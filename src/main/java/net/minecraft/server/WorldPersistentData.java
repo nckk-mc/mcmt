@@ -26,6 +26,7 @@ public class WorldPersistentData {
         this.c = datafixer;
         this.d = file;
     }
+    private static final PersistentBase NO_RESULT = new ForcedChunk(); // Paper
 
     private File a(String s) {
         return new File(this.d, s + ".dat");
@@ -46,6 +47,7 @@ public class WorldPersistentData {
 
     @Nullable
     public <T extends PersistentBase> T b(Supplier<T> supplier, String s) {
+        if ("Mineshaft_index".equals(s) || "Mineshaft".equals(s)) return null; // Paper - mineshaft is useless data
         PersistentBase persistentbase = (PersistentBase) this.data.get(s);
 
         if (persistentbase == null) {
@@ -58,13 +60,13 @@ public class WorldPersistentData {
 
                     persistentbase.a(nbttagcompound.getCompound("data"));
                     this.data.put(s, persistentbase);
-                }
+                } else this.data.put(s, NO_RESULT); // Paper
             } catch (Exception exception) {
                 WorldPersistentData.LOGGER.error("Error loading saved data: {}", s, exception);
             }
         }
 
-        return (T) persistentbase; // Paper - decompile fix
+        return (T) persistentbase == NO_RESULT ? null : (T) persistentbase; // Paper - decompile fix // Paper
     }
 
     public void a(PersistentBase persistentbase) {
@@ -72,6 +74,7 @@ public class WorldPersistentData {
     }
 
     public NBTTagCompound a(String s, int i) throws IOException {
+        if ("Mineshaft".equals(s) || "Mineshaft_index".equals(s)) return new NBTTagCompound(); // Paper
         File file = this.a(s);
         PushbackInputStream pushbackinputstream = new PushbackInputStream(new FileInputStream(file), 2);
         Throwable throwable = null;
