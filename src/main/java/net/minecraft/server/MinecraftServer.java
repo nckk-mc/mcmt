@@ -462,6 +462,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
         // Paper end
 
         this.server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.POSTWORLD);
+        LoginListener.allowLogins(); // Paper - Allow logins once postworld
         this.server.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP));
         // CraftBukkit end
 
