@@ -17,7 +17,17 @@ import javax.annotation.Nullable;
 
 public class GameRules {
 
-    private static final TreeMap<String, GameRules.GameRuleDefinition> a = SystemUtils.a(new TreeMap(), (treemap) -> { // Paper - decompile fix
+    // Paper start - Optimize GameRules
+    private static final int RULES_SIZE = 256;
+
+    private static <K, V> java.util.LinkedHashMap<K, V> linkedMapOf(final int capacity, final TreeMap<K, V> map) {
+        final java.util.LinkedHashMap<K, V> ret = new java.util.LinkedHashMap<>(capacity);
+        ret.putAll(map);
+        return ret;
+    }
+
+    private static final java.util.LinkedHashMap<String, GameRuleDefinition> a = GameRules.linkedMapOf(RULES_SIZE, SystemUtils.a(new TreeMap(), (treemap) -> { // Paper - decompile fix
+        // Paper end
         treemap.put("doFireTick", new GameRules.GameRuleDefinition("true", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
         treemap.put("mobGriefing", new GameRules.GameRuleDefinition("true", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
         treemap.put("keepInventory", new GameRules.GameRuleDefinition("false", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
@@ -51,8 +61,8 @@ public class GameRules {
         treemap.put("doLimitedCrafting", new GameRules.GameRuleDefinition("false", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
         treemap.put("maxCommandChainLength", new GameRules.GameRuleDefinition("65536", GameRules.EnumGameRuleType.NUMERICAL_VALUE));
         treemap.put("announceAdvancements", new GameRules.GameRuleDefinition("true", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
-    });
-    private final TreeMap<String, GameRules.GameRuleValue> b = new TreeMap();
+    })); // Paper - Optimize GameRules
+    private final java.util.LinkedHashMap<String, GameRuleValue> b = new java.util.LinkedHashMap<>(RULES_SIZE); // Paper - Optimize GameRules
 
     public GameRules() {
         Iterator iterator = GameRules.a.entrySet().iterator();
@@ -116,7 +126,7 @@ public class GameRules {
         return (GameRules.GameRuleValue) this.b.get(s);
     }
 
-    public static TreeMap<String, GameRules.GameRuleDefinition> getGameRules() {
+    public static java.util.LinkedHashMap<String, GameRuleDefinition> getGameRules() { // Paper - Optimize GameRules
         return GameRules.a;
     }
 
