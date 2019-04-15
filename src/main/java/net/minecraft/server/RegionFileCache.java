@@ -171,8 +171,21 @@ public abstract class RegionFileCache implements AutoCloseable {
     private static NBTTagCompound readOversizedChunk(RegionFile regionfile, ChunkCoordIntPair chunkCoordinate) throws IOException {
         synchronized (regionfile) {
             try (DataInputStream datainputstream = regionfile.getReadStream(chunkCoordinate)) {
-                NBTTagCompound oversizedData = regionfile.getOversizedData(chunkCoordinate.x, chunkCoordinate.z);
-                NBTTagCompound chunk = NBTCompressedStreamTools.readNBT(datainputstream);
+                // Paper start - Handle bad chunks more gracefully - also handle similarly with oversized data
+                NBTTagCompound oversizedData = null;
+
+                try {
+                    oversizedData = regionfile.getOversizedData(chunkCoordinate.x, chunkCoordinate.z);
+                } catch (Exception ex) {}
+
+                NBTTagCompound chunk;
+
+                try {
+                    chunk = NBTCompressedStreamTools.readNBT(datainputstream);
+                } catch (final Exception ex) {
+                    return null;
+                }
+                // Paper end
                 if (oversizedData == null) {
                     return chunk;
                 }
@@ -231,8 +244,13 @@ public abstract class RegionFileCache implements AutoCloseable {
 
         try {
             if (datainputstream != null) {
-                nbttagcompound = NBTCompressedStreamTools.a(datainputstream);
-                return nbttagcompound;
+                // Paper start - Handle bad chunks more gracefully
+                try {
+                    return NBTCompressedStreamTools.a(datainputstream);
+                } catch (Exception ex) {
+                    return null;
+                }
+                // Paper end
             }
 
             nbttagcompound = null;
