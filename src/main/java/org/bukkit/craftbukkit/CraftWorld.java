@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import net.minecraft.server.AxisAlignedBB;
 import net.minecraft.server.BiomeBase;
@@ -2116,6 +2117,40 @@ public class CraftWorld implements World {
         BlockPosition nearest = getHandle().getChunkProvider().getChunkGenerator().findNearestMapFeature(getHandle(), structureType.getName(), originPos, radius, findUnexplored);
         return (nearest == null) ? null : new Location(this, nearest.getX(), nearest.getY(), nearest.getZ());
     }
+
+    // Paper start
+    private Chunk getChunkAtGen(int x, int z, boolean gen) {
+        // copied from loadChunk()
+        // this function is identical except we do not add a plugin ticket
+        IChunkAccess chunk = world.getChunkProvider().getChunkAt(x, z, gen || isChunkGenerated(x, z) ? ChunkStatus.FULL : ChunkStatus.EMPTY, true);
+
+        // If generate = false, but the chunk already exists, we will get this back.
+        if (chunk instanceof ProtoChunkExtension) {
+            // We then cycle through again to get the full chunk immediately, rather than after the ticket addition
+            chunk = world.getChunkProvider().getChunkAt(x, z, ChunkStatus.FULL, true);
+        }
+
+        if (chunk instanceof net.minecraft.server.Chunk) {
+            return ((net.minecraft.server.Chunk)chunk).bukkitChunk;
+        }
+
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Chunk> getChunkAtAsync(int x, int z, boolean gen) {
+        // TODO placeholder
+        if (Bukkit.isPrimaryThread()) {
+            return CompletableFuture.completedFuture(getChunkAtGen(x, z, gen));
+        } else {
+            CompletableFuture<Chunk> ret = new CompletableFuture<>();
+            net.minecraft.server.MinecraftServer.getServer().scheduleOnMain(() -> {
+                ret.complete(getChunkAtGen(x, z, gen));
+            });
+            return ret;
+        }
+    }
+    // Paper end
 
     // Spigot start
     private final Spigot spigot = new Spigot()
