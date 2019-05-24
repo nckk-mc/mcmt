@@ -101,6 +101,23 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     private int tileTickPosition;
     public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<>(); // Paper - Optimize explosions
     public java.util.ArrayDeque<BlockRedstoneTorch.RedstoneUpdateInfo> redstoneUpdateInfos; // Paper - Move from Map in BlockRedstoneTorch to here
+    // Paper start - yes this is hacky as shit
+    RegionLimitedWorldAccess regionLimited;
+    World originalWorld;
+    public World regionLimited(RegionLimitedWorldAccess limitedWorldAccess) {
+        try {
+            World clone = (World) super.clone();
+            clone.regionLimited = limitedWorldAccess;
+            clone.originalWorld = this;
+            return clone;
+        } catch (CloneNotSupportedException e1) {
+        }
+        return null;
+    }
+    ChunkCoordIntPair[] strongholdCoords;
+    List<StructureStart> strongholdStuctures = Lists.newArrayList();
+    final java.lang.Object stuctureLock = new Object();
+    // Paper end
 
     public CraftWorld getWorld() {
         return this.world;
