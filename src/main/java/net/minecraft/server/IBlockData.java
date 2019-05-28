@@ -266,6 +266,7 @@ public class IBlockData extends BlockDataAbstract<Block, IBlockData> implements 
         return this.getBlock().isTicking(this);
     }
 
+    public final SoundEffectType getStepSound() { return this.r(); } // Paper - OBFHELPER
     public SoundEffectType r() {
         return this.getBlock().getStepSound(this);
     }

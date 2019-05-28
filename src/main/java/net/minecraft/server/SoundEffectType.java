@@ -26,10 +26,10 @@ public class SoundEffectType {
     public static final SoundEffectType v = new SoundEffectType(1.0F, 1.0F, SoundEffects.BLOCK_LANTERN_BREAK, SoundEffects.BLOCK_LANTERN_STEP, SoundEffects.BLOCK_LANTERN_PLACE, SoundEffects.BLOCK_LANTERN_HIT, SoundEffects.BLOCK_LANTERN_FALL);
     public final float w;
     public final float x;
-    private final SoundEffect y;
+    private final SoundEffect y; public final SoundEffect getBreakSound() { return this.y; } // Paper - OBFHELPER
     private final SoundEffect z;
     private final SoundEffect A;
-    private final SoundEffect B;
+    private final SoundEffect B; public final SoundEffect getHitSound() { return this.B; } // Paper - OBFHELPER
     private final SoundEffect C;
 
     public SoundEffectType(float f, float f1, SoundEffect soundeffect, SoundEffect soundeffect1, SoundEffect soundeffect2, SoundEffect soundeffect3, SoundEffect soundeffect4) {
@@ -50,14 +50,17 @@ public class SoundEffectType {
         return this.x;
     }
 
+    public final SoundEffect getStepSound() { return this.d(); } // Paper - OBFHELPER
     public SoundEffect d() {
         return this.z;
     }
 
+    public final SoundEffect getPlaceSound() { return this.e(); } // Paper - OBFHELPER
     public SoundEffect e() {
         return this.A;
     }
 
+    public final SoundEffect getFallSound() { return this.g(); } // Paper - OBFHELPER
     public SoundEffect g() {
         return this.C;
     }
