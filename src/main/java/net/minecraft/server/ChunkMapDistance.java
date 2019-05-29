@@ -39,7 +39,7 @@ public abstract class ChunkMapDistance {
     private int entitydistance;
     private final ChunkMapDistance.b i = new ChunkMapDistance.b(8);
     private final ChunkMapDistance.d j = new ChunkMapDistance.d(33);
-    private final Set<PlayerChunk> k = Sets.newHashSet();
+    private Set<PlayerChunk> k = Sets.newHashSet(); // Paper - -final
     private final PlayerChunk.c l;
     private final Mailbox<ChunkTaskQueueSorter.a<Runnable>> m;
     private final Mailbox<ChunkTaskQueueSorter.b> n;
@@ -117,8 +117,12 @@ public abstract class ChunkMapDistance {
             ;
         }
 
-        if (!this.k.isEmpty()) {
-            this.k.forEach((playerchunk) -> {
+        // Paper start
+        Set<PlayerChunk> currentPending = this.k;
+        this.k = Sets.newHashSet();
+        if (!currentPending.isEmpty()) {
+            currentPending.forEach((playerchunk) -> {
+                // Paper end
                 playerchunk.a(playerchunkmap);
             });
             this.k.clear();
