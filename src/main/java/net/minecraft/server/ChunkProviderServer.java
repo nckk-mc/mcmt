@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 public class ChunkProviderServer extends IChunkProvider {
 
     private static final int b = (int) Math.pow(17.0D, 2.0D);
-    private static final List<ChunkStatus> c = ChunkStatus.a();
+    private static final List<ChunkStatus> c = ChunkStatus.a(); static final List<ChunkStatus> getPossibleChunkStatuses() { return ChunkProviderServer.c; } // Paper - OBFHELPER
     private final ChunkMapDistance chunkMapDistance;
     public final ChunkGenerator<?> chunkGenerator;
     private final WorldServer world;

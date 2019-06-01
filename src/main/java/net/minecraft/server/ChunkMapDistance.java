@@ -33,7 +33,7 @@ public abstract class ChunkMapDistance {
     private static final int b = 33 + ChunkStatus.a(ChunkStatus.FULL) - 2;
     private final Long2ObjectMap<ObjectSet<EntityPlayer>> c = new Long2ObjectOpenHashMap();
     private final Long2ObjectMap<ObjectSet<EntityPlayer>> d = new Long2ObjectOpenHashMap();
-    private final Long2ObjectOpenHashMap<ObjectSortedSet<Ticket<?>>> tickets = new Long2ObjectOpenHashMap();
+    final Long2ObjectOpenHashMap<ObjectSortedSet<Ticket<?>>> tickets = new Long2ObjectOpenHashMap(); // Paper -> private -> package
     private final ChunkMapDistance.a f = new ChunkMapDistance.a();
     private final ChunkMapDistance.c g = new ChunkMapDistance.c();
     private int entitydistance;

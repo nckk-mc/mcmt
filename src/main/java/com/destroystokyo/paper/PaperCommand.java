@@ -28,14 +28,14 @@ public class PaperCommand extends Command {
     public PaperCommand(String name) {
         super(name);
         this.description = "Paper related commands";
-        this.usageMessage = "/paper [heap | entity | reload | version]";
+        this.usageMessage = "/paper [heap | entity | reload | version | debug]";
         this.setPermission("bukkit.command.paper");
     }
 
     @Override
     public List<String> tabComplete(CommandSender sender, String alias, String[] args, Location location) throws IllegalArgumentException {
         if (args.length <= 1)
-            return getListMatchingLast(args, "heap", "entity", "reload", "version");
+            return getListMatchingLast(args, "heap", "entity", "reload", "version", "debug");
 
         switch (args[0].toLowerCase(Locale.ENGLISH))
         {
@@ -45,6 +45,10 @@ public class PaperCommand extends Command {
                 if (args.length == 3)
                     return getListMatchingLast(args, EntityTypes.getEntityNameList().stream().map(MinecraftKey::toString).sorted().toArray(String[]::new));
                 break;
+            case "debug":
+                if (args.length == 2) {
+                    return getListMatchingLast(args, "help", "chunks");
+                }
         }
         return Collections.emptyList();
     }
@@ -109,6 +113,9 @@ public class PaperCommand extends Command {
             case "reload":
                 doReload(sender);
                 break;
+            case "debug":
+                doDebug(sender, args);
+                break;
             case "ver":
             case "version":
                 Command ver = org.bukkit.Bukkit.getServer().getCommandMap().getCommand("version");
@@ -123,6 +130,39 @@ public class PaperCommand extends Command {
         }
 
         return true;
+    }
+
+    private void doDebug(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Use /paper debug [chunks] help for more information on a specific command");
+            return;
+        }
+
+        String debugType = args[1].toLowerCase(Locale.ENGLISH);
+        switch (debugType) {
+            case "chunks":
+                if (args.length >= 3 && args[2].toLowerCase(Locale.ENGLISH).equals("help")) {
+                    sender.sendMessage(ChatColor.RED + "Use /paper debug chunks to dump loaded chunk information to a file");
+                    break;
+                }
+                File file = new File(new File(new File("."), "debug"),
+                    "chunks-" + DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss").format(LocalDateTime.now()) + ".txt");
+                sender.sendMessage(ChatColor.GREEN + "Writing chunk information dump to " + file.toString());
+                try {
+                    MCUtil.dumpChunks(file);
+                    sender.sendMessage(ChatColor.GREEN + "Successfully written chunk information!");
+                } catch (Throwable thr) {
+                    MinecraftServer.LOGGER.warn("Failed to dump chunk information to file " + file.toString(), thr);
+                    sender.sendMessage(ChatColor.RED + "Failed to dump chunk information, see console");
+                }
+
+                break;
+            case "help":
+                // fall through to default
+            default:
+                sender.sendMessage(ChatColor.RED + "Use /paper debug [chunks] help for more information on a specific command");
+                return;
+        }
     }
 
     /*

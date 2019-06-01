@@ -26,7 +26,7 @@ public class PlayerChunk {
     public int oldTicketLevel;
     private int ticketLevel;
     private int n;
-    private final ChunkCoordIntPair location;
+    final ChunkCoordIntPair location; // Paper - private -> package
     private final short[] dirtyBlocks;
     private int dirtyCount;
     private int r;
