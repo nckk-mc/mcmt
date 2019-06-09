@@ -25,7 +25,8 @@ public class LootItemConditionSurvivesExplosion implements LootItemCondition {
             Random random = loottableinfo.b();
             float f = 1.0F / ofloat;
 
-            return random.nextFloat() <= f;
+            // CraftBukkit - <= to < to allow for plugins to completely disable block drops from explosions
+            return random.nextFloat() < f;
         } else {
             return true;
         }

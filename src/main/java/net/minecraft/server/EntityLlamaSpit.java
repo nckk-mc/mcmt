@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class EntityLlamaSpit extends Entity implements IProjectile {
 
-    public EntityLlama shooter;
+    public EntityLiving shooter; // CraftBukkit - type
     private NBTTagCompound c;
 
     public EntityLlamaSpit(EntityTypes<? extends EntityLlamaSpit> entitytypes, World world) {
@@ -91,6 +91,7 @@ public class EntityLlamaSpit extends Entity implements IProjectile {
     }
 
     public void a(MovingObjectPosition movingobjectposition) {
+        org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // Craftbukkit - Call event
         MovingObjectPosition.EnumMovingObjectType movingobjectposition_enummovingobjecttype = movingobjectposition.getType();
 
         if (movingobjectposition_enummovingobjecttype == MovingObjectPosition.EnumMovingObjectType.ENTITY && this.shooter != null) {

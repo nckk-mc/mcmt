@@ -18,7 +18,7 @@ public abstract class RegionFileCache implements AutoCloseable {
         this.a = file;
     }
 
-    private RegionFile a(ChunkCoordIntPair chunkcoordintpair) throws IOException {
+    private RegionFile a(ChunkCoordIntPair chunkcoordintpair, boolean existingOnly) throws IOException { // CraftBukkit
         long i = ChunkCoordIntPair.pair(chunkcoordintpair.getRegionX(), chunkcoordintpair.getRegionZ());
         RegionFile regionfile = (RegionFile) this.cache.getAndMoveToFirst(i);
 
@@ -34,6 +34,7 @@ public abstract class RegionFileCache implements AutoCloseable {
             }
 
             File file = new File(this.a, "r." + chunkcoordintpair.getRegionX() + "." + chunkcoordintpair.getRegionZ() + ".mca");
+            if (existingOnly && !file.exists()) return null; // CraftBukkit
             RegionFile regionfile1 = new RegionFile(file);
 
             this.cache.putAndMoveToFirst(i, regionfile1);
@@ -43,7 +44,7 @@ public abstract class RegionFileCache implements AutoCloseable {
 
     @Nullable
     public NBTTagCompound read(ChunkCoordIntPair chunkcoordintpair) throws IOException {
-        RegionFile regionfile = this.a(chunkcoordintpair);
+        RegionFile regionfile = this.a(chunkcoordintpair, false); // CraftBukkit
         DataInputStream datainputstream = regionfile.a(chunkcoordintpair);
         Throwable throwable = null;
 
@@ -78,7 +79,7 @@ public abstract class RegionFileCache implements AutoCloseable {
     }
 
     protected void write(ChunkCoordIntPair chunkcoordintpair, NBTTagCompound nbttagcompound) throws IOException {
-        RegionFile regionfile = this.a(chunkcoordintpair);
+        RegionFile regionfile = this.a(chunkcoordintpair, false); // CraftBukkit
         DataOutputStream dataoutputstream = regionfile.c(chunkcoordintpair);
         Throwable throwable = null;
 
@@ -114,4 +115,12 @@ public abstract class RegionFileCache implements AutoCloseable {
         }
 
     }
+
+    // CraftBukkit start
+    public boolean chunkExists(ChunkCoordIntPair pos) throws IOException {
+        RegionFile regionfile = a(pos, true);
+
+        return regionfile != null ? regionfile.d(pos) : false;
+    }
+    // CraftBukkit end
 }

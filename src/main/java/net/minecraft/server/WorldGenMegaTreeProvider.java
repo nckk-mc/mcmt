@@ -29,6 +29,7 @@ public abstract class WorldGenMegaTreeProvider extends WorldGenTreeProvider {
         if (worldgentreeabstract == null) {
             return false;
         } else {
+            setTreeType(worldgentreeabstract); // CraftBukkit
             IBlockData iblockdata1 = Blocks.AIR.getBlockData();
 
             generatoraccess.setTypeAndData(blockposition.b(i, 0, j), iblockdata1, 4);

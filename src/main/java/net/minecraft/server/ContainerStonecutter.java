@@ -3,6 +3,11 @@ package net.minecraft.server;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
+// CraftBukkit start
+import org.bukkit.craftbukkit.inventory.CraftInventoryStonecutter;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+import org.bukkit.entity.Player;
+// CraftBukkit end
 
 public class ContainerStonecutter extends Container {
 
@@ -18,6 +23,21 @@ public class ContainerStonecutter extends Container {
     private Runnable m;
     public final IInventory inventory;
     private final InventoryCraftResult n;
+    // CraftBukkit start
+    private CraftInventoryView bukkitEntity = null;
+    private Player player;
+
+    @Override
+    public CraftInventoryView getBukkitView() {
+        if (bukkitEntity != null) {
+            return bukkitEntity;
+        }
+
+        CraftInventoryStonecutter inventory = new CraftInventoryStonecutter(this.inventory);
+        bukkitEntity = new CraftInventoryView(this.player, inventory, this);
+        return bukkitEntity;
+    }
+    // CraftBukkit end
 
     public ContainerStonecutter(int i, PlayerInventory playerinventory) {
         this(i, playerinventory, ContainerAccess.a);
@@ -83,10 +103,12 @@ public class ContainerStonecutter extends Container {
         }
 
         this.a(this.containerProperty);
+        player = (Player) playerinventory.player.getBukkitEntity(); // CraftBukkit
     }
 
     @Override
     public boolean canUse(EntityHuman entityhuman) {
+        if (!this.checkReachable) return true; // CraftBukkit
         return a(this.containerAccess, entityhuman, Blocks.STONECUTTER);
     }
 

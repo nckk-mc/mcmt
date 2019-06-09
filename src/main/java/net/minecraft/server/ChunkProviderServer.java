@@ -81,7 +81,7 @@ public class ChunkProviderServer extends IChunkProvider {
             for (int l = 0; l < 4; ++l) {
                 if (k == this.cachePos[l] && chunkstatus == this.cacheStatus[l]) {
                     ichunkaccess = this.cacheChunk[l];
-                    if (ichunkaccess != null || !flag) {
+                    if (ichunkaccess != null) { // CraftBukkit - the chunk can become accessible in the meantime TODO for non-null chunks it might also make sense to check that the chunk's state hasn't changed in the meantime
                         return ichunkaccess;
                     }
                 }
@@ -125,7 +125,15 @@ public class ChunkProviderServer extends IChunkProvider {
         int l = 33 + ChunkStatus.a(chunkstatus);
         PlayerChunk playerchunk = this.getChunk(k);
 
-        if (flag) {
+        // CraftBukkit start - don't add new ticket for currently unloading chunk
+        boolean currentlyUnloading = false;
+        if (playerchunk != null) {
+            PlayerChunk.State oldChunkState = PlayerChunk.getChunkState(playerchunk.oldTicketLevel);
+            PlayerChunk.State currentChunkState = PlayerChunk.getChunkState(playerchunk.getTicketLevel());
+            currentlyUnloading = (oldChunkState.isAtLeast(PlayerChunk.State.BORDER) && !currentChunkState.isAtLeast(PlayerChunk.State.BORDER));
+        }
+        if (flag && !currentlyUnloading) {
+            // CraftBukkit end
             this.chunkMapDistance.a(TicketType.UNKNOWN, chunkcoordintpair, l, chunkcoordintpair);
             if (this.a(playerchunk, l)) {
                 GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
@@ -144,7 +152,7 @@ public class ChunkProviderServer extends IChunkProvider {
     }
 
     private boolean a(@Nullable PlayerChunk playerchunk, int i) {
-        return playerchunk == null || playerchunk.getTicketLevel() > i;
+        return playerchunk == null || playerchunk.oldTicketLevel > i; // CraftBukkit using oldTicketLevel for isLoaded checks
     }
 
     public boolean isLoaded(int i, int j) {
@@ -245,6 +253,18 @@ public class ChunkProviderServer extends IChunkProvider {
         this.playerChunkMap.close();
     }
 
+    // CraftBukkit start - modelled on below
+    public void purgeUnload() {
+        this.world.getMethodProfiler().enter("purge");
+        this.chunkMapDistance.purgeTickets();
+        this.tickDistanceManager();
+        this.world.getMethodProfiler().exitEnter("unload");
+        this.playerChunkMap.unloadChunks(() -> true);
+        this.world.getMethodProfiler().exit();
+        this.clearCache();
+    }
+    // CraftBukkit end
+
     public void tick(BooleanSupplier booleansupplier) {
         this.world.getMethodProfiler().enter("purge");
         this.chunkMapDistance.purgeTickets();
@@ -264,13 +284,13 @@ public class ChunkProviderServer extends IChunkProvider {
         this.lastTickTime = i;
         WorldData worlddata = this.world.getWorldData();
         boolean flag = worlddata.getType() == WorldType.DEBUG_ALL_BLOCK_STATES;
-        boolean flag1 = this.world.getGameRules().getBoolean("doMobSpawning");
+        boolean flag1 = this.world.getGameRules().getBoolean("doMobSpawning") && !world.getPlayers().isEmpty(); // CraftBukkit
 
         if (!flag) {
             this.world.getMethodProfiler().enter("pollingChunks");
             int k = this.world.getGameRules().c("randomTickSpeed");
             BlockPosition blockposition = this.world.getSpawn();
-            boolean flag2 = worlddata.getTime() % 400L == 0L;
+            boolean flag2 = world.ticksPerAnimalSpawns != 0L && worlddata.getTime() % world.ticksPerAnimalSpawns == 0L; // CraftBukkit // PAIL: TODO monster ticks
 
             this.world.getMethodProfiler().enter("naturalSpawnCount");
             int l = this.chunkMapDistance.b();
@@ -303,8 +323,30 @@ public class ChunkProviderServer extends IChunkProvider {
                             for (int j1 = 0; j1 < i1; ++j1) {
                                 EnumCreatureType enumcreaturetype = aenumcreaturetype1[j1];
 
+                                // CraftBukkit start - Use per-world spawn limits
+                                int limit = enumcreaturetype.b();
+                                switch (enumcreaturetype) {
+                                    case MONSTER:
+                                        limit = world.getWorld().getMonsterSpawnLimit();
+                                        break;
+                                    case CREATURE:
+                                        limit = world.getWorld().getAnimalSpawnLimit();
+                                        break;
+                                    case WATER_CREATURE:
+                                        limit = world.getWorld().getWaterAnimalSpawnLimit();
+                                        break;
+                                    case AMBIENT:
+                                        limit = world.getWorld().getAmbientSpawnLimit();
+                                        break;
+                                }
+
+                                if (limit == 0) {
+                                    continue;
+                                }
+                                // CraftBukkit end
+
                                 if (enumcreaturetype != EnumCreatureType.MISC && (!enumcreaturetype.c() || this.allowAnimals) && (enumcreaturetype.c() || this.allowMonsters) && (!enumcreaturetype.d() || flag2)) {
-                                    int k1 = enumcreaturetype.b() * l / ChunkProviderServer.b;
+                                    int k1 = limit * l / ChunkProviderServer.b; // CraftBukkit - use per-world limits
 
                                     if (object2intmap.getInt(enumcreaturetype) <= k1) {
                                         SpawnerCreature.a(enumcreaturetype, (World) this.world, chunk, blockposition);

@@ -16,7 +16,7 @@ public class EntityCat extends EntityTameableAnimal {
     private static final DataWatcherObject<Boolean> bG = DataWatcher.a(EntityCat.class, DataWatcherRegistry.i);
     private static final DataWatcherObject<Boolean> bH = DataWatcher.a(EntityCat.class, DataWatcherRegistry.i);
     private static final DataWatcherObject<Integer> bI = DataWatcher.a(EntityCat.class, DataWatcherRegistry.b);
-    public static final Map<Integer, MinecraftKey> bD = (Map) SystemUtils.a((Object) Maps.newHashMap(), (hashmap) -> {
+    public static final Map<Integer, MinecraftKey> bD = (Map) SystemUtils.a(Maps.newHashMap(), (hashmap) -> { // CraftBukkit - decompile error
         hashmap.put(0, new MinecraftKey("textures/entity/cat/tabby.png"));
         hashmap.put(1, new MinecraftKey("textures/entity/cat/black.png"));
         hashmap.put(2, new MinecraftKey("textures/entity/cat/red.png"));
@@ -329,7 +329,7 @@ public class EntityCat extends EntityTameableAnimal {
         } else if (this.i(itemstack)) {
             this.a(entityhuman, itemstack);
             if (!this.world.isClientSide) {
-                if (this.random.nextInt(3) == 0) {
+                if (this.random.nextInt(3) == 0 && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTameEvent(this, entityhuman).isCancelled()) { // CraftBukkit
                     this.tame(entityhuman);
                     this.r(true);
                     this.goalSit.setSitting(true);
@@ -518,7 +518,7 @@ public class EntityCat extends EntityTameableAnimal {
     static class PathfinderGoalTemptChance extends PathfinderGoalTempt {
 
         @Nullable
-        private EntityHuman chosenTarget;
+        private EntityLiving chosenTarget; // CraftBukkit
         private final EntityCat d;
 
         public PathfinderGoalTemptChance(EntityCat entitycat, double d0, RecipeItemStack recipeitemstack, boolean flag) {
@@ -553,9 +553,9 @@ public class EntityCat extends EntityTameableAnimal {
         private final EntityCat i;
 
         public a(EntityCat entitycat, Class<T> oclass, float f, double d0, double d1) {
-            Predicate predicate = IEntitySelector.e;
+            // Predicate predicate = IEntitySelector.e; // CraftBukkit - decompile error
 
-            super(entitycat, oclass, f, d0, d1, predicate::test);
+            super(entitycat, oclass, f, d0, d1, IEntitySelector.e::test); // CraftBukkit - decompile error
             this.i = entitycat;
         }
 

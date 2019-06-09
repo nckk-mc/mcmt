@@ -144,7 +144,7 @@ public abstract class StructureGenerator<C extends WorldGenFeatureConfiguration>
 
         while (longiterator.hasNext()) {
             long k = longiterator.nextLong();
-            IChunkAccess ichunkaccess1 = generatoraccess.getChunkAt(ChunkCoordIntPair.getX(k), ChunkCoordIntPair.getZ(k), ChunkStatus.STRUCTURE_STARTS);
+            IChunkAccess ichunkaccess1 = generatoraccess.getChunkAt(ChunkCoordIntPair.getX(k), ChunkCoordIntPair.getZ(k), ChunkStatus.STRUCTURE_STARTS, false); // CraftBukkit - don't load chunks
             StructureStart structurestart = ichunkaccess1.a(this.b());
 
             if (structurestart != null) {

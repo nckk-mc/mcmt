@@ -396,7 +396,7 @@ public abstract class EntityRaider extends EntityMonsterPatrolling {
             while (iterator.hasNext()) {
                 EntityRaider entityraider = (EntityRaider) iterator.next();
 
-                entityraider.setGoalTarget(this.c.getGoalTarget());
+                entityraider.setGoalTarget(this.c.getGoalTarget(), org.bukkit.event.entity.EntityTargetEvent.TargetReason.FOLLOW_LEADER, true); // CraftBukkit
             }
 
         }
@@ -413,7 +413,7 @@ public abstract class EntityRaider extends EntityMonsterPatrolling {
                 while (iterator.hasNext()) {
                     EntityRaider entityraider = (EntityRaider) iterator.next();
 
-                    entityraider.setGoalTarget(entityliving);
+                    entityraider.setGoalTarget(this.c.getGoalTarget(), org.bukkit.event.entity.EntityTargetEvent.TargetReason.FOLLOW_LEADER, true); // CraftBukkit
                     entityraider.q(true);
                 }
 
@@ -487,7 +487,7 @@ public abstract class EntityRaider extends EntityMonsterPatrolling {
 
         private final T b;
 
-        public b(EntityRaider entityraider) {
+        public b(T entityraider) { // CraftBukkit - decompile error
             this.b = entityraider;
             this.a(EnumSet.of(PathfinderGoal.Type.MOVE));
         }

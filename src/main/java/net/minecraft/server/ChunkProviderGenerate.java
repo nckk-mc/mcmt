@@ -4,7 +4,7 @@ import java.util.List;
 
 public class ChunkProviderGenerate extends ChunkGeneratorAbstract<GeneratorSettingsOverworld> {
 
-    private static final float[] h = (float[]) SystemUtils.a((Object) (new float[25]), (afloat) -> {
+    private static final float[] h = (float[]) SystemUtils.a((new float[25]), (afloat) -> { // CraftBukkit - decompile error
         for (int i = -2; i <= 2; ++i) {
             for (int j = -2; j <= 2; ++j) {
                 float f = 10.0F / MathHelper.c((float) (i * i + j * j) + 0.2F);
@@ -81,6 +81,11 @@ public class ChunkProviderGenerate extends ChunkGeneratorAbstract<GeneratorSetti
                     f4 = 1.0F + f4 * 2.0F;
                     f5 = 1.0F + f5 * 4.0F;
                 }
+                // CraftBukkit start - fix MC-54738
+                if (f4 < -1.8F) {
+                    f4 = -1.8F;
+                }
+                // CraftBukkit end
 
                 float f6 = ChunkProviderGenerate.h[k + 2 + (l + 2) * 5] / (f4 + 2.0F);
 

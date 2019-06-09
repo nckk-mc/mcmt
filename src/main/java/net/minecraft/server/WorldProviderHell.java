@@ -63,18 +63,22 @@ public class WorldProviderHell extends WorldProvider {
         return new WorldBorder() {
             @Override
             public double getCenterX() {
-                return super.getCenterX() / 8.0D;
+                return super.getCenterX(); // CraftBukkit
             }
 
             @Override
             public double getCenterZ() {
-                return super.getCenterZ() / 8.0D;
+                return super.getCenterZ(); // CraftBukkit
             }
         };
     }
 
+    // CraftBukkit start
+    /*
     @Override
     public DimensionManager getDimensionManager() {
         return DimensionManager.NETHER;
     }
+    */
+    // CraftBukkit end
 }

@@ -14,6 +14,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
 
+// CraftBukkit start
+import com.google.common.collect.Maps;
+import java.util.ArrayList;
+import java.util.Map;
+import org.bukkit.Bukkit;
+import org.bukkit.block.BlockState;
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.weather.LightningStrikeEvent;
+// CraftBukkit end
+
 public abstract class World implements IIBlockAccess, GeneratorAccess, AutoCloseable {
 
     protected static final Logger LOGGER = LogManager.getLogger();
@@ -41,7 +57,51 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     protected boolean tickingTileEntities;
     private final WorldBorder worldBorder;
 
-    protected World(WorldData worlddata, DimensionManager dimensionmanager, BiFunction<World, WorldProvider, IChunkProvider> bifunction, GameProfilerFiller gameprofilerfiller, boolean flag) {
+    // CraftBukkit start Added the following
+    private final CraftWorld world;
+    public boolean pvpMode;
+    public boolean keepSpawnInMemory = true;
+    public org.bukkit.generator.ChunkGenerator generator;
+
+    public boolean captureBlockStates = false;
+    public boolean captureTreeGeneration = false;
+    public ArrayList<CraftBlockState> capturedBlockStates = new ArrayList<CraftBlockState>() {
+        @Override
+        public boolean add(CraftBlockState blockState) {
+            Iterator<CraftBlockState> blockStateIterator = this.iterator();
+            while (blockStateIterator.hasNext()) {
+                BlockState blockState1 = blockStateIterator.next();
+                if (blockState1.getLocation().equals(blockState.getLocation())) {
+                    return false;
+                }
+            }
+
+            return super.add(blockState);
+        }
+    };
+    public List<EntityItem> captureDrops;
+    public long ticksPerAnimalSpawns;
+    public long ticksPerMonsterSpawns;
+    public boolean populating;
+
+    public CraftWorld getWorld() {
+        return this.world;
+    }
+
+    public CraftServer getServer() {
+        return (CraftServer) Bukkit.getServer();
+    }
+
+    public Chunk getChunkIfLoaded(int x, int z) {
+        return ((ChunkProviderServer) this.chunkProvider).getChunkAt(x, z, false);
+    }
+
+    protected World(WorldData worlddata, DimensionManager dimensionmanager, BiFunction<World, WorldProvider, IChunkProvider> bifunction, GameProfilerFiller gameprofilerfiller, boolean flag, org.bukkit.generator.ChunkGenerator gen, org.bukkit.World.Environment env) {
+        this.generator = gen;
+        this.world = new CraftWorld((WorldServer) this, gen, env);
+        this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
+        this.ticksPerMonsterSpawns = this.getServer().getTicksPerMonsterSpawns(); // CraftBukkit
+        // CraftBukkit end
         this.methodProfiler = gameprofilerfiller;
         this.worldData = worlddata;
         this.worldProvider = dimensionmanager.getWorldProvider(this);
@@ -49,6 +109,35 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         this.isClientSide = flag;
         this.worldBorder = this.worldProvider.getWorldBorder();
         this.serverThread = Thread.currentThread();
+        // CraftBukkit start
+        getWorldBorder().world = (WorldServer) this;
+        // From PlayerList.setPlayerFileData
+        getWorldBorder().a(new IWorldBorderListener() {
+            public void a(WorldBorder worldborder, double d0) {
+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_SIZE), worldborder.world);
+            }
+
+            public void a(WorldBorder worldborder, double d0, double d1, long i) {
+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.LERP_SIZE), worldborder.world);
+            }
+
+            public void a(WorldBorder worldborder, double d0, double d1) {
+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_CENTER), worldborder.world);
+            }
+
+            public void a(WorldBorder worldborder, int i) {
+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_WARNING_TIME), worldborder.world);
+            }
+
+            public void b(WorldBorder worldborder, int i) {
+                getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_WARNING_BLOCKS), worldborder.world);
+            }
+
+            public void b(WorldBorder worldborder, double d0) {}
+
+            public void c(WorldBorder worldborder, double d0) {}
+        });
+        // CraftBukkit end
     }
 
     @Override
@@ -119,6 +208,26 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
 
     @Override
     public boolean setTypeAndData(BlockPosition blockposition, IBlockData iblockdata, int i) {
+        // CraftBukkit start - tree generation
+        if (this.captureTreeGeneration) {
+            CraftBlockState blockstate = null;
+            Iterator<CraftBlockState> it = capturedBlockStates.iterator();
+            while (it.hasNext()) {
+                CraftBlockState previous = it.next();
+                if (previous.getPosition().equals(blockposition)) {
+                    blockstate = previous;
+                    it.remove();
+                    break;
+                }
+            }
+            if (blockstate == null) {
+                blockstate = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(this, blockposition, i);
+            }
+            blockstate.setData(iblockdata);
+            this.capturedBlockStates.add(blockstate);
+            return true;
+        }
+        // CraftBukkit end
         if (isOutsideWorld(blockposition)) {
             return false;
         } else if (!this.isClientSide && this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
@@ -126,9 +235,23 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         } else {
             Chunk chunk = this.getChunkAtWorldCoords(blockposition);
             Block block = iblockdata.getBlock();
-            IBlockData iblockdata1 = chunk.setType(blockposition, iblockdata, (i & 64) != 0);
+
+            // CraftBukkit start - capture blockstates
+            CraftBlockState blockstate = null;
+            if (this.captureBlockStates) {
+                blockstate = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(this, blockposition, i);
+                this.capturedBlockStates.add(blockstate);
+            }
+            // CraftBukkit end
+
+            IBlockData iblockdata1 = chunk.setType(blockposition, iblockdata, (i & 64) != 0, (i & 1024) == 0); // CraftBukkit custom NO_PLACE flag
 
             if (iblockdata1 == null) {
+                // CraftBukkit start - remove blockstate if failed
+                if (this.captureBlockStates) {
+                    this.capturedBlockStates.remove(blockstate);
+                }
+                // CraftBukkit end
                 return false;
             } else {
                 IBlockData iblockdata2 = this.getType(blockposition);
@@ -139,6 +262,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
                     this.methodProfiler.exit();
                 }
 
+                /*
                 if (iblockdata2 == iblockdata) {
                     if (iblockdata1 != iblockdata2) {
                         this.m(blockposition);
@@ -165,11 +289,64 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
 
                     this.a(blockposition, iblockdata1, iblockdata2);
                 }
+                */
+
+                // CraftBukkit start
+                if (!this.captureBlockStates) { // Don't notify clients or update physics while capturing blockstates
+                    // Modularize client and physic updates
+                    notifyAndUpdatePhysics(blockposition, chunk, iblockdata1, iblockdata, iblockdata2, i);
+                }
+                // CraftBukkit end
 
                 return true;
             }
         }
     }
+
+    // CraftBukkit start - Split off from above in order to directly send client and physic updates
+    public void notifyAndUpdatePhysics(BlockPosition blockposition, Chunk chunk, IBlockData oldBlock, IBlockData newBlock, IBlockData actualBlock, int i) {
+        IBlockData iblockdata = newBlock;
+        IBlockData iblockdata1 = oldBlock;
+        IBlockData iblockdata2 = actualBlock;
+        if (iblockdata2 == iblockdata) {
+            if (iblockdata1 != iblockdata2) {
+                this.m(blockposition);
+            }
+
+            if ((i & 2) != 0 && (!this.isClientSide || (i & 4) == 0) && (this.isClientSide || chunk == null || (chunk.getState() != null && chunk.getState().isAtLeast(PlayerChunk.State.TICKING)))) { // allow chunk to be null here as chunk.isReady() is false when we send our notification during block placement
+                this.notify(blockposition, iblockdata1, iblockdata, i);
+            }
+
+            if (!this.isClientSide && (i & 1) != 0) {
+                this.update(blockposition, iblockdata1.getBlock());
+                if (iblockdata.isComplexRedstone()) {
+                    this.updateAdjacentComparators(blockposition, newBlock.getBlock());
+                }
+            }
+
+            if ((i & 16) == 0) {
+                int j = i & -2;
+
+                // CraftBukkit start
+                iblockdata1.b(this, blockposition, j); // Don't call an event for the old block to limit event spam
+                CraftWorld world = ((WorldServer) this).getWorld();
+                if (world != null) {
+                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftBlockData.fromData(iblockdata));
+                    this.getServer().getPluginManager().callEvent(event);
+
+                    if (event.isCancelled()) {
+                        return;
+                    }
+                }
+                // CraftBukkit end
+                iblockdata.a(this, blockposition, j);
+                iblockdata.b(this, blockposition, j);
+            }
+
+            this.a(blockposition, iblockdata1, iblockdata2);
+        }
+    }
+    // CraftBukkit end
 
     public void a(BlockPosition blockposition, IBlockData iblockdata, IBlockData iblockdata1) {}
 
@@ -209,6 +386,11 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     @Override
     public void update(BlockPosition blockposition, Block block) {
         if (this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES) {
+            // CraftBukkit start
+            if (populating) {
+                return;
+            }
+            // CraftBukkit end
             this.applyPhysics(blockposition, block);
         }
 
@@ -257,6 +439,17 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
             IBlockData iblockdata = this.getType(blockposition);
 
             try {
+                // CraftBukkit start
+                CraftWorld world = ((WorldServer) this).getWorld();
+                if (world != null) {
+                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftBlockData.fromData(iblockdata), world.getBlockAt(blockposition1.getX(), blockposition1.getY(), blockposition1.getZ()));
+                    this.getServer().getPluginManager().callEvent(event);
+
+                    if (event.isCancelled()) {
+                        return;
+                    }
+                }
+                // CraftBukkit end
                 iblockdata.doPhysics(this, blockposition, block, blockposition1, false);
             } catch (Throwable throwable) {
                 CrashReport crashreport = CrashReport.a(throwable, "Exception while updating neighbours");
@@ -316,6 +509,17 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
 
     @Override
     public IBlockData getType(BlockPosition blockposition) {
+        // CraftBukkit start - tree generation
+        if (captureTreeGeneration) {
+            Iterator<CraftBlockState> it = capturedBlockStates.iterator();
+            while (it.hasNext()) {
+                CraftBlockState previous = it.next();
+                if (previous.getPosition().equals(blockposition)) {
+                    return previous.getHandle();
+                }
+            }
+        }
+        // CraftBukkit end
         if (isOutsideWorld(blockposition)) {
             return Blocks.VOID_AIR.getBlockData();
         } else {
@@ -459,9 +663,11 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
                 TileEntity tileentity1 = (TileEntity) this.tileEntityListPending.get(i);
 
                 if (!tileentity1.isRemoved()) {
+                    /* CraftBukkit start - Order matters, moved down
                     if (!this.tileEntityList.contains(tileentity1)) {
                         this.a(tileentity1);
                     }
+                    // CraftBukkit end */
 
                     if (this.isLoaded(tileentity1.getPosition())) {
                         Chunk chunk = this.getChunkAtWorldCoords(tileentity1.getPosition());
@@ -469,6 +675,12 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
 
                         chunk.setTileEntity(tileentity1.getPosition(), tileentity1);
                         this.notify(tileentity1.getPosition(), iblockdata, iblockdata, 3);
+                        // CraftBukkit start
+                        // From above, don't screw this up - SPIGOT-1746
+                        if (!this.tileEntityList.contains(tileentity1)) {
+                            this.a(tileentity1);
+                        }
+                        // CraftBukkit end
                     }
                 }
             }
@@ -631,6 +843,7 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         }
     }
 
+    public Map<BlockPosition, TileEntity> capturedTileEntities = Maps.newHashMap();
     @Nullable
     @Override
     public TileEntity getTileEntity(BlockPosition blockposition) {
@@ -639,6 +852,12 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         } else if (!this.isClientSide && Thread.currentThread() != this.serverThread) {
             return null;
         } else {
+            // CraftBukkit start
+            if (capturedTileEntities.containsKey(blockposition)) {
+                return capturedTileEntities.get(blockposition);
+            }
+            // CraftBukkit end
+
             TileEntity tileentity = null;
 
             if (this.tickingTileEntities) {
@@ -673,6 +892,14 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
     public void setTileEntity(BlockPosition blockposition, @Nullable TileEntity tileentity) {
         if (!isOutsideWorld(blockposition)) {
             if (tileentity != null && !tileentity.isRemoved()) {
+                // CraftBukkit start
+                if (captureBlockStates) {
+                    tileentity.setWorld(this);
+                    tileentity.setPosition(blockposition);
+                    capturedTileEntities.put(blockposition, tileentity);
+                    return;
+                }
+                // CraftBukkit end
                 if (this.tickingTileEntities) {
                     tileentity.setPosition(blockposition);
                     Iterator iterator = this.tileEntityListPending.iterator();

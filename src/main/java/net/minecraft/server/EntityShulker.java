@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+// CraftBukkit start
+import org.bukkit.Location;
+import org.bukkit.event.entity.EntityTeleportEvent;
+// CraftBukkit end
 
 public class EntityShulker extends EntityGolem implements IMonster {
 
@@ -46,7 +50,7 @@ public class EntityShulker extends EntityGolem implements IMonster {
         this.goalSelector.a(4, new EntityShulker.a());
         this.goalSelector.a(7, new EntityShulker.e());
         this.goalSelector.a(8, new PathfinderGoalRandomLookaround(this));
-        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[0])).a());
+        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[0])).a(new Class[0])); // CraftBukkit - decompile error
         this.targetSelector.a(2, new EntityShulker.d(this));
         this.targetSelector.a(3, new EntityShulker.c(this));
     }
@@ -308,8 +312,17 @@ public class EntityShulker extends EntityGolem implements IMonster {
                         EnumDirection enumdirection = aenumdirection[k];
 
                         if (this.world.a(blockposition1.shift(enumdirection), (Entity) this)) {
-                            this.datawatcher.set(EntityShulker.b, enumdirection);
-                            flag = true;
+                            // CraftBukkit start
+                            EntityTeleportEvent teleport = new EntityTeleportEvent(this.getBukkitEntity(), this.getBukkitEntity().getLocation(), new Location(this.world.getWorld(), blockposition1.getX(), blockposition1.getY(), blockposition1.getZ()));
+                            this.world.getServer().getPluginManager().callEvent(teleport);
+                            if (!teleport.isCancelled()) {
+                                Location to = teleport.getTo();
+                                blockposition1 = new BlockPosition(to.getX(), to.getY(), to.getZ());
+
+                                this.datawatcher.set(EntityShulker.b, enumdirection);
+                                flag = true;
+                            }
+                            // CraftBukkit end
                             break;
                         }
                     }
@@ -354,6 +367,7 @@ public class EntityShulker extends EntityGolem implements IMonster {
                 this.locX = (double) blockposition.getX() + 0.5D;
                 this.locY = (double) blockposition.getY();
                 this.locZ = (double) blockposition.getZ() + 0.5D;
+                if (valid) ((WorldServer) world).chunkCheck(this); // CraftBukkit
                 this.lastX = this.locX;
                 this.lastY = this.locY;
                 this.lastZ = this.locZ;

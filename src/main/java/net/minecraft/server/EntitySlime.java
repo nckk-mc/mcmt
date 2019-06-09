@@ -2,6 +2,13 @@ package net.minecraft.server;
 
 import java.util.EnumSet;
 import javax.annotation.Nullable;
+// CraftBukkit start
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.event.entity.EntityTransformEvent;
+import org.bukkit.event.entity.SlimeSplitEvent;
+// CraftBukkit end
 
 public class EntitySlime extends EntityInsentient implements IMonster {
 
@@ -138,7 +145,7 @@ public class EntitySlime extends EntityInsentient implements IMonster {
 
     @Override
     public EntityTypes<? extends EntitySlime> getEntityType() {
-        return super.getEntityType();
+        return (EntityTypes<? extends EntitySlime>) super.getEntityType(); // CraftBukkit - decompile error
     }
 
     @Override
@@ -147,6 +154,19 @@ public class EntitySlime extends EntityInsentient implements IMonster {
 
         if (!this.world.isClientSide && i > 1 && this.getHealth() <= 0.0F) {
             int j = 2 + this.random.nextInt(3);
+
+            // CraftBukkit start
+            SlimeSplitEvent event = new SlimeSplitEvent((org.bukkit.entity.Slime) this.getBukkitEntity(), j);
+            this.world.getServer().getPluginManager().callEvent(event);
+
+            if (!event.isCancelled() && event.getCount() > 0) {
+                j = event.getCount();
+            } else {
+                super.die();
+                return;
+            }
+            List<EntityLiving> slimes = new ArrayList<>(j);
+            // CraftBukkit end
 
             for (int k = 0; k < j; ++k) {
                 float f = ((float) (k % 2) - 0.5F) * (float) i / 4.0F;
@@ -163,8 +183,18 @@ public class EntitySlime extends EntityInsentient implements IMonster {
 
                 entityslime.setSize(i / 2, true);
                 entityslime.setPositionRotation(this.locX + (double) f, this.locY + 0.5D, this.locZ + (double) f1, this.random.nextFloat() * 360.0F, 0.0F);
-                this.world.addEntity(entityslime);
+
+                slimes.add(entityslime); // CraftBukkit
             }
+
+            // CraftBukkit start
+            if (CraftEventFactory.callEntityTransformEvent(this, slimes, EntityTransformEvent.TransformReason.SPLIT).isCancelled()) {
+                return;
+            }
+            for (EntityLiving living : slimes) {
+                this.world.addEntity(living, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SLIME_SPLIT); // CraftBukkit - SpawnReason
+            }
+            // CraftBukkit end
         }
 
         super.die();

@@ -17,6 +17,16 @@ import java.util.Map.Entry;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+// CraftBukkit start
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.entity.CraftVillager;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.craftbukkit.inventory.CraftMerchantRecipe;
+import org.bukkit.entity.Villager;
+import org.bukkit.event.entity.EntityTransformEvent;
+import org.bukkit.event.entity.VillagerAcquireTradeEvent;
+import org.bukkit.event.entity.VillagerReplenishTradeEvent;
+// CraftBukkit end
 
 public class EntityVillager extends EntityVillagerAbstract implements ReputationHandler, VillagerDataHolder {
 
@@ -62,7 +72,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
 
     @Override
     public BehaviorController<EntityVillager> getBehaviorController() {
-        return super.getBehaviorController();
+        return (BehaviorController<EntityVillager>) super.getBehaviorController(); // CraftBukkit - decompile error
     }
 
     @Override
@@ -126,7 +136,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
     @Override
     protected void mobTick() {
         this.world.getMethodProfiler().enter("brain");
-        this.getBehaviorController().a((WorldServer) this.world, (EntityLiving) this);
+        this.getBehaviorController().a((WorldServer) this.world, this); // CraftBukkit - decompile error
         this.world.getMethodProfiler().exit();
         if (!this.dY() && this.bE > 0) {
             --this.bE;
@@ -136,7 +146,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
                     this.bF = false;
                 }
 
-                this.addEffect(new MobEffect(MobEffects.REGENERATION, 200, 0));
+                this.addEffect(new MobEffect(MobEffects.REGENERATION, 200, 0), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.VILLAGER_TRADE); // CraftBukkit
             }
         }
 
@@ -258,7 +268,14 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
             while (iterator.hasNext()) {
                 MerchantRecipe merchantrecipe = (MerchantRecipe) iterator.next();
 
-                merchantrecipe.increaseSpecialPrice(-MathHelper.d((float) i * merchantrecipe.getPriceMultiplier()));
+                // CraftBukkit start
+                int bonus = -MathHelper.d((float) i * merchantrecipe.getPriceMultiplier());
+                VillagerReplenishTradeEvent event = new VillagerReplenishTradeEvent((Villager) this.getBukkitEntity(), merchantrecipe.asBukkit(), bonus);
+                Bukkit.getPluginManager().callEvent(event);
+                if (!event.isCancelled()) {
+                    merchantrecipe.increaseSpecialPrice(event.getBonus());
+                }
+                // CraftBukkit end
             }
         }
 
@@ -564,7 +581,12 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
             entitywitch.setCustomNameVisible(this.getCustomNameVisible());
         }
 
-        this.world.addEntity(entitywitch);
+        // CraftBukkit start
+        if (CraftEventFactory.callEntityTransformEvent(this, entitywitch, EntityTransformEvent.TransformReason.LIGHTNING).isCancelled()) {
+            return;
+        }
+        this.world.addEntity(entitywitch, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING);
+        // CraftBukkit end
         this.die();
     }
 
@@ -737,7 +759,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
 
             if (entityirongolem != null) {
                 if (entityirongolem.a((GeneratorAccess) this.world, EnumMobSpawn.MOB_SUMMONED) && entityirongolem.a((IWorldReader) this.world)) {
-                    this.world.addEntity(entityirongolem);
+                    this.world.addEntity(entityirongolem, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE); // CraftBukkit
                     return entityirongolem;
                 }
 
@@ -787,7 +809,7 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
         EntityVillager.a entityvillager_a = (EntityVillager.a) this.getBehaviorController().getMemory(MemoryModuleType.GOLEM_SPAWN_CONDITIONS).orElseGet(EntityVillager.a::new);
 
         entityvillager_a.b(this.world.getTime());
-        this.br.setMemory(MemoryModuleType.GOLEM_SPAWN_CONDITIONS, (Object) entityvillager_a);
+        this.br.setMemory(MemoryModuleType.GOLEM_SPAWN_CONDITIONS, entityvillager_a); // CraftBukkit - decompile error
     }
 
     public static final class a {

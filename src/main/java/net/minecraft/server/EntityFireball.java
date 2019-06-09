@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public abstract class EntityFireball extends Entity {
 
     public EntityLiving shooter;
@@ -8,6 +10,8 @@ public abstract class EntityFireball extends Entity {
     public double dirX;
     public double dirY;
     public double dirZ;
+    public float bukkitYield = 1; // CraftBukkit
+    public boolean isIncendiary = true; // CraftBukkit
 
     protected EntityFireball(EntityTypes<? extends EntityFireball> entitytypes, World world) {
         super(entitytypes, world);
@@ -27,9 +31,16 @@ public abstract class EntityFireball extends Entity {
     public EntityFireball(EntityTypes<? extends EntityFireball> entitytypes, EntityLiving entityliving, double d0, double d1, double d2, World world) {
         this(entitytypes, world);
         this.shooter = entityliving;
+        this.projectileSource = (org.bukkit.entity.LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
         this.setPositionRotation(entityliving.locX, entityliving.locY, entityliving.locZ, entityliving.yaw, entityliving.pitch);
         this.setPosition(this.locX, this.locY, this.locZ);
         this.setMot(Vec3D.a);
+        // CraftBukkit start - Added setDirection method
+        this.setDirection(d0, d1, d2);
+    }
+
+    public void setDirection(double d0, double d1, double d2) {
+        // CraftBukkit end
         d0 += this.random.nextGaussian() * 0.4D;
         d1 += this.random.nextGaussian() * 0.4D;
         d2 += this.random.nextGaussian() * 0.4D;
@@ -58,6 +69,12 @@ public abstract class EntityFireball extends Entity {
 
             if (movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS) {
                 this.a(movingobjectposition);
+
+                // CraftBukkit start - Fire ProjectileHitEvent
+                if (this.dead) {
+                    CraftEventFactory.callProjectileHitEvent(this, movingobjectposition);
+                }
+                // CraftBukkit end
             }
 
             Vec3D vec3d = this.getMot();
@@ -147,6 +164,11 @@ public abstract class EntityFireball extends Entity {
         } else {
             this.velocityChanged();
             if (damagesource.getEntity() != null) {
+                // CraftBukkit start
+                if (CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f)) {
+                    return false;
+                }
+                // CraftBukkit end
                 Vec3D vec3d = damagesource.getEntity().getLookDirection();
 
                 this.setMot(vec3d);
@@ -155,6 +177,7 @@ public abstract class EntityFireball extends Entity {
                 this.dirZ = vec3d.z * 0.1D;
                 if (damagesource.getEntity() instanceof EntityLiving) {
                     this.shooter = (EntityLiving) damagesource.getEntity();
+                    this.projectileSource = (org.bukkit.projectiles.ProjectileSource) this.shooter.getBukkitEntity();
                 }
 
                 return true;

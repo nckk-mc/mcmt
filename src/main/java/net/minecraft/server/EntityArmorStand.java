@@ -5,6 +5,15 @@ import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+// CraftBukkit end
+
 public class EntityArmorStand extends EntityLiving {
 
     private static final Vector3f bu = new Vector3f(0.0F, 0.0F, 0.0F);
@@ -52,6 +61,13 @@ public class EntityArmorStand extends EntityLiving {
         this(EntityTypes.ARMOR_STAND, world);
         this.setPosition(d0, d1, d2);
     }
+
+    // CraftBukkit start - SPIGOT-3607, SPIGOT-3637
+    @Override
+    public float getBukkitYaw() {
+        return this.yaw;
+    }
+    // CraftBukkit end
 
     @Override
     public void updateSize() {
@@ -374,6 +390,21 @@ public class EntityArmorStand extends EntityLiving {
         if (itemstack1.isEmpty() || (this.bE & 1 << enumitemslot.c() + 8) == 0) {
             if (!itemstack1.isEmpty() || (this.bE & 1 << enumitemslot.c() + 16) == 0) {
                 ItemStack itemstack2;
+                // CraftBukkit start
+                org.bukkit.inventory.ItemStack armorStandItem = CraftItemStack.asCraftMirror(itemstack1);
+                org.bukkit.inventory.ItemStack playerHeldItem = CraftItemStack.asCraftMirror(itemstack);
+
+                Player player = (Player) entityhuman.getBukkitEntity();
+                ArmorStand self = (ArmorStand) this.getBukkitEntity();
+
+                EquipmentSlot slot = CraftEquipmentSlot.getSlot(enumitemslot);
+                PlayerArmorStandManipulateEvent armorStandManipulateEvent = new PlayerArmorStandManipulateEvent(player,self,playerHeldItem,armorStandItem,slot);
+                this.world.getServer().getPluginManager().callEvent(armorStandManipulateEvent);
+
+                if (armorStandManipulateEvent.isCancelled()) {
+                    return;
+                }
+                // CraftBukkit end
 
                 if (entityhuman.abilities.canInstantlyBuild && itemstack1.isEmpty() && !itemstack.isEmpty()) {
                     itemstack2 = itemstack.cloneItemStack();
@@ -396,14 +427,19 @@ public class EntityArmorStand extends EntityLiving {
 
     @Override
     public boolean damageEntity(DamageSource damagesource, float f) {
+        // CraftBukkit start
+        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f)) {
+            return false;
+        }
+        // CraftBukkit end
         if (!this.world.isClientSide && !this.dead) {
             if (DamageSource.OUT_OF_WORLD.equals(damagesource)) {
-                this.die();
+                this.killEntity(); // CraftBukkit - this.die() -> this.killEntity()
                 return false;
             } else if (!this.isInvulnerable(damagesource) && !this.bD && !this.isMarker()) {
                 if (damagesource.isExplosion()) {
                     this.g(damagesource);
-                    this.die();
+                    this.killEntity(); // CraftBukkit - this.die() -> this.killEntity()
                     return false;
                 } else if (DamageSource.FIRE.equals(damagesource)) {
                     if (this.isBurning()) {
@@ -428,7 +464,7 @@ public class EntityArmorStand extends EntityLiving {
                     } else if (damagesource.v()) {
                         this.F();
                         this.D();
-                        this.die();
+                        this.killEntity(); // CraftBukkit - this.die() -> this.killEntity()
                         return flag1;
                     } else {
                         long i = this.world.getTime();
@@ -439,7 +475,7 @@ public class EntityArmorStand extends EntityLiving {
                         } else {
                             this.f(damagesource);
                             this.D();
-                            this.die();
+                            this.die(); // CraftBukkit - SPIGOT-4890: remain as this.die() since above damagesource method will call death event
                         }
 
                         return true;
@@ -466,7 +502,7 @@ public class EntityArmorStand extends EntityLiving {
         f1 -= f;
         if (f1 <= 0.5F) {
             this.g(damagesource);
-            this.die();
+            this.killEntity(); // CraftBukkit - this.die() -> this.killEntity()
         } else {
             this.setHealth(f1);
         }
@@ -474,13 +510,13 @@ public class EntityArmorStand extends EntityLiving {
     }
 
     private void f(DamageSource damagesource) {
-        Block.a(this.world, new BlockPosition(this), new ItemStack(Items.ARMOR_STAND));
+        drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(new ItemStack(Items.ARMOR_STAND))); // CraftBukkit - add to drops
         this.g(damagesource);
     }
 
     private void g(DamageSource damagesource) {
         this.F();
-        this.d(damagesource);
+        // this.d(damagesource); // CraftBukkit - moved down
 
         ItemStack itemstack;
         int i;
@@ -488,7 +524,7 @@ public class EntityArmorStand extends EntityLiving {
         for (i = 0; i < this.handItems.size(); ++i) {
             itemstack = (ItemStack) this.handItems.get(i);
             if (!itemstack.isEmpty()) {
-                Block.a(this.world, (new BlockPosition(this)).up(), itemstack);
+                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack)); // CraftBukkit - add to drops
                 this.handItems.set(i, ItemStack.a);
             }
         }
@@ -496,10 +532,11 @@ public class EntityArmorStand extends EntityLiving {
         for (i = 0; i < this.armorItems.size(); ++i) {
             itemstack = (ItemStack) this.armorItems.get(i);
             if (!itemstack.isEmpty()) {
-                Block.a(this.world, (new BlockPosition(this)).up(), itemstack);
+                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack)); // CraftBukkit - add to drops
                 this.armorItems.set(i, ItemStack.a);
             }
         }
+        this.d(damagesource); // CraftBukkit - moved from above
 
     }
 
@@ -602,6 +639,7 @@ public class EntityArmorStand extends EntityLiving {
 
     @Override
     public void killEntity() {
+        org.bukkit.craftbukkit.event.CraftEventFactory.callEntityDeathEvent(this, drops); // CraftBukkit - call event
         this.die();
     }
 

@@ -30,24 +30,7 @@ public class BlockChest extends BlockTileEntity implements IBlockWaterlogged {
         public ITileInventory b(final TileEntityChest tileentitychest, final TileEntityChest tileentitychest1) {
             final InventoryLargeChest inventorylargechest = new InventoryLargeChest(tileentitychest, tileentitychest1);
 
-            return new ITileInventory() {
-                @Nullable
-                @Override
-                public Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
-                    if (tileentitychest.e(entityhuman) && tileentitychest1.e(entityhuman)) {
-                        tileentitychest.d(playerinventory.player);
-                        tileentitychest1.d(playerinventory.player);
-                        return ContainerChest.b(i, playerinventory, inventorylargechest);
-                    } else {
-                        return null;
-                    }
-                }
-
-                @Override
-                public IChatBaseComponent getScoreboardDisplayName() {
-                    return new ChatMessage("container.chestDouble", new Object[0]);
-                }
-            };
+            return new DoubleInventory(tileentitychest, tileentitychest1, inventorylargechest); // CraftBukkit
         }
 
         @Override
@@ -55,6 +38,38 @@ public class BlockChest extends BlockTileEntity implements IBlockWaterlogged {
             return tileentitychest;
         }
     };
+
+    // CraftBukkit start
+    public static class DoubleInventory implements ITileInventory {
+
+        private final TileEntityChest tileentitychest;
+        private final TileEntityChest tileentitychest1;
+        public final InventoryLargeChest inventorylargechest;
+
+        public DoubleInventory(TileEntityChest tileentitychest, TileEntityChest tileentitychest1, InventoryLargeChest inventorylargechest) {
+            this.tileentitychest = tileentitychest;
+            this.tileentitychest1 = tileentitychest1;
+            this.inventorylargechest = inventorylargechest;
+        }
+
+        @Nullable
+        @Override
+        public Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
+            if (tileentitychest.e(entityhuman) && tileentitychest1.e(entityhuman)) {
+                tileentitychest.d(playerinventory.player);
+                tileentitychest1.d(playerinventory.player);
+                return ContainerChest.b(i, playerinventory, inventorylargechest);
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public IChatBaseComponent getScoreboardDisplayName() {
+            return new ChatMessage("container.chestDouble", new Object[0]);
+        }
+    };
+    // CraftBukkit end
 
     protected BlockChest(Block.Info block_info) {
         super(block_info);

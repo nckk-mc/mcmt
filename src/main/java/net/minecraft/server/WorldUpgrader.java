@@ -123,7 +123,7 @@ public class WorldUpgrader {
                                 int j = IChunkLoader.a(nbttagcompound);
                                 NBTTagCompound nbttagcompound1 = ichunkloader.getChunkData(dimensionmanager2, () -> {
                                     return this.q;
-                                }, nbttagcompound);
+                                }, nbttagcompound, chunkcoordintpair, null); // CraftBukkit
                                 boolean flag2 = j < SharedConstants.a().getWorldVersion();
 
                                 if (this.d) {

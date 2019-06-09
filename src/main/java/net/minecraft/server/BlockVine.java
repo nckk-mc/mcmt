@@ -6,6 +6,8 @@ import java.util.Random;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public class BlockVine extends Block {
 
     public static final BlockStateBoolean UP = BlockSprawling.e;
@@ -178,20 +180,24 @@ public class BlockVine extends Block {
                             BlockPosition blockposition3 = blockposition2.shift(enumdirection1);
                             BlockPosition blockposition4 = blockposition2.shift(enumdirection2);
 
+                            // CraftBukkit start - Call BlockSpreadEvent
+                            BlockPosition source = blockposition;
+
                             if (flag && a((IBlockAccess) world, blockposition3, enumdirection1)) {
-                                world.setTypeAndData(blockposition2, (IBlockData) this.getBlockData().set(getDirection(enumdirection1), true), 2);
+                                CraftEventFactory.handleBlockSpreadEvent(world, source, blockposition2, (IBlockData) this.getBlockData().set(getDirection(enumdirection1), true), 2);
                             } else if (flag1 && a((IBlockAccess) world, blockposition4, enumdirection2)) {
-                                world.setTypeAndData(blockposition2, (IBlockData) this.getBlockData().set(getDirection(enumdirection2), true), 2);
+                                CraftEventFactory.handleBlockSpreadEvent(world, source, blockposition2, (IBlockData) this.getBlockData().set(getDirection(enumdirection2), true), 2);
                             } else {
                                 EnumDirection enumdirection3 = enumdirection.opposite();
 
                                 if (flag && world.isEmpty(blockposition3) && a((IBlockAccess) world, blockposition.shift(enumdirection1), enumdirection3)) {
-                                    world.setTypeAndData(blockposition3, (IBlockData) this.getBlockData().set(getDirection(enumdirection3), true), 2);
+                                    CraftEventFactory.handleBlockSpreadEvent(world, source, blockposition3, (IBlockData) this.getBlockData().set(getDirection(enumdirection3), true), 2);
                                 } else if (flag1 && world.isEmpty(blockposition4) && a((IBlockAccess) world, blockposition.shift(enumdirection2), enumdirection3)) {
-                                    world.setTypeAndData(blockposition4, (IBlockData) this.getBlockData().set(getDirection(enumdirection3), true), 2);
+                                    CraftEventFactory.handleBlockSpreadEvent(world, source, blockposition4, (IBlockData) this.getBlockData().set(getDirection(enumdirection3), true), 2);
                                 } else if ((double) world.random.nextFloat() < 0.05D && a((IBlockAccess) world, blockposition2.up(), EnumDirection.UP)) {
-                                    world.setTypeAndData(blockposition2, (IBlockData) this.getBlockData().set(BlockVine.UP, true), 2);
+                                    CraftEventFactory.handleBlockSpreadEvent(world, source, blockposition2, (IBlockData) this.getBlockData().set(BlockVine.UP, true), 2);
                                 }
+                                // CraftBukkit end
                             }
                         } else if (a((IBlockAccess) world, blockposition2, enumdirection)) {
                             world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(getDirection(enumdirection), true), 2);
@@ -221,7 +227,7 @@ public class BlockVine extends Block {
                             }
 
                             if (this.canSpread(iblockdata3)) {
-                                world.setTypeAndData(blockposition1, iblockdata3, 2);
+                                CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition1, iblockdata3, 2); // CraftBukkit
                             }
 
                             return;
@@ -236,7 +242,7 @@ public class BlockVine extends Block {
                             IBlockData iblockdata5 = this.a(iblockdata, iblockdata4, random);
 
                             if (iblockdata4 != iblockdata5 && this.canSpread(iblockdata5)) {
-                                world.setTypeAndData(blockposition2, iblockdata5, 2);
+                                CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition2, iblockdata5, 2); // CraftBukkit
                             }
                         }
                     }

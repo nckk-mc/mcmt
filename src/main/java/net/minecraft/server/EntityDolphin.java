@@ -106,7 +106,7 @@ public class EntityDolphin extends EntityWaterAnimal {
         this.goalSelector.a(8, new EntityDolphin.d());
         this.goalSelector.a(8, new PathfinderGoalFollowBoat(this));
         this.goalSelector.a(9, new PathfinderGoalAvoidTarget<>(this, EntityGuardian.class, 8.0F, 1.0D, 1.0D));
-        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityGuardian.class})).a());
+        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityGuardian.class})).a(new Class[0])); // CraftBukkit - decompile error
     }
 
     @Override
@@ -178,6 +178,11 @@ public class EntityDolphin extends EntityWaterAnimal {
             ItemStack itemstack = entityitem.getItemStack();
 
             if (this.g(itemstack)) {
+                // CraftBukkit start - call EntityPickupItemEvent
+                if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityPickupItemEvent(this, entityitem, 0, false).isCancelled()) {
+                    return;
+                }
+                // CraftBukkit end
                 this.setSlot(EnumItemSlot.MAINHAND, itemstack);
                 this.dropChanceHand[EnumItemSlot.MAINHAND.b()] = 2.0F;
                 this.receive(entityitem, itemstack.getCount());
@@ -422,7 +427,7 @@ public class EntityDolphin extends EntityWaterAnimal {
 
         @Override
         public void c() {
-            this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100));
+            this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DOLPHIN); // CraftBukkit
         }
 
         @Override
@@ -441,7 +446,7 @@ public class EntityDolphin extends EntityWaterAnimal {
             }
 
             if (this.c.isSwimming() && this.c.world.random.nextInt(6) == 0) {
-                this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100));
+                this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DOLPHIN); // CraftBukkit
             }
 
         }

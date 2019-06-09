@@ -28,6 +28,11 @@ public class LootItemConditionRandomChanceWithLooting implements LootItemConditi
         if (entity instanceof EntityLiving) {
             i = EnchantmentManager.g((EntityLiving) entity);
         }
+        // CraftBukkit start - only use lootingModifier if set by Bukkit
+        if (loottableinfo.hasContextParameter(LootContextParameters.LOOTING_MOD)) {
+            i = loottableinfo.getContextParameter(LootContextParameters.LOOTING_MOD);
+        }
+        // CraftBukkit end
 
         return loottableinfo.b().nextFloat() < this.a + (float) i * this.b;
     }

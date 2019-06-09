@@ -65,7 +65,7 @@ public class TagRegistry implements IReloadListener {
         CompletableFuture<Map<MinecraftKey, Tag.a<Item>>> completablefuture1 = this.b.a(iresourcemanager, executor);
         CompletableFuture<Map<MinecraftKey, Tag.a<FluidType>>> completablefuture2 = this.c.a(iresourcemanager, executor);
         CompletableFuture<Map<MinecraftKey, Tag.a<EntityTypes<?>>>> completablefuture3 = this.d.a(iresourcemanager, executor);
-        CompletableFuture completablefuture4 = completablefuture.thenCombine(completablefuture1, Pair::of).thenCombine(completablefuture2.thenCombine(completablefuture3, Pair::of), (pair, pair1) -> {
+        CompletableFuture<TagRegistry.a> completablefuture4 = completablefuture.thenCombine(completablefuture1, Pair::of).thenCombine(completablefuture2.thenCombine(completablefuture3, Pair::of), (pair, pair1) -> { // CraftBukkit - decompile error
             return new TagRegistry.a((Map) pair.getFirst(), (Map) pair.getSecond(), (Map) pair1.getFirst(), (Map) pair1.getSecond());
         });
 
@@ -80,6 +80,12 @@ public class TagRegistry implements IReloadListener {
             TagsItem.a((Tags) this.b);
             TagsFluid.a((Tags) this.c);
             TagsEntity.a((Tags) this.d);
+            // CraftBukkit start
+            this.a.version++;
+            this.b.version++;
+            this.c.version++;
+            this.d.version++;
+            // CraftBukkit end
         }, executor1);
     }
 

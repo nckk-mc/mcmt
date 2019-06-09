@@ -7,6 +7,10 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+// CraftBukkit start
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+// CraftBukkit end
+
 public final class SpawnerCreature {
 
     private static final Logger LOGGER = LogManager.getLogger();
@@ -85,9 +89,12 @@ public final class SpawnerCreature {
                                                     entityinsentient.setPositionRotation((double) f, (double) k, (double) f1, world.random.nextFloat() * 360.0F, 0.0F);
                                                     if ((entityhuman.e((double) f, (double) k, (double) f1) <= 16384.0D || !entityinsentient.isTypeNotPersistent(entityhuman.e((double) f, (double) k, (double) f1))) && entityinsentient.a((GeneratorAccess) world, EnumMobSpawn.NATURAL) && entityinsentient.a((IWorldReader) world)) {
                                                         groupdataentity = entityinsentient.prepare(world, world.getDamageScaler(new BlockPosition(entityinsentient)), EnumMobSpawn.NATURAL, groupdataentity, (NBTTagCompound) null);
-                                                        ++i;
-                                                        ++i2;
-                                                        world.addEntity(entityinsentient);
+                                                        // CraftBukkit start
+                                                        if (world.addEntity(entityinsentient, SpawnReason.NATURAL)) {
+                                                            ++i;
+                                                            ++i2;
+                                                        }
+                                                        // CraftBukkit end
                                                         if (i >= entityinsentient.dC()) {
                                                             return;
                                                         }
@@ -210,7 +217,7 @@ public final class SpawnerCreature {
 
                                 if (entityinsentient.a(generatoraccess, EnumMobSpawn.CHUNK_GENERATION) && entityinsentient.a((IWorldReader) generatoraccess)) {
                                     groupdataentity = entityinsentient.prepare(generatoraccess, generatoraccess.getDamageScaler(new BlockPosition(entityinsentient)), EnumMobSpawn.CHUNK_GENERATION, groupdataentity, (NBTTagCompound) null);
-                                    generatoraccess.addEntity(entityinsentient);
+                                    generatoraccess.addEntity(entityinsentient, SpawnReason.CHUNK_GEN); // CraftBukkit
                                     flag = true;
                                 }
                             }

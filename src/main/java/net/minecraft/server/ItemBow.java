@@ -6,12 +6,16 @@ public class ItemBow extends ItemProjectileWeapon {
 
     public ItemBow(Item.Info item_info) {
         super(item_info);
+        // CraftBukkit start - obfuscator went a little crazy
+        /*
         this.a(new MinecraftKey("pull"), (itemstack, world, entityliving) -> {
             return entityliving == null ? 0.0F : (entityliving.dl().getItem() != Items.BOW ? 0.0F : (float) (itemstack.k() - entityliving.dm()) / 20.0F);
         });
         this.a(new MinecraftKey("pulling"), (itemstack, world, entityliving) -> {
             return entityliving != null && entityliving.isHandRaised() && entityliving.dl() == itemstack ? 1.0F : 0.0F;
         });
+        */
+        // CraftBukkit end
     }
 
     @Override
@@ -56,6 +60,13 @@ public class ItemBow extends ItemProjectileWeapon {
                         if (EnchantmentManager.getEnchantmentLevel(Enchantments.ARROW_FIRE, itemstack) > 0) {
                             entityarrow.setOnFire(100);
                         }
+                        // CraftBukkit start
+                        org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(entityhuman, itemstack, entityarrow, f);
+                        if (event.isCancelled()) {
+                            event.getProjectile().remove();
+                            return;
+                        }
+                        // CraftBukkit end
 
                         itemstack.damage(1, entityhuman, (entityhuman1) -> {
                             entityhuman1.d(entityhuman.getRaisedHand());
@@ -64,7 +75,16 @@ public class ItemBow extends ItemProjectileWeapon {
                             entityarrow.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                         }
 
-                        world.addEntity(entityarrow);
+                        // CraftBukkit start
+                        if (event.getProjectile() == entityarrow.getBukkitEntity()) {
+                            if (!world.addEntity(entityarrow)) {
+                                if (entityhuman instanceof EntityPlayer) {
+                                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
+                                }
+                                return;
+                            }
+                        }
+                        // CraftBukkit end
                     }
 
                     world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0F, 1.0F / (ItemBow.i.nextFloat() * 0.4F + 1.2F) + f * 0.5F);

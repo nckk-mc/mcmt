@@ -13,10 +13,14 @@ public class WorldProviderNormal extends WorldProvider {
         super(world, dimensionmanager);
     }
 
+    // CraftBukkit start
+    /*
     @Override
     public DimensionManager getDimensionManager() {
         return DimensionManager.OVERWORLD;
     }
+    */
+    // CraftBukkit end
 
     @Override
     public ChunkGenerator<? extends GeneratorSettingsDefault> getChunkGenerator() {

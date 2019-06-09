@@ -434,7 +434,8 @@ public class Block implements IMaterial {
     }
 
     public static List<ItemStack> getDrops(IBlockData iblockdata, WorldServer worldserver, BlockPosition blockposition, @Nullable TileEntity tileentity, Entity entity, ItemStack itemstack) {
-        LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder(worldserver)).a(worldserver.random).set(LootContextParameters.POSITION, blockposition).set(LootContextParameters.TOOL, itemstack).set(LootContextParameters.THIS_ENTITY, entity).setOptional(LootContextParameters.BLOCK_ENTITY, tileentity);
+        // CraftBukkit - make entity optional
+        LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder(worldserver)).a(worldserver.random).set(LootContextParameters.POSITION, blockposition).set(LootContextParameters.TOOL, itemstack).setOptional(LootContextParameters.THIS_ENTITY, entity).setOptional(LootContextParameters.BLOCK_ENTITY, tileentity);
 
         return iblockdata.a(loottableinfo_builder);
     }
@@ -488,7 +489,13 @@ public class Block implements IMaterial {
             EntityItem entityitem = new EntityItem(world, (double) blockposition.getX() + d0, (double) blockposition.getY() + d1, (double) blockposition.getZ() + d2, itemstack);
 
             entityitem.defaultPickupDelay();
-            world.addEntity(entityitem);
+            // CraftBukkit start
+            if (world.captureDrops != null) {
+                world.captureDrops.add(entityitem);
+            } else {
+                world.addEntity(entityitem);
+            }
+            // CraftBukkit end
         }
     }
 
@@ -684,6 +691,12 @@ public class Block implements IMaterial {
     public static boolean c(Block block) {
         return block == Blocks.DIRT || block == Blocks.COARSE_DIRT || block == Blocks.PODZOL;
     }
+
+    // CraftBukkit start
+    public int getExpDrop(IBlockData iblockdata, World world, BlockPosition blockposition, ItemStack itemstack) {
+        return 0;
+    }
+    // CraftBukkit end
 
     public static enum EnumRandomOffset {
 

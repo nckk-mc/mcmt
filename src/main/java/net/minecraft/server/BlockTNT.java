@@ -93,6 +93,11 @@ public class BlockTNT extends Block {
 
             if (entityarrow.isBurning()) {
                 BlockPosition blockposition = movingobjectpositionblock.getBlockPosition();
+                // CraftBukkit start
+                if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(entityarrow, blockposition, Blocks.AIR.getBlockData()).isCancelled()) {
+                    return;
+                }
+                // CraftBukkit end
 
                 a(world, blockposition, entity1 instanceof EntityLiving ? (EntityLiving) entity1 : null);
                 world.a(blockposition, false);

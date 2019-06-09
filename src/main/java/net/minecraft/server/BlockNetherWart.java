@@ -28,7 +28,7 @@ public class BlockNetherWart extends BlockPlant {
 
         if (i < 3 && random.nextInt(10) == 0) {
             iblockdata = (IBlockData) iblockdata.set(BlockNetherWart.AGE, i + 1);
-            world.setTypeAndData(blockposition, iblockdata, 2);
+            org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(world, blockposition, iblockdata, 2); // CraftBukkit
         }
 
         super.tick(iblockdata, world, blockposition, random);

@@ -1,6 +1,11 @@
 package net.minecraft.server;
 
 import com.google.common.collect.ImmutableMap;
+// CraftBukkit start
+import org.bukkit.craftbukkit.entity.CraftVillager;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.event.entity.VillagerCareerChangeEvent;
+// CraftBukkit end
 
 public class BehaviorCareer extends Behavior<EntityVillager> {
 
@@ -20,7 +25,14 @@ public class BehaviorCareer extends Behavior<EntityVillager> {
             IRegistry.VILLAGER_PROFESSION.d().filter((villagerprofession) -> {
                 return villagerprofession.b() == villageplacetype;
             }).findFirst().ifPresent((villagerprofession) -> {
-                entityvillager.setVillagerData(entityvillager.getVillagerData().withProfession(villagerprofession));
+                // CraftBukkit start - Fire VillagerCareerChangeEvent where Villager gets employed
+                VillagerCareerChangeEvent event = CraftEventFactory.callVillagerCareerChangeEvent(entityvillager, CraftVillager.nmsToBukkitProfession(villagerprofession), VillagerCareerChangeEvent.ChangeReason.EMPLOYED);
+                if (event.isCancelled()) {
+                    return;
+                }
+
+                entityvillager.setVillagerData(entityvillager.getVillagerData().withProfession(CraftVillager.bukkitToNmsProfession(event.getProfession())));
+                // CraftBukkit end
                 entityvillager.a(worldserver);
             });
         });

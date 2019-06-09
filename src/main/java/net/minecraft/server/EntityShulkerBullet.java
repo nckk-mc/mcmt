@@ -40,7 +40,28 @@ public class EntityShulkerBullet extends Entity {
         this.target = entity;
         this.dir = EnumDirection.UP;
         this.a(enumdirection_enumaxis);
+        projectileSource = (org.bukkit.entity.LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
     }
+
+    // CraftBukkit start
+    public EntityLiving getShooter() {
+        return this.shooter;
+    }
+
+    public void setShooter(EntityLiving e) {
+        this.shooter = e;
+    }
+
+    public Entity getTarget() {
+        return this.target;
+    }
+
+    public void setTarget(Entity e) {
+        this.target = e;
+        this.dir = EnumDirection.UP;
+        this.a(EnumDirection.EnumAxis.X);
+    }
+    // CraftBukkit end
 
     @Override
     public SoundCategory getSoundCategory() {
@@ -294,6 +315,7 @@ public class EntityShulkerBullet extends Entity {
     }
 
     protected void a(MovingObjectPosition movingobjectposition) {
+        org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // Craftbukkit - Call event
         if (movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
             Entity entity = ((MovingObjectPositionEntity) movingobjectposition).getEntity();
             boolean flag = entity.damageEntity(DamageSource.a(this, this.shooter).c(), 4.0F);
@@ -301,7 +323,7 @@ public class EntityShulkerBullet extends Entity {
             if (flag) {
                 this.a(this.shooter, entity);
                 if (entity instanceof EntityLiving) {
-                    ((EntityLiving) entity).addEffect(new MobEffect(MobEffects.LEVITATION, 200));
+                    ((EntityLiving) entity).addEffect(new MobEffect(MobEffects.LEVITATION, 200), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ATTACK); // CraftBukkit
                 }
             }
         } else {

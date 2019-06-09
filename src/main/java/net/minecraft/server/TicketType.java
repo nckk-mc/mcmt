@@ -19,6 +19,7 @@ public class TicketType<T> {
     public static final TicketType<BlockPosition2D> PORTAL = a("portal", Comparator.comparingLong(BlockPosition2D::b));
     public static final TicketType<Integer> POST_TELEPORT = a("post_teleport", Integer::compareTo, 5);
     public static final TicketType<ChunkCoordIntPair> UNKNOWN = a("unknown", Comparator.comparingLong(ChunkCoordIntPair::pair), 1);
+    public static final TicketType<Unit> PLUGIN = a("plugin", (a, b) -> 0); // CraftBukkit
 
     public static <T> TicketType<T> a(String s, Comparator<T> comparator) {
         return new TicketType<>(s, comparator, 0L);

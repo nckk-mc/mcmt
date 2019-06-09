@@ -36,6 +36,18 @@ public class DamageSource {
     private boolean E;
     private boolean F;
     public final String translationIndex;
+    // CraftBukkit start
+    private boolean sweep;
+
+    public boolean isSweep() {
+        return sweep;
+    }
+
+    public DamageSource sweep() {
+        this.sweep = true;
+        return this;
+    }
+    // CraftBukkit end
 
     public static DamageSource mobAttack(EntityLiving entityliving) {
         return new EntityDamageSource("mob", entityliving);

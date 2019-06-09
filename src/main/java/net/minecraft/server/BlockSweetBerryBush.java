@@ -1,6 +1,10 @@
 package net.minecraft.server;
 
 import java.util.Random;
+// CraftBukkit start
+import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+// CraftBukkit end
 
 public class BlockSweetBerryBush extends BlockPlant implements IBlockFragilePlantElement {
 
@@ -24,7 +28,7 @@ public class BlockSweetBerryBush extends BlockPlant implements IBlockFragilePlan
         int i = (Integer) iblockdata.get(BlockSweetBerryBush.a);
 
         if (i < 3 && random.nextInt(5) == 0 && world.getLightLevel(blockposition.up(), 0) >= 9) {
-            world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockSweetBerryBush.a, i + 1), 2);
+            CraftEventFactory.handleBlockGrowEvent(world, blockposition, (IBlockData) iblockdata.set(BlockSweetBerryBush.a, i + 1), 2); // CraftBukkit
         }
 
     }
@@ -38,7 +42,9 @@ public class BlockSweetBerryBush extends BlockPlant implements IBlockFragilePlan
                 double d1 = Math.abs(entity.locZ - entity.J);
 
                 if (d0 >= 0.003000000026077032D || d1 >= 0.003000000026077032D) {
+                    CraftEventFactory.blockDamage = CraftBlock.at(world, blockposition); // CraftBukkit
                     entity.damageEntity(DamageSource.SWEET_BERRY_BUSH, 1.0F);
+                    CraftEventFactory.blockDamage = null; // CraftBukkit
                 }
             }
 

@@ -258,6 +258,7 @@ public class PortalTravelAgent {
             l5 = -l5;
         }
 
+        org.bukkit.craftbukkit.util.BlockStateListPopulator blockList = new org.bukkit.craftbukkit.util.BlockStateListPopulator(this.world); // CraftBukkit - Use BlockStateListPopulator
         if (d0 < 0.0D) {
             i1 = MathHelper.clamp(i1, 70, this.world.getHeight() - 10);
             j5 = i1;
@@ -271,7 +272,7 @@ public class PortalTravelAgent {
                         boolean flag1 = l2 < 0;
 
                         blockposition_mutableblockposition.d(j3, l3, i4);
-                        this.world.setTypeUpdate(blockposition_mutableblockposition, flag1 ? Blocks.OBSIDIAN.getBlockData() : Blocks.AIR.getBlockData());
+                        blockList.setTypeAndData(blockposition_mutableblockposition, flag1 ? Blocks.OBSIDIAN.getBlockData() : Blocks.AIR.getBlockData(), 3); // CraftBukkit
                     }
                 }
             }
@@ -281,7 +282,7 @@ public class PortalTravelAgent {
             for (i3 = -1; i3 < 4; ++i3) {
                 if (k2 == -1 || k2 == 2 || i3 == -1 || i3 == 3) {
                     blockposition_mutableblockposition.d(i5 + k2 * k5, j5 + i3, j2 + k2 * l5);
-                    this.world.setTypeAndData(blockposition_mutableblockposition, Blocks.OBSIDIAN.getBlockData(), 3);
+                    blockList.setTypeAndData(blockposition_mutableblockposition, Blocks.OBSIDIAN.getBlockData(), 3); // CraftBukkit
                 }
             }
         }
@@ -291,10 +292,19 @@ public class PortalTravelAgent {
         for (i3 = 0; i3 < 2; ++i3) {
             for (l2 = 0; l2 < 3; ++l2) {
                 blockposition_mutableblockposition.d(i5 + i3 * k5, j5 + l2, j2 + i3 * l5);
-                this.world.setTypeAndData(blockposition_mutableblockposition, iblockdata, 18);
+                blockList.setTypeAndData(blockposition_mutableblockposition, iblockdata, 18); // CraftBukkit
             }
         }
 
+        // CraftBukkit start
+        org.bukkit.World bworld = this.world.getWorld();
+        org.bukkit.event.world.PortalCreateEvent event = new org.bukkit.event.world.PortalCreateEvent((java.util.List<org.bukkit.block.BlockState>) (java.util.List) blockList.getList(), bworld, entity.getBukkitEntity(), org.bukkit.event.world.PortalCreateEvent.CreateReason.NETHER_PAIR);
+
+        this.world.getServer().getPluginManager().callEvent(event);
+        if (!event.isCancelled()) {
+            blockList.updateList();
+        }
+        // CraftBukkit end
         return true;
     }
 

@@ -2,6 +2,11 @@ package net.minecraft.server;
 
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.event.entity.EntityTransformEvent;
+// CraftBukkit end
+
 public class EntityPig extends EntityAnimal {
 
     private static final DataWatcherObject<Boolean> bz = DataWatcher.a(EntityPig.class, DataWatcherRegistry.i);
@@ -163,7 +168,13 @@ public class EntityPig extends EntityAnimal {
             entitypigzombie.setCustomNameVisible(this.getCustomNameVisible());
         }
 
-        this.world.addEntity(entitypigzombie);
+        // CraftBukkit start
+        if (CraftEventFactory.callPigZapEvent(this, entitylightning, entitypigzombie).isCancelled()) {
+            return;
+        }
+        // CraftBukkit - added a reason for spawning this creature
+        this.world.addEntity(entitypigzombie, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING);
+        // CraftBukkit end
         this.die();
     }
 

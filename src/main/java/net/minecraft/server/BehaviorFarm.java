@@ -27,7 +27,7 @@ public class BehaviorFarm extends Behavior<EntityVillager> {
         } else if (entityvillager.getVillagerData().getProfession() != VillagerProfession.FARMER) {
             return false;
         } else {
-            Set<BlockPosition> set = (Set) ((List) entityvillager.getBehaviorController().getMemory(MemoryModuleType.SECONDARY_JOB_SITE).get()).stream().map(GlobalPos::getBlockPosition).collect(Collectors.toSet());
+            Set<BlockPosition> set = (Set) (entityvillager.getBehaviorController().getMemory(MemoryModuleType.SECONDARY_JOB_SITE).get()).stream().map(GlobalPos::getBlockPosition).collect(Collectors.toSet()); // CraftBukkit - decompile error
             BlockPosition blockposition = new BlockPosition(entityvillager);
             Stream stream = ImmutableList.of(blockposition.down(), blockposition.south(), blockposition.north(), blockposition.east(), blockposition.west()).stream();
 
@@ -57,8 +57,8 @@ public class BehaviorFarm extends Behavior<EntityVillager> {
 
     protected void a(WorldServer worldserver, EntityVillager entityvillager, long i) {
         if (i > this.d && this.a != null) {
-            entityvillager.getBehaviorController().setMemory(MemoryModuleType.LOOK_TARGET, (Object) (new BehaviorTarget(this.a)));
-            entityvillager.getBehaviorController().setMemory(MemoryModuleType.WALK_TARGET, (Object) (new MemoryTarget(new BehaviorTarget(this.a), 0.5F, 1)));
+            entityvillager.getBehaviorController().setMemory(MemoryModuleType.LOOK_TARGET, (new BehaviorTarget(this.a))); // CraftBukkit - decompile error
+            entityvillager.getBehaviorController().setMemory(MemoryModuleType.WALK_TARGET, (new MemoryTarget(new BehaviorTarget(this.a), 0.5F, 1))); // CraftBukkit - decompile error
         }
 
     }
@@ -76,7 +76,11 @@ public class BehaviorFarm extends Behavior<EntityVillager> {
             Block block = iblockdata.getBlock();
 
             if (block instanceof BlockCrops && ((BlockCrops) block).isRipe(iblockdata) && this.c) {
-                worldserver.b(this.a, true);
+                // CraftBukkit start
+                if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(entityvillager, this.a, Blocks.AIR.getBlockData()).isCancelled()) {
+                    worldserver.b(this.a, true);
+                }
+                // CraftBukkit end
             } else if (iblockdata.isAir() && this.b) {
                 InventorySubcontainer inventorysubcontainer = entityvillager.getInventory();
 
@@ -85,19 +89,28 @@ public class BehaviorFarm extends Behavior<EntityVillager> {
                     boolean flag = false;
 
                     if (!itemstack.isEmpty()) {
+                        // CraftBukkit start
+                        Block planted = null;
                         if (itemstack.getItem() == Items.WHEAT_SEEDS) {
-                            worldserver.setTypeAndData(this.a, Blocks.WHEAT.getBlockData(), 3);
+                            planted = Blocks.WHEAT;
                             flag = true;
                         } else if (itemstack.getItem() == Items.POTATO) {
-                            worldserver.setTypeAndData(this.a, Blocks.POTATOES.getBlockData(), 3);
+                            planted = Blocks.POTATOES;
                             flag = true;
                         } else if (itemstack.getItem() == Items.CARROT) {
-                            worldserver.setTypeAndData(this.a, Blocks.CARROTS.getBlockData(), 3);
+                            planted = Blocks.CARROTS;
                             flag = true;
                         } else if (itemstack.getItem() == Items.BEETROOT_SEEDS) {
-                            worldserver.setTypeAndData(this.a, Blocks.BEETROOTS.getBlockData(), 3);
+                            planted = Blocks.BEETROOTS;
                             flag = true;
                         }
+
+                        if (planted != null && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(entityvillager, this.a, planted.getBlockData()).isCancelled()) {
+                            worldserver.setTypeAndData(this.a, planted.getBlockData(), 3);
+                        } else {
+                            flag = false;
+                        }
+                        // CraftBukkit end
                     }
 
                     if (flag) {

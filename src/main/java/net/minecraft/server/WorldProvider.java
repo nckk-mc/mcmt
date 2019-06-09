@@ -76,5 +76,5 @@ public abstract class WorldProvider {
 
     public abstract boolean canRespawn();
 
-    public abstract DimensionManager getDimensionManager();
+    public DimensionManager getDimensionManager() { return this.f; } // CraftBukkit
 }

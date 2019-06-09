@@ -8,9 +8,11 @@ import javax.annotation.Nullable;
 
 public class DimensionManager implements MinecraftSerializable {
 
-    public static final DimensionManager OVERWORLD = register("overworld", new DimensionManager(1, "", "", WorldProviderNormal::new, true));
-    public static final DimensionManager NETHER = register("the_nether", new DimensionManager(0, "_nether", "DIM-1", WorldProviderHell::new, false));
-    public static final DimensionManager THE_END = register("the_end", new DimensionManager(2, "_end", "DIM1", WorldProviderTheEnd::new, false));
+    // CraftBukkit start
+    public static final DimensionManager OVERWORLD = register("overworld", new DimensionManager(1, "", "", WorldProviderNormal::new, true, null));
+    public static final DimensionManager NETHER = register("the_nether", new DimensionManager(0, "_nether", "DIM-1", WorldProviderHell::new, false, null));
+    public static final DimensionManager THE_END = register("the_end", new DimensionManager(2, "_end", "DIM1", WorldProviderTheEnd::new, false, null));
+    // CraftBukkit end
     private final int id;
     private final String suffix;
     public final String folder;
@@ -21,12 +23,14 @@ public class DimensionManager implements MinecraftSerializable {
         return (DimensionManager) IRegistry.a(IRegistry.DIMENSION_TYPE, dimensionmanager.id, s, dimensionmanager);
     }
 
-    public DimensionManager(int i, String s, String s1, BiFunction<World, DimensionManager, ? extends WorldProvider> bifunction, boolean flag) {
+    // CraftBukkit - add type
+    public DimensionManager(int i, String s, String s1, BiFunction<World, DimensionManager, ? extends WorldProvider> bifunction, boolean flag, DimensionManager type) {
         this.id = i;
         this.suffix = s;
         this.folder = s1;
         this.providerFactory = bifunction;
         this.hasSkyLight = flag;
+        this.type = type; // CraftBukkit
     }
 
     public static DimensionManager a(Dynamic<?> dynamic) {
@@ -80,4 +84,12 @@ public class DimensionManager implements MinecraftSerializable {
     public <T> T a(DynamicOps<T> dynamicops) {
         return dynamicops.createString(IRegistry.DIMENSION_TYPE.getKey(this).toString());
     }
+
+    // CraftBukkit start
+    private final DimensionManager type;
+
+    public DimensionManager getType() {
+        return (type == null) ? this : type;
+    }
+    // CraftBukkit end
 }

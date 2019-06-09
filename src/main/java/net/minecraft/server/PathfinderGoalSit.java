@@ -20,7 +20,7 @@ public class PathfinderGoalSit extends PathfinderGoal {
     @Override
     public boolean a() {
         if (!this.entity.isTamed()) {
-            return false;
+            return this.willSit && this.entity.getGoalTarget() == null; // CraftBukkit - Allow sitting for wild animals
         } else if (this.entity.au()) {
             return false;
         } else if (!this.entity.onGround) {

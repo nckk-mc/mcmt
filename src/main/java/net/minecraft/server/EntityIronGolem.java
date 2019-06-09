@@ -52,7 +52,7 @@ public class EntityIronGolem extends EntityGolem {
     @Override
     protected void D(Entity entity) {
         if (entity instanceof IMonster && !(entity instanceof EntityCreeper) && this.getRandom().nextInt(20) == 0) {
-            this.setGoalTarget((EntityLiving) entity);
+            this.setGoalTarget((EntityLiving) entity, org.bukkit.event.entity.EntityTargetLivingEntityEvent.TargetReason.COLLISION, true); // CraftBukkit - set reason
         }
 
         super.D(entity);

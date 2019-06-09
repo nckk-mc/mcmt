@@ -1,18 +1,36 @@
 package net.minecraft.server;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+// CraftBukkit end
+
 public class ContainerPlayer extends ContainerRecipeBook<InventoryCrafting> {
 
     private static final String[] d = new String[]{"item/empty_armor_slot_boots", "item/empty_armor_slot_leggings", "item/empty_armor_slot_chestplate", "item/empty_armor_slot_helmet"};
     private static final EnumItemSlot[] e = new EnumItemSlot[]{EnumItemSlot.HEAD, EnumItemSlot.CHEST, EnumItemSlot.LEGS, EnumItemSlot.FEET};
-    private final InventoryCrafting craftInventory = new InventoryCrafting(this, 2, 2);
-    private final InventoryCraftResult resultInventory = new InventoryCraftResult();
+    // CraftBukkit start
+    private final InventoryCrafting craftInventory;
+    private final InventoryCraftResult resultInventory;
+    // CraftBukkit end
     public final boolean c;
     private final EntityHuman owner;
+    // CraftBukkit start
+    private CraftInventoryView bukkitEntity = null;
+    private PlayerInventory player;
+    // CraftBukkit end
 
     public ContainerPlayer(PlayerInventory playerinventory, boolean flag, EntityHuman entityhuman) {
         super((Containers) null, 0);
         this.c = flag;
         this.owner = entityhuman;
+        // CraftBukkit start
+        this.resultInventory = new InventoryCraftResult(); // CraftBukkit - moved to before InventoryCrafting construction
+        this.craftInventory = new InventoryCrafting(this, 2, 2, playerinventory.player); // CraftBukkit - pass player
+        this.craftInventory.resultInventory = this.resultInventory; // CraftBukkit - let InventoryCrafting know about its result slot
+        this.player = playerinventory; // CraftBukkit - save player
+        setTitle(new ChatMessage("container.crafting")); // SPIGOT-4722: Allocate title for player inventory
+        // CraftBukkit end
         this.a((Slot) (new SlotResult(playerinventory.player, this.craftInventory, this.resultInventory, 0, 154, 28)));
 
         int i;
@@ -79,7 +97,7 @@ public class ContainerPlayer extends ContainerRecipeBook<InventoryCrafting> {
 
     @Override
     public void a(IInventory iinventory) {
-        ContainerWorkbench.a(this.windowId, this.owner.world, this.owner, this.craftInventory, this.resultInventory);
+        ContainerWorkbench.a(this.windowId, this.owner.world, this.owner, this.craftInventory, this.resultInventory, this); // CraftBukkit
     }
 
     @Override
@@ -182,4 +200,17 @@ public class ContainerPlayer extends ContainerRecipeBook<InventoryCrafting> {
     public int h() {
         return this.craftInventory.f();
     }
+
+    // CraftBukkit start
+    @Override
+    public CraftInventoryView getBukkitView() {
+        if (bukkitEntity != null) {
+            return bukkitEntity;
+        }
+
+        CraftInventoryCrafting inventory = new CraftInventoryCrafting(this.craftInventory, this.resultInventory);
+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
+        return bukkitEntity;
+    }
+    // CraftBukkit end
 }

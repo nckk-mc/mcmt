@@ -43,6 +43,11 @@ public class EntityChicken extends EntityAnimal {
 
     @Override
     public void movementTick() {
+        // CraftBukkit start
+        if (this.isChickenJockey()) {
+            this.persistent = !this.isTypeNotPersistent(0);
+        }
+        // CraftBukkit end
         super.movementTick();
         this.bD = this.bz;
         this.bB = this.bA;
@@ -62,7 +67,9 @@ public class EntityChicken extends EntityAnimal {
         this.bz += this.bE * 2.0F;
         if (!this.world.isClientSide && this.isAlive() && !this.isBaby() && !this.isChickenJockey() && --this.eggLayTime <= 0) {
             this.a(SoundEffects.ENTITY_CHICKEN_EGG, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+            this.forceDrops = true; // CraftBukkit
             this.a((IMaterial) Items.EGG);
+            this.forceDrops = false; // CraftBukkit
             this.eggLayTime = this.random.nextInt(6000) + 6000;
         }
 

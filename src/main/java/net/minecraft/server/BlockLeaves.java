@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import java.util.Random;
 
+import org.bukkit.event.block.LeavesDecayEvent; // CraftBukkit
+
 public class BlockLeaves extends Block {
 
     public static final BlockStateInteger DISTANCE = BlockProperties.ah;
@@ -21,6 +23,14 @@ public class BlockLeaves extends Block {
     @Override
     public void c(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (!(Boolean) iblockdata.get(BlockLeaves.PERSISTENT) && (Integer) iblockdata.get(BlockLeaves.DISTANCE) == 7) {
+            // CraftBukkit start
+            LeavesDecayEvent event = new LeavesDecayEvent(world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
+            world.getServer().getPluginManager().callEvent(event);
+
+            if (event.isCancelled() || world.getType(blockposition).getBlock() != this) {
+                return;
+            }
+            // CraftBukkit end
             c(iblockdata, world, blockposition);
             world.a(blockposition, false);
         }

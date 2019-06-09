@@ -8,6 +8,7 @@ public abstract class EntityAnimal extends EntityAgeable {
     protected Block bC;
     public int loveTicks;
     public UUID breedCause;
+    public ItemStack breedItem; // CraftBukkit - Add breedItem variable
 
     protected EntityAnimal(EntityTypes<? extends EntityAnimal> entitytypes, World world) {
         super(entitytypes, world);
@@ -43,6 +44,9 @@ public abstract class EntityAnimal extends EntityAgeable {
 
     }
 
+    /* CraftBukkit start
+    // Function disabled as it has no special function anymore after
+    // setSitting is disabled.
     @Override
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable(damagesource)) {
@@ -52,6 +56,7 @@ public abstract class EntityAnimal extends EntityAgeable {
             return super.damageEntity(damagesource, f);
         }
     }
+    // CraftBukkit end */
 
     @Override
     public float a(BlockPosition blockposition, IWorldReader iworldreader) {
@@ -146,6 +151,7 @@ public abstract class EntityAnimal extends EntityAgeable {
         if (entityhuman != null) {
             this.breedCause = entityhuman.getUniqueID();
         }
+        this.breedItem = entityhuman.inventory.getItemInHand(); // CraftBukkit
 
         this.world.broadcastEntityEffect(this, (byte) 18);
     }

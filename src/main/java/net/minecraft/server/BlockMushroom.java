@@ -3,6 +3,10 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.Random;
 
+// CraftBukkit start
+import org.bukkit.TreeType;
+// CraftBukkit end
+
 public class BlockMushroom extends BlockPlant implements IBlockFragilePlantElement {
 
     protected static final VoxelShape a = Block.a(5.0D, 0.0D, 5.0D, 11.0D, 6.0D, 11.0D);
@@ -45,7 +49,7 @@ public class BlockMushroom extends BlockPlant implements IBlockFragilePlantEleme
             }
 
             if (world.isEmpty(blockposition2) && iblockdata.canPlace(world, blockposition2)) {
-                world.setTypeAndData(blockposition2, iblockdata, 2);
+                org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition2, iblockdata, 2); // CraftBukkit
             }
         }
 
@@ -70,8 +74,10 @@ public class BlockMushroom extends BlockPlant implements IBlockFragilePlantEleme
         WorldGenerator<WorldGenHugeMushroomConfiguration> worldgenerator = null;
 
         if (this == Blocks.BROWN_MUSHROOM) {
+            BlockSapling.treeType = TreeType.BROWN_MUSHROOM; // CraftBukkit
             worldgenerator = WorldGenerator.HUGE_BROWN_MUSHROOM;
         } else if (this == Blocks.RED_MUSHROOM) {
+            BlockSapling.treeType = TreeType.RED_MUSHROOM; // CraftBukkit
             worldgenerator = WorldGenerator.HUGE_RED_MUSHROOM;
         }
 

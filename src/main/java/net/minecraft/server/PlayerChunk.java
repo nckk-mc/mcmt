@@ -43,7 +43,7 @@ public class PlayerChunk {
         this.fullChunkFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
         this.tickingFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
         this.entityTickingFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
-        this.chunkSave = CompletableFuture.completedFuture((Object) null);
+        this.chunkSave = CompletableFuture.completedFuture(null); // CraftBukkit - decompile error
         this.dirtyBlocks = new short[64];
         this.location = chunkcoordintpair;
         this.lightEngine = lightengine;
@@ -54,6 +54,14 @@ public class PlayerChunk {
         this.n = this.oldTicketLevel;
         this.a(i);
     }
+
+    // CraftBukkit start
+    public Chunk getFullChunk() {
+        CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> statusFuture = this.getStatusFutureUnchecked(ChunkStatus.FULL);
+        Either<IChunkAccess, PlayerChunk.Failure> either = (Either<IChunkAccess, PlayerChunk.Failure>) statusFuture.getNow(null);
+        return either == null ? null : (Chunk) either.left().orElse(null);
+    }
+    // CraftBukkit end
 
     public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> getStatusFutureUnchecked(ChunkStatus chunkstatus) {
         CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.statusFutures.get(chunkstatus.c());
@@ -72,9 +80,9 @@ public class PlayerChunk {
     @Nullable
     public Chunk getChunk() {
         CompletableFuture<Either<Chunk, PlayerChunk.Failure>> completablefuture = this.a();
-        Either<Chunk, PlayerChunk.Failure> either = (Either) completablefuture.getNow((Object) null);
+        Either<Chunk, PlayerChunk.Failure> either = (Either) completablefuture.getNow(null); // CraftBukkit - decompile error
 
-        return either == null ? null : (Chunk) either.left().orElse((Object) null);
+        return either == null ? null : (Chunk) either.left().orElse(null); // CraftBukkit - decompile error
     }
 
     public CompletableFuture<IChunkAccess> getChunkSave() {
@@ -197,7 +205,7 @@ public class PlayerChunk {
         CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.statusFutures.get(i);
 
         if (completablefuture != null) {
-            Either<IChunkAccess, PlayerChunk.Failure> either = (Either) completablefuture.getNow((Object) null);
+            Either<IChunkAccess, PlayerChunk.Failure> either = (Either) completablefuture.getNow(null); // CraftBukkit - decompile error
 
             if (either == null || either.left().isPresent()) {
                 return completablefuture;
@@ -252,6 +260,21 @@ public class PlayerChunk {
         boolean flag1 = this.ticketLevel <= PlayerChunkMap.GOLDEN_TICKET;
         PlayerChunk.State playerchunk_state = getChunkState(this.oldTicketLevel);
         PlayerChunk.State playerchunk_state1 = getChunkState(this.ticketLevel);
+        // CraftBukkit start
+        // ChunkUnloadEvent: Called before the chunk is unloaded: isChunkLoaded is still true and chunk can still be modified by plugins.
+        if (playerchunk_state.isAtLeast(PlayerChunk.State.BORDER) && !playerchunk_state1.isAtLeast(PlayerChunk.State.BORDER)) {
+            this.getStatusFutureUnchecked(ChunkStatus.FULL).thenAccept((either) -> {
+                either.ifLeft((chunkAccess) -> {
+                    Chunk chunk = (Chunk) chunkAccess;
+                    // Minecraft will apply the chunks tick lists to the world once the chunk got loaded, and then store the tick
+                    // lists again inside the chunk once the chunk becomes inaccessible and set the chunk's needsSaving flag.
+                    // These actions may however happen deferred, so we manually set the needsSaving flag already here.
+                    chunk.setNeedsSaving(true);
+                    chunk.unloadCallback();
+                });
+            });
+        }
+        // CraftBukkit end
         CompletableFuture completablefuture;
 
         if (flag) {
@@ -283,7 +306,7 @@ public class PlayerChunk {
         if (flag2 && !flag3) {
             completablefuture = this.fullChunkFuture;
             this.fullChunkFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
-            this.a(completablefuture.thenApply((either1) -> {
+            this.a(((CompletableFuture<Either<Chunk, PlayerChunk.Failure>>) completablefuture).thenApply((either1) -> { // CraftBukkit - decompile error
                 playerchunkmap.getClass();
                 return either1.ifLeft(playerchunkmap::a);
             }));
@@ -321,6 +344,17 @@ public class PlayerChunk {
 
         this.w.a(this.location, this::j, this.ticketLevel, this::d);
         this.oldTicketLevel = this.ticketLevel;
+        // CraftBukkit start
+        // ChunkLoadEvent: Called after the chunk is loaded: isChunkLoaded returns true and chunk is ready to be modified by plugins.
+        if (!playerchunk_state.isAtLeast(PlayerChunk.State.BORDER) && playerchunk_state1.isAtLeast(PlayerChunk.State.BORDER)) {
+            this.getStatusFutureUnchecked(ChunkStatus.FULL).thenAccept((either) -> {
+                either.ifLeft((chunkAccess) -> {
+                    Chunk chunk = (Chunk) chunkAccess;
+                    chunk.loadCallback();
+                });
+            });
+        }
+        // CraftBukkit end
     }
 
     public static ChunkStatus getChunkStatus(int i) {

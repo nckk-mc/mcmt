@@ -108,6 +108,11 @@ public class EntityItemFrame extends EntityHanging {
             return false;
         } else if (!damagesource.isExplosion() && !this.getItem().isEmpty()) {
             if (!this.world.isClientSide) {
+                // CraftBukkit start - fire EntityDamageEvent
+                if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f, false) || this.dead) {
+                    return true;
+                }
+                // CraftBukkit end
                 this.b(damagesource.getEntity(), false);
                 this.a(SoundEffects.ENTITY_ITEM_FRAME_REMOVE_ITEM, 1.0F, 1.0F);
             }
@@ -193,6 +198,12 @@ public class EntityItemFrame extends EntityHanging {
     }
 
     public void setItem(ItemStack itemstack, boolean flag) {
+        // CraftBukkit start
+        this.setItem(itemstack, flag, true);
+    }
+
+    public void setItem(ItemStack itemstack, boolean flag, boolean playSound) {
+        // CraftBukkit end
         if (!itemstack.isEmpty()) {
             itemstack = itemstack.cloneItemStack();
             itemstack.setCount(1);
@@ -200,7 +211,7 @@ public class EntityItemFrame extends EntityHanging {
         }
 
         this.getDataWatcher().set(EntityItemFrame.ITEM, itemstack);
-        if (!itemstack.isEmpty()) {
+        if (!itemstack.isEmpty() && playSound) { // CraftBukkit
             this.a(SoundEffects.ENTITY_ITEM_FRAME_ADD_ITEM, 1.0F, 1.0F);
         }
 

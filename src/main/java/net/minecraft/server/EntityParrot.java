@@ -21,7 +21,7 @@ public class EntityParrot extends EntityPerchable implements EntityBird {
     };
     private static final Item bK = Items.COOKIE;
     private static final Set<Item> bL = Sets.newHashSet(new Item[]{Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS});
-    private static final Map<EntityTypes<?>, SoundEffect> bM = (Map) SystemUtils.a((Object) Maps.newHashMap(), (hashmap) -> {
+    private static final Map<EntityTypes<?>, SoundEffect> bM = (Map) SystemUtils.a(Maps.newHashMap(), (hashmap) -> { // CraftBukkit - decompile error
         hashmap.put(EntityTypes.BLAZE, SoundEffects.ENTITY_PARROT_IMITATE_BLAZE);
         hashmap.put(EntityTypes.CAVE_SPIDER, SoundEffects.ENTITY_PARROT_IMITATE_SPIDER);
         hashmap.put(EntityTypes.CREEPER, SoundEffects.ENTITY_PARROT_IMITATE_CREEPER);
@@ -180,7 +180,7 @@ public class EntityParrot extends EntityPerchable implements EntityBird {
             }
 
             if (!this.world.isClientSide) {
-                if (this.random.nextInt(10) == 0) {
+                if (this.random.nextInt(10) == 0 && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTameEvent(this, entityhuman).isCancelled()) { // CraftBukkit
                     this.tame(entityhuman);
                     this.r(true);
                     this.world.broadcastEntityEffect(this, (byte) 7);
@@ -196,7 +196,7 @@ public class EntityParrot extends EntityPerchable implements EntityBird {
                 itemstack.subtract(1);
             }
 
-            this.addEffect(new MobEffect(MobEffects.POISON, 900));
+            this.addEffect(new MobEffect(MobEffects.POISON, 900), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.FOOD); // CraftBukkit
             if (entityhuman.isCreative() || !this.isInvulnerable()) {
                 this.damageEntity(DamageSource.playerAttack(entityhuman), Float.MAX_VALUE);
             }
@@ -334,7 +334,8 @@ public class EntityParrot extends EntityPerchable implements EntityBird {
             return false;
         } else {
             if (this.goalSit != null) {
-                this.goalSit.setSitting(false);
+                // CraftBukkit - moved into EntityLiving.d(DamageSource, float)
+                // this.goalSit.setSitting(false);
             }
 
             return super.damageEntity(damagesource, f);

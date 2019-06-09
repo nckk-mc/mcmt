@@ -60,10 +60,14 @@ public class WorldProviderTheEnd extends WorldProvider {
         return this.a(new ChunkCoordIntPair(i >> 4, j >> 4), flag);
     }
 
+    // CraftBukkit start
+    /*
     @Override
     public DimensionManager getDimensionManager() {
         return DimensionManager.THE_END;
     }
+    */
+    // CraftBukkit end
 
     @Override
     public void k() {

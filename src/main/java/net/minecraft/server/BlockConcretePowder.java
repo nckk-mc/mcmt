@@ -1,5 +1,10 @@
 package net.minecraft.server;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.block.CraftBlockState;
+import org.bukkit.event.block.BlockFormEvent;
+// CraftBukkit end
+
 public class BlockConcretePowder extends BlockFalling {
 
     private final IBlockData a;
@@ -12,7 +17,7 @@ public class BlockConcretePowder extends BlockFalling {
     @Override
     public void a(World world, BlockPosition blockposition, IBlockData iblockdata, IBlockData iblockdata1) {
         if (canHarden(iblockdata1)) {
-            world.setTypeAndData(blockposition, this.a, 3);
+            org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, blockposition, this.a, 3); // CraftBukkit
         }
 
     }
@@ -22,7 +27,24 @@ public class BlockConcretePowder extends BlockFalling {
         World world = blockactioncontext.getWorld();
         BlockPosition blockposition = blockactioncontext.getClickPosition();
 
-        return !canHarden(world.getType(blockposition)) && !a((IBlockAccess) world, blockposition) ? super.getPlacedState(blockactioncontext) : this.a;
+        // CraftBukkit start
+        if (!canHarden(world.getType(blockposition)) && !a((IBlockAccess) world, blockposition)) {
+            return super.getPlacedState(blockactioncontext);
+        }
+
+        // TODO: An event factory call for methods like this
+        CraftBlockState blockState = CraftBlockState.getBlockState(world, blockposition);
+        blockState.setData(this.a);
+
+        BlockFormEvent event = new BlockFormEvent(blockState.getBlock(), blockState);
+        world.getMinecraftServer().server.getPluginManager().callEvent(event);
+
+        if (!event.isCancelled()) {
+            return blockState.getHandle();
+        }
+
+        return super.getPlacedState(blockactioncontext);
+        // CraftBukkit end
     }
 
     private static boolean a(IBlockAccess iblockaccess, BlockPosition blockposition) {
@@ -54,6 +76,20 @@ public class BlockConcretePowder extends BlockFalling {
 
     @Override
     public IBlockData updateState(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
-        return a((IBlockAccess) generatoraccess, blockposition) ? this.a : super.updateState(iblockdata, enumdirection, iblockdata1, generatoraccess, blockposition, blockposition1);
+        // CraftBukkit start
+        if (a((IBlockAccess) generatoraccess, blockposition)) {
+            CraftBlockState blockState = CraftBlockState.getBlockState(generatoraccess, blockposition);
+            blockState.setData(this.a);
+
+            BlockFormEvent event = new BlockFormEvent(blockState.getBlock(), blockState);
+            generatoraccess.getMinecraftWorld().getMinecraftServer().server.getPluginManager().callEvent(event);
+
+            if (!event.isCancelled()) {
+                return blockState.getHandle();
+            }
+        }
+
+        return super.updateState(iblockdata, enumdirection, iblockdata1, generatoraccess, blockposition, blockposition1);
+        // CraftBukkit end
     }
 }

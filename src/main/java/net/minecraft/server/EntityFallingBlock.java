@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public class EntityFallingBlock extends Entity {
 
     private IBlockData block;
@@ -73,7 +75,7 @@ public class EntityFallingBlock extends Entity {
 
             if (this.ticksLived++ == 0) {
                 blockposition = new BlockPosition(this);
-                if (this.world.getType(blockposition).getBlock() == block) {
+                if (this.world.getType(blockposition).getBlock() == block && !CraftEventFactory.callEntityChangeBlockEvent(this, blockposition, Blocks.AIR.getBlockData()).isCancelled()) {
                     this.world.a(blockposition, false);
                 } else if (!this.world.isClientSide) {
                     this.die();
@@ -125,6 +127,11 @@ public class EntityFallingBlock extends Entity {
                                     this.block = (IBlockData) this.block.set(BlockProperties.C, true);
                                 }
 
+                                // CraftBukkit start
+                                if (CraftEventFactory.callEntityChangeBlockEvent(this, blockposition, this.block).isCancelled()) {
+                                    return;
+                                }
+                                // CraftBukkit end
                                 if (this.world.setTypeAndData(blockposition, this.block, 3)) {
                                     if (block instanceof BlockFalling) {
                                         ((BlockFalling) block).a(this.world, blockposition, this.block, iblockdata);
@@ -179,7 +186,9 @@ public class EntityFallingBlock extends Entity {
                 while (iterator.hasNext()) {
                     Entity entity = (Entity) iterator.next();
 
+                    CraftEventFactory.entityDamage = this; // CraftBukkit
                     entity.damageEntity(damagesource, (float) Math.min(MathHelper.d((float) i * this.fallHurtAmount), this.fallHurtMax));
+                    CraftEventFactory.entityDamage = null; // CraftBukkit
                 }
 
                 if (flag && (double) this.random.nextFloat() < 0.05000000074505806D + (double) i * 0.05D) {

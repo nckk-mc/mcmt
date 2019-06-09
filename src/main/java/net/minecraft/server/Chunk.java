@@ -95,7 +95,18 @@ public class Chunk implements IChunkAccess {
             }
         }
 
+        // CraftBukkit start
+        this.bukkitChunk = new org.bukkit.craftbukkit.CraftChunk(this);
     }
+
+    public org.bukkit.Chunk bukkitChunk;
+    public org.bukkit.Chunk getBukkitChunk() {
+        return bukkitChunk;
+    }
+
+    public boolean mustNotSave;
+    public boolean needsDecoration;
+    // CraftBukkit end
 
     public Chunk(World world, ProtoChunk protochunk) {
         this(world, protochunk.getPos(), protochunk.getBiomeIndex(), protochunk.p(), protochunk.n(), protochunk.o(), protochunk.q(), protochunk.getSections(), (Consumer) null);
@@ -138,6 +149,7 @@ public class Chunk implements IChunkAccess {
 
         this.b(protochunk.r());
         this.s = true;
+        this.needsDecoration = true; // CraftBukkit
     }
 
     @Override
@@ -228,9 +240,16 @@ public class Chunk implements IChunkAccess {
         }
     }
 
+    // CraftBukkit start
     @Nullable
     @Override
     public IBlockData setType(BlockPosition blockposition, IBlockData iblockdata, boolean flag) {
+        return this.setType(blockposition, iblockdata, flag, true);
+    }
+
+    @Nullable
+    public IBlockData setType(BlockPosition blockposition, IBlockData iblockdata, boolean flag, boolean doPlace) {
+        // CraftBukkit end
         int i = blockposition.getX() & 15;
         int j = blockposition.getY();
         int k = blockposition.getZ() & 15;
@@ -282,7 +301,8 @@ public class Chunk implements IChunkAccess {
                     }
                 }
 
-                if (!this.world.isClientSide) {
+                // CraftBukkit - Don't place while processing the BlockPlaceEvent, unless it's a BlockContainer. Prevents blocks such as TNT from activating when cancelled.
+                if (!this.world.isClientSide && doPlace && (!this.world.captureBlockStates || block instanceof BlockTileEntity)) {
                     iblockdata.onPlace(this.world, blockposition, iblockdata1, flag);
                 }
 
@@ -382,7 +402,12 @@ public class Chunk implements IChunkAccess {
 
     @Nullable
     public TileEntity a(BlockPosition blockposition, Chunk.EnumTileEntityState chunk_enumtileentitystate) {
-        TileEntity tileentity = (TileEntity) this.tileEntities.get(blockposition);
+        // CraftBukkit start
+        TileEntity tileentity = world.capturedTileEntities.get(blockposition);
+        if (tileentity == null) {
+            tileentity = (TileEntity) this.tileEntities.get(blockposition);
+        }
+        // CraftBukkit end
 
         if (tileentity == null) {
             NBTTagCompound nbttagcompound = (NBTTagCompound) this.e.remove(blockposition);
@@ -429,6 +454,13 @@ public class Chunk implements IChunkAccess {
                 tileentity1.W_();
             }
 
+            // CraftBukkit start
+        } else {
+            System.out.println("Attempted to place a tile entity (" + tileentity + ") at " + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ()
+                + " (" + getType(blockposition) + ") where there was no entity tile!");
+            System.out.println("Chunk coordinates: " + (this.loc.x * 16) + "," + (this.loc.z * 16));
+            new Exception().printStackTrace();
+            // CraftBukkit end
         }
     }
 
@@ -477,6 +509,50 @@ public class Chunk implements IChunkAccess {
         }
 
     }
+
+    // CraftBukkit start
+    public void loadCallback() {
+        org.bukkit.Server server = this.world.getServer();
+        if (server != null) {
+            /*
+             * If it's a new world, the first few chunks are generated inside
+             * the World constructor. We can't reliably alter that, so we have
+             * no way of creating a CraftWorld/CraftServer at that point.
+             */
+            server.getPluginManager().callEvent(new org.bukkit.event.world.ChunkLoadEvent(this.bukkitChunk, this.needsDecoration));
+
+            if (this.needsDecoration) {
+                this.needsDecoration = false;
+                java.util.Random random = new java.util.Random();
+                random.setSeed(world.getSeed());
+                long xRand = random.nextLong() / 2L * 2L + 1L;
+                long zRand = random.nextLong() / 2L * 2L + 1L;
+                random.setSeed((long) this.loc.x * xRand + (long) this.loc.z * zRand ^ world.getSeed());
+
+                org.bukkit.World world = this.world.getWorld();
+                if (world != null) {
+                    this.world.populating = true;
+                    try {
+                        for (org.bukkit.generator.BlockPopulator populator : world.getPopulators()) {
+                            populator.populate(world, random, bukkitChunk);
+                        }
+                    } finally {
+                        this.world.populating = false;
+                    }
+                }
+                server.getPluginManager().callEvent(new org.bukkit.event.world.ChunkPopulateEvent(bukkitChunk));
+            }
+        }
+    }
+
+    public void unloadCallback() {
+        org.bukkit.Server server = this.world.getServer();
+        org.bukkit.event.world.ChunkUnloadEvent unloadEvent = new org.bukkit.event.world.ChunkUnloadEvent(this.bukkitChunk, this.isNeedsSaving());
+        server.getPluginManager().callEvent(unloadEvent);
+        // note: saving can be prevented, but not forced if no saving is actually required
+        this.mustNotSave = !unloadEvent.isSaveChunk();
+    }
+    // CraftBukkit end
 
     public void markDirty() {
         this.s = true;
@@ -552,7 +628,7 @@ public class Chunk implements IChunkAccess {
             Iterator iterator = this.entitySlices[k].a(oclass).iterator();
 
             while (iterator.hasNext()) {
-                T t0 = (Entity) iterator.next();
+                T t0 = (T) iterator.next(); // CraftBukkit - decompile error
 
                 if (t0.getBoundingBox().c(axisalignedbb) && (predicate == null || predicate.test(t0))) {
                     list.add(t0);
@@ -626,7 +702,7 @@ public class Chunk implements IChunkAccess {
 
     @Override
     public boolean isNeedsSaving() {
-        return this.s || this.q && this.world.getTime() != this.lastSaved;
+        return (this.s || this.q && this.world.getTime() != this.lastSaved) && !this.mustNotSave; // CraftBukkit
     }
 
     public void d(boolean flag) {
@@ -767,7 +843,7 @@ public class Chunk implements IChunkAccess {
 
     public void B() {
         if (this.o instanceof ProtoChunkTickList) {
-            ((ProtoChunkTickList) this.o).a(this.world.getBlockTickList(), (blockposition) -> {
+            ((ProtoChunkTickList<Block>) this.o).a(this.world.getBlockTickList(), (blockposition) -> { // CraftBukkit - decompile error
                 return this.getType(blockposition).getBlock();
             });
             this.o = TickListEmpty.a();
@@ -777,7 +853,7 @@ public class Chunk implements IChunkAccess {
         }
 
         if (this.p instanceof ProtoChunkTickList) {
-            ((ProtoChunkTickList) this.p).a(this.world.getFluidTickList(), (blockposition) -> {
+            ((ProtoChunkTickList<FluidType>) this.p).a(this.world.getFluidTickList(), (blockposition) -> { // CraftBukkit - decompile error
                 return this.getFluid(blockposition).getType();
             });
             this.p = TickListEmpty.a();
@@ -789,12 +865,12 @@ public class Chunk implements IChunkAccess {
     }
 
     public void a(WorldServer worldserver) {
-        if (this.o == TickListEmpty.a()) {
+        if (this.o == TickListEmpty.<Block>a()) { // CraftBukkit - decompile error
             this.o = new TickListChunk<>(IRegistry.BLOCK::getKey, worldserver.getBlockTickList().a(this.loc, true, false));
             this.setNeedsSaving(true);
         }
 
-        if (this.p == TickListEmpty.a()) {
+        if (this.p == TickListEmpty.<FluidType>a()) { // CraftBukkit - decompile error
             this.p = new TickListChunk<>(IRegistry.FLUID::getKey, worldserver.getFluidTickList().a(this.loc, true, false));
             this.setNeedsSaving(true);
         }
