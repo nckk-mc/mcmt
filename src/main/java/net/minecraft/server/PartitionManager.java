@@ -13,8 +13,8 @@ public class PartitionManager {
 
     public void addEntity(Entity entity) {
         System.out.println("MCMT | Loaded Entity: " + entity.getName());
-        ArrayList<Partition> partitionsNotInRange = new ArrayList<Partition>();
-        ArrayList<Partition> partitionsInRange = new ArrayList<Partition>();
+        ArrayList<Partition> partitionsNotInRange = new ArrayList<>();
+        ArrayList<Partition> partitionsInRange = new ArrayList<>();
         for (int i2 = 0; i2 < this.partitions.size(); ++i2) {
             Partition partition = this.partitions.get(i2);
             if (partition.isInMergeDistance(entity)) {
@@ -44,9 +44,23 @@ public class PartitionManager {
         }
     }
     
+    public void removeEntity(Entity entity)
+    {
+        for(int i = 0; i < partitions.size(); i++)
+        {
+            Partition partition = this.partitions.get(i);
+            if(partition.entities.indexOf(entity) > -1)
+            {
+                partition.entities.remove(entity);
+                System.out.println("MCMT | Removed Entity: " + entity.getName());
+                return;
+            }
+        }
+    }
+    
     public void load(PlayerChunk playerChunk) {
         Chunk chunk = playerChunk.getFullChunk();
-        System.out.println("MCMT | Loaded Chunk: " + Integer.toString(chunk.getPos().x) + ", " + Integer.toString(chunk.getPos().z));
+        //System.out.println("MCMT | Loaded Chunk: " + Integer.toString(chunk.getPos().x) + ", " + Integer.toString(chunk.getPos().z));
         ArrayList<Partition> partitionsNotInRange = new ArrayList<Partition>();
         ArrayList<Partition> partitionsInRange = new ArrayList<Partition>();
         for (int i2 = 0; i2 < this.partitions.size(); ++i2) {

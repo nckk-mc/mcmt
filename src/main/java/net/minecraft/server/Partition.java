@@ -57,6 +57,20 @@ public class Partition {
         }
         return false;
     }
+    
+    public boolean alreadyHasEntity(Entity entityToCheck)
+    {
+        String uuid = entityToCheck.getName();
+        for(int i = 0; i < this.entities.size(); i++)
+        {
+            Entity entity = this.entities.get(i);
+            if(uuid.equals(entity.getName()))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public void addChunk(PlayerChunk chunk)
     {
@@ -66,15 +80,18 @@ public class Partition {
         }
         else
         {
-            MinecraftServer.LOGGER.warn("MCMT | Attempted to load already loaded chunk!");
+            //MinecraftServer.LOGGER.warn("MCMT | Attempted to load already loaded chunk!");
         }
     }
     
     public void addEntity(Entity entity) {
-        this.entities.add(entity);
-        if (entity instanceof EntityEnderDragon) {
-            for (EntityComplexPart entitycomplexpart : ((EntityEnderDragon)entity).dT()) {
-                this.entities.add(entitycomplexpart);
+        if(!alreadyHasEntity(entity))
+        {
+            this.entities.add(entity);
+            if (entity instanceof EntityEnderDragon) {
+                for (EntityComplexPart entitycomplexpart : ((EntityEnderDragon)entity).dT()) {
+                    this.entities.add(entitycomplexpart);
+                }
             }
         }
     }
@@ -183,6 +200,7 @@ public class Partition {
             
             if (entity.dead)
             {
+                System.out.println("MCMT | Removed Entity: " + entity.getName());
                 this.entities.remove(i--);
             }
         }

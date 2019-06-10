@@ -1011,6 +1011,8 @@ public class WorldServer extends World {
         }
         // Spigot end
 
+        this.getPartitionManager().removeEntity(entity);
+        
         if (entity instanceof EntityEnderDragon) {
             EntityComplexPart[] aentitycomplexpart = ((EntityEnderDragon) entity).dT();
             int i = aentitycomplexpart.length;
