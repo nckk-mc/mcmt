@@ -281,7 +281,8 @@ public abstract class ChunkMapDistance {
     }
 
     public int b() {
-        this.i.a();
+        // MCMT: Not thread-safe... disabling for now
+//        this.i.a();
         return this.i.a.size();
     }
 

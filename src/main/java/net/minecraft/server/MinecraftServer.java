@@ -843,7 +843,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
     // Spigot End
 
     int tickingThreadCount = 2;
-    long tickDuration = 50L;
+    long tickDuration = 50_000_000L; // ns
     volatile int handlerThreads = 0;
     private void scheduleChunkHandler(int threadId) {
         handlerThreads++;
@@ -852,6 +852,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
             public void run() {
                 MinecraftServer.LOGGER.warn("MCMT | Running Partition Handler #" + threadId);
 
+                long ticks = 0;
+                long start = System.nanoTime();
                 while (isRunning()) {
                     long t1 = System.nanoTime();
 
@@ -869,9 +871,17 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                             }
                         }
                     }
-                    long elapsed = (System.nanoTime() - t1) / 1_000_000L; // ms
-                    long duration = Math.max(0, tickDuration - elapsed);
-                    LockSupport.parkNanos("waiting for " + this.getName(), duration);
+                    long elapsed = (System.nanoTime() - t1); // ns
+                    LockSupport.parkNanos("waiting for " + this.getName(), Math.max(0, tickDuration - elapsed));
+
+                    ticks++;
+                    double elapsedSinceLastLog = Math.max(1.0, (System.nanoTime()-start)/1_000_000_000.0);
+                    double tps = (ticks / elapsedSinceLastLog);
+                    if (elapsedSinceLastLog > 9) {
+                        MinecraftServer.LOGGER.warn("MCMT | Partition Handler #" + threadId + " TPS: " + tps);
+                        start = System.nanoTime();
+                        ticks = 0;
+                    }
                 }
 
                 MinecraftServer.LOGGER.warn("MCMT | Exiting Partition Handler #" + threadId);

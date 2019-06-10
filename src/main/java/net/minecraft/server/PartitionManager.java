@@ -13,8 +13,8 @@ public class PartitionManager {
 
     public void load(PlayerChunk playerChunk)
     {
-//        Chunk chunk = playerChunk.getFullChunk();
-//        System.out.println("MCMT | Loaded Chunk: " + Integer.toString(chunk.getPos().x) + ", " + Integer.toString(chunk.getPos().z));
+        Chunk chunk = playerChunk.getFullChunk();
+//        System.out.println("MCMT | Loaded Chunk: " + chunk.getPos().x + ", " + chunk.getPos().z);
 
         List<Partition> partitionsNotInRange = new ArrayList<>();
         List<Partition> partitionsInRange = new ArrayList<>();
@@ -48,6 +48,7 @@ public class PartitionManager {
         }
         else
         {
+//            System.out.println("MCMT | Chunk in range of existing partition, adding...");
             Partition target = partitionsInRange.get(0);
             target.add(playerChunk);
         }
