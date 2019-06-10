@@ -200,7 +200,7 @@ public class Partition {
             
             if (entity.dead)
             {
-                System.out.println("MCMT | Removed Entity: " + entity.getName());
+                System.out.println("MCMT | Removed Entity: " + entity.getName());   
                 this.entities.remove(i--);
             }
         }
@@ -210,30 +210,23 @@ public class Partition {
         
         ActivationRange.activateEntities(world);
         
-        world.timings.entityTick.startTiming();
-        for (int i3 = 0; i3 < this.entities.size(); ++i3) {
-            Entity entity12 = this.entities.get(i3);
-            Entity entity2 = entity12.getVehicle();
-            if (entity2 != null) {
-                if (!entity2.dead && entity2.w(entity12)) continue;
-                entity12.stopRiding();
+        world.timings.entityTick.startTiming();*/
+        for (int i = 0; i < this.entities.size(); ++i) {
+            Entity entity = this.entities.get(i);
+            Entity vechile = entity.getVehicle();
+            if (vechile != null) {
+                if (!vechile.dead && vechile.w(entity)) continue;
+                entity.stopRiding();
             }
-            gameprofilerfiller.enter("tick");
-            if (!entity12.dead && !(entity12 instanceof EntityComplexPart)) {
-                world.a(world::entityJoinedWorld, entity12);
+            if (!entity.dead && !(entity instanceof EntityComplexPart)) {
+                world.a(world::entityJoinedWorld, entity);
             }
-            gameprofilerfiller.exit();
-            gameprofilerfiller.enter("remove");
-            if (entity12.dead) {
-                world.removeEntityFromChunk(entity12);
-                world.unregisterEntity(entity12);
+            
+            if (entity.dead) {
+                world.removeEntityFromChunk(entity);
+                world.unregisterEntity(entity);
             }
-            gameprofilerfiller.exit();
         }
-        world.timings.entityTick.stopTiming();
-        world.tickingEntities = false;
-        gameprofilerfiller.exit();
-        world.timings.tickEntities.stopTiming();*/
     }
 
 
