@@ -297,87 +297,20 @@ public class WorldServer extends World {
         }
 
         if (flag3 || this.emptyTime++ < 300) {
-            timings.tickEntities.startTiming(); // Spigot
-            this.worldProvider.l();
-            gameprofilerfiller.enter("global");
-
+            
             Entity entity;
-
-            for (i = 0; i < this.globalEntityList.size(); ++i) {
-                entity = (Entity) this.globalEntityList.get(i);
-                // CraftBukkit start - Fixed an NPE
-                if (entity == null) {
-                    continue;
-                }
-                // CraftBukkit end
-                this.a((entity1) -> {
-                    ++entity1.ticksLived;
-                    entity1.tick();
-                }, entity);
-                if (entity.dead) {
-                    this.globalEntityList.remove(i--);
-                }
-            }
-
-            gameprofilerfiller.exitEnter("regular");
-            this.tickingEntities = true;
-            ObjectIterator objectiterator = this.entitiesById.int2ObjectEntrySet().iterator();
-
-            org.spigotmc.ActivationRange.activateEntities(this); // Spigot
-            timings.entityTick.startTiming(); // Spigot
-            TimingHistory.entityTicks += this.globalEntityList.size(); // Paper
-            while (objectiterator.hasNext()) {
-                Entry<Entity> entry = (Entry) objectiterator.next();
-                Entity entity1 = (Entity) entry.getValue();
-                Entity entity2 = entity1.getVehicle();
-
-                /* CraftBukkit start - We prevent spawning in general, so this butchering is not needed
-                if (!this.server.getSpawnAnimals() && (entity1 instanceof EntityAnimal || entity1 instanceof EntityWaterAnimal)) {
-                    entity1.die();
-                }
-
-                if (!this.server.getSpawnNPCs() && entity1 instanceof NPC) {
-                    entity1.die();
-                }
-                // CraftBukkit end */
-
-                if (entity2 != null) {
-                    if (!entity2.dead && entity2.w(entity1)) {
-                        continue;
-                    }
-
-                    entity1.stopRiding();
-                }
-
-                gameprofilerfiller.enter("tick");
-                if (!entity1.dead && !(entity1 instanceof EntityComplexPart)) {
-                    this.a(this::entityJoinedWorld, entity1);
-                }
-
-                gameprofilerfiller.exit();
-                gameprofilerfiller.enter("remove");
-                if (entity1.dead) {
-                    this.removeEntityFromChunk(entity1);
-                    objectiterator.remove();
-                    this.unregisterEntity(entity1);
-                }
-
-                gameprofilerfiller.exit();
-            }
-            timings.entityTick.stopTiming(); // Spigot
-
-            this.tickingEntities = false;
-
             while ((entity = (Entity) this.entitiesToAdd.poll()) != null) {
                 this.registerEntity(entity);
             }
-
-            gameprofilerfiller.exit();
-            timings.tickEntities.stopTiming(); // Spigot
+            
             this.tickBlockEntities();
         }
 
         gameprofilerfiller.exit();
+    }
+    
+    public void tickPartition(int index) {
+        this.getPartitionManager().tickPartitionEntities(index, this);
     }
 
     public void a(Chunk chunk, int i) {
@@ -1106,53 +1039,51 @@ public class WorldServer extends World {
     }
 
     private void registerEntity(Entity entity) {
-        if (this.tickingEntities) {
-            this.entitiesToAdd.add(entity);
-        } else {
-            this.entitiesById.put(entity.getId(), entity);
-            if (entity instanceof EntityEnderDragon) {
-                EntityComplexPart[] aentitycomplexpart = ((EntityEnderDragon) entity).dT();
-                int i = aentitycomplexpart.length;
+        
+        this.getPartitionManager().addEntity(entity);
+        
+        this.entitiesById.put(entity.getId(), entity);
+        if (entity instanceof EntityEnderDragon) {
+            EntityComplexPart[] aentitycomplexpart = ((EntityEnderDragon) entity).dT();
+            int i = aentitycomplexpart.length;
 
-                for (int j = 0; j < i; ++j) {
-                    EntityComplexPart entitycomplexpart = aentitycomplexpart[j];
+            for (int j = 0; j < i; ++j) {
+                EntityComplexPart entitycomplexpart = aentitycomplexpart[j];
 
-                    this.entitiesById.put(entitycomplexpart.getId(), entitycomplexpart);
-                }
+                this.entitiesById.put(entitycomplexpart.getId(), entitycomplexpart);
             }
-
-            if (DEBUG_ENTITIES) {
-                entity.addedToWorldStack = getAddToWorldStackTrace(entity);
-            }
-
-            Entity old = this.entitiesByUUID.put(entity.getUniqueID(), entity);
-            if (old != null && old.getId() != entity.getId() && old.valid && entity.world.paperConfig.duplicateUUIDMode != com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode.NOTHING) { // Paper
-                Logger logger = LogManager.getLogger();
-                logger.error("Overwrote an existing entity " + old + " with " + entity);
-                if (DEBUG_ENTITIES) {
-                    if (old.addedToWorldStack != null) {
-                        old.addedToWorldStack.printStackTrace();
-                    } else {
-                        logger.error("Oddly, the old entity was not added to the world in the normal way. Plugins?");
-                    }
-                    entity.addedToWorldStack.printStackTrace();
-                }
-            }
-
-            this.getChunkProvider().addEntity(entity);
-            if (entity instanceof EntityInsentient) {
-                this.I.add(((EntityInsentient) entity).getNavigation());
-            }
-            entity.valid = true; // CraftBukkit
-            // Paper start - Set origin location when the entity is being added to the world
-            if (entity.origin == null) {
-                entity.origin = entity.getBukkitEntity().getLocation();
-            }
-            // Paper end
-            entity.shouldBeRemoved = false; // Paper - shouldn't be removed after being re-added
-            new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
         }
 
+        if (DEBUG_ENTITIES) {
+            entity.addedToWorldStack = getAddToWorldStackTrace(entity);
+        }
+
+        Entity old = this.entitiesByUUID.put(entity.getUniqueID(), entity);
+        if (old != null && old.getId() != entity.getId() && old.valid && entity.world.paperConfig.duplicateUUIDMode != com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode.NOTHING) { // Paper
+            Logger logger = LogManager.getLogger();
+            logger.error("Overwrote an existing entity " + old + " with " + entity);
+            if (DEBUG_ENTITIES) {
+                if (old.addedToWorldStack != null) {
+                    old.addedToWorldStack.printStackTrace();
+                } else {
+                    logger.error("Oddly, the old entity was not added to the world in the normal way. Plugins?");
+                }
+                entity.addedToWorldStack.printStackTrace();
+            }
+        }
+
+        this.getChunkProvider().addEntity(entity);
+        if (entity instanceof EntityInsentient) {
+            this.I.add(((EntityInsentient) entity).getNavigation());
+        }
+        entity.valid = true; // CraftBukkit
+        // Paper start - Set origin location when the entity is being added to the world
+        if (entity.origin == null) {
+            entity.origin = entity.getBukkitEntity().getLocation();
+        }
+        // Paper end
+        entity.shouldBeRemoved = false; // Paper - shouldn't be removed after being re-added
+        new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
     }
 
     public void removeEntity(Entity entity) {
@@ -1168,7 +1099,7 @@ public class WorldServer extends World {
         }
     }
 
-    private void removeEntityFromChunk(Entity entity) {
+    public void removeEntityFromChunk(Entity entity) {
         IChunkAccess ichunkaccess = this.getChunkAt(entity.chunkX, entity.chunkZ, ChunkStatus.FULL, false);
 
         if (ichunkaccess instanceof Chunk) {

@@ -5,40 +5,78 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.spigotmc.ActivationRange;
 
 public class Partition {
 
     public List<PlayerChunk> chunks;
+    public List<Entity> entities;
     private long lastTickTime;
 
     Partition(PlayerChunk initial)
     {
-        chunks = new ArrayList<>();
-        chunks.add(initial);
+        this.chunks = new ArrayList<>();
+        this.chunks.add(initial);
+        
+        this.entities = new ArrayList<>();
     }
 
     long mergeRadius = 32;
 
-    public boolean isInMergeDistance(PlayerChunk playerChunkToCheck)
-    {
+    public boolean isInMergeDistance(PlayerChunk playerChunkToCheck) {
         Chunk playerChunk = playerChunkToCheck.getFullChunk();
         ChunkCoordIntPair playerPos = playerChunk.getPos();
+        return this.isInMergeDistance(playerPos);
+    }
 
-        for(int i = 0; i < chunks.size(); i++)
+    public boolean isInMergeDistance(Entity ent) {
+        ChunkCoordIntPair pos = ent.getCurrentChunk().getPos();
+        return this.isInMergeDistance(pos);
+    }
+
+    public boolean isInMergeDistance(ChunkCoordIntPair pos) {
+        for (int i2 = 0; i2 < this.chunks.size(); ++i2) {
+            Chunk partitionChunk = this.chunks.get(i2).getFullChunk();
+            ChunkCoordIntPair partitionPos = partitionChunk.getPos();
+            if ((long)Math.abs(partitionPos.x - pos.x) > this.mergeRadius || (long)Math.abs(partitionPos.z - pos.z) > this.mergeRadius) continue;
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean alreadyHasChunk(PlayerChunk playerChunkToCheck)
+    {
+        ChunkCoordIntPair posToCheck = playerChunkToCheck.getFullChunk().getPos();
+        for(int i = 0; i < this.chunks.size(); i++)
         {
-            Chunk partitionChunk = chunks.get(i).getFullChunk();
-            ChunkCoordIntPair partitionPos  = partitionChunk.getPos();
-            if (Math.abs(partitionPos.x - playerPos.x) <= mergeRadius && Math.abs(partitionPos.z - playerPos.z) <= mergeRadius) {
+            ChunkCoordIntPair pos = this.chunks.get(i).getFullChunk().getPos();
+            if(pos.x == posToCheck.x && pos.z == posToCheck.x)
+            {
                 return true;
             }
         }
-
         return false;
     }
 
-    public void add(PlayerChunk chunk)
+    public void addChunk(PlayerChunk chunk)
     {
-        chunks.add(chunk);
+        if(!alreadyHasChunk(chunk))
+        {
+            chunks.add(chunk);
+        }
+        else
+        {
+            MinecraftServer.LOGGER.warn("MCMT | Attempted to load already loaded chunk!");
+        }
+    }
+    
+    public void addEntity(Entity entity) {
+        this.entities.add(entity);
+        if (entity instanceof EntityEnderDragon) {
+            for (EntityComplexPart entitycomplexpart : ((EntityEnderDragon)entity).dT()) {
+                this.entities.add(entitycomplexpart);
+            }
+        }
     }
 
     public void tickChunks(WorldServer world, PlayerChunkMap playerChunkMap, boolean allowAnimals, boolean allowMonsters)
@@ -129,11 +167,65 @@ public class Partition {
             }
         }
     }
+    
+    public void tickEntities(WorldServer world) {
+        /*world.timings.tickEntities.startTiming();
+        world.worldProvider.l();
+        GameProfilerFiller gameprofilerfiller = world.getMethodProfiler();
+        gameprofilerfiller.enter("global");*/
+        for (int i = 0; i < this.entities.size(); ++i) {
+            Entity entity = this.entities.get(i);
+            if (entity == null) continue;
+            world.a(entity1 -> {
+                ++entity1.ticksLived;
+                entity1.tick();
+            }, entity);
+            
+            if (entity.dead)
+            {
+                this.entities.remove(i--);
+            }
+        }
+        /*
+        gameprofilerfiller.exitEnter("regular");
+        world.tickingEntities = true;
+        
+        ActivationRange.activateEntities(world);
+        
+        world.timings.entityTick.startTiming();
+        for (int i3 = 0; i3 < this.entities.size(); ++i3) {
+            Entity entity12 = this.entities.get(i3);
+            Entity entity2 = entity12.getVehicle();
+            if (entity2 != null) {
+                if (!entity2.dead && entity2.w(entity12)) continue;
+                entity12.stopRiding();
+            }
+            gameprofilerfiller.enter("tick");
+            if (!entity12.dead && !(entity12 instanceof EntityComplexPart)) {
+                world.a(world::entityJoinedWorld, entity12);
+            }
+            gameprofilerfiller.exit();
+            gameprofilerfiller.enter("remove");
+            if (entity12.dead) {
+                world.removeEntityFromChunk(entity12);
+                world.unregisterEntity(entity12);
+            }
+            gameprofilerfiller.exit();
+        }
+        world.timings.entityTick.stopTiming();
+        world.tickingEntities = false;
+        gameprofilerfiller.exit();
+        world.timings.tickEntities.stopTiming();*/
+    }
+
 
     public void mergeInto(Partition partition) {
-        for(int j = 0; j < partition.chunks.size(); j++)
-        {
-            add(partition.chunks.get(j));
+        int j;
+        for (j = 0; j < partition.chunks.size(); ++j) {
+            this.addChunk(partition.chunks.get(j));
+        }
+        for (j = 0; j < partition.entities.size(); ++j) {
+            this.addEntity(partition.entities.get(j));
         }
     }
 }
