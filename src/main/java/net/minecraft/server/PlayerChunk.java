@@ -351,6 +351,9 @@ public class PlayerChunk {
                 either.ifLeft((chunkAccess) -> {
                     Chunk chunk = (Chunk) chunkAccess;
                     chunk.loadCallback();
+
+                    // nckk
+                    this.getFullChunk().getWorld().getPartitionManager().load(this);
                 });
             });
         }

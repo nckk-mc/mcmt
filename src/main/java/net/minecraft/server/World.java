@@ -1,10 +1,7 @@
 package net.minecraft.server;
 
-import co.aikar.timings.Timing;
-import co.aikar.timings.Timings;
 import com.destroystokyo.paper.event.server.ServerExceptionEvent;
 import com.destroystokyo.paper.exception.ServerInternalException;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Collection;
@@ -30,10 +27,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.event.weather.LightningStrikeEvent;
 // CraftBukkit end
 
 public abstract class World implements IIBlockAccess, GeneratorAccess, AutoCloseable {
@@ -179,6 +173,12 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         this.keepSpawnInMemory = this.paperConfig.keepSpawnInMemory; // Paper
         this.entityLimiter = new org.spigotmc.TickLimiter(spigotConfig.entityMaxTickTime);
         this.tileLimiter = new org.spigotmc.TickLimiter(spigotConfig.tileMaxTickTime);
+		this.partitionManager = new PartitionManager();
+    }
+	
+	private PartitionManager partitionManager;
+    public PartitionManager getPartitionManager() {
+        return this.partitionManager;
     }
 
     @Override

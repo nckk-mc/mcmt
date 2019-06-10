@@ -2,9 +2,7 @@ package net.minecraft.server;
 
 import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.util.Either;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -16,9 +14,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import com.destroystokyo.paper.exception.ServerInternalException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ChunkProviderServer extends IChunkProvider {
 
@@ -288,6 +283,10 @@ public class ChunkProviderServer extends IChunkProvider {
         this.clearCache();
     }
 
+    public void tickChunk(int i) {
+        this.world.getPartitionManager().tickGroup(i, world, playerChunkMap, allowAnimals, allowMonsters);
+    }
+
     private void tickChunks() {
         long i = this.world.getTime();
         long j = i - this.lastTickTime;
@@ -298,84 +297,84 @@ public class ChunkProviderServer extends IChunkProvider {
         boolean flag1 = this.world.getGameRules().getBoolean("doMobSpawning") && !world.getPlayers().isEmpty(); // CraftBukkit
 
         if (!flag) {
-            this.world.getMethodProfiler().enter("pollingChunks");
-            int k = this.world.getGameRules().c("randomTickSpeed");
-            BlockPosition blockposition = this.world.getSpawn();
-            boolean flag2 = world.ticksPerAnimalSpawns != 0L && worlddata.getTime() % world.ticksPerAnimalSpawns == 0L; // CraftBukkit // PAIL: TODO monster ticks
-
-            this.world.getMethodProfiler().enter("naturalSpawnCount");
-            int l = this.chunkMapDistance.b();
-            EnumCreatureType[] aenumcreaturetype = EnumCreatureType.values();
-            Object2IntMap<EnumCreatureType> object2intmap = this.world.l();
-
-            this.world.getMethodProfiler().exit();
-            ObjectBidirectionalIterator objectbidirectionaliterator = this.playerChunkMap.f();
-
-            while (objectbidirectionaliterator.hasNext()) {
-                Entry<PlayerChunk> entry = (Entry) objectbidirectionaliterator.next();
-                PlayerChunk playerchunk = (PlayerChunk) entry.getValue();
-                Optional<Chunk> optional = ((Either) playerchunk.b().getNow(PlayerChunk.UNLOADED_CHUNK)).left();
-
-                if (optional.isPresent()) {
-                    Chunk chunk = (Chunk) optional.get();
-
-                    this.world.getMethodProfiler().enter("broadcast");
-                    playerchunk.a(chunk);
-                    this.world.getMethodProfiler().exit();
-                    ChunkCoordIntPair chunkcoordintpair = playerchunk.h();
-
-                    if (!this.playerChunkMap.isOutsideOfRange(chunkcoordintpair, false)) { // Spigot
-                        chunk.b(chunk.q() + j);
-                        if (flag1 && (this.allowMonsters || this.allowAnimals) && this.world.getWorldBorder().isInBounds(chunk.getPos()) && !this.playerChunkMap.isOutsideOfRange(chunkcoordintpair, true)) { // Spigot
-                            this.world.getMethodProfiler().enter("spawner");
-                            this.world.timings.mobSpawn.startTiming(); // Spigot
-                            EnumCreatureType[] aenumcreaturetype1 = aenumcreaturetype;
-                            int i1 = aenumcreaturetype.length;
-
-                            for (int j1 = 0; j1 < i1; ++j1) {
-                                EnumCreatureType enumcreaturetype = aenumcreaturetype1[j1];
-
-                                // CraftBukkit start - Use per-world spawn limits
-                                int limit = enumcreaturetype.b();
-                                switch (enumcreaturetype) {
-                                    case MONSTER:
-                                        limit = world.getWorld().getMonsterSpawnLimit();
-                                        break;
-                                    case CREATURE:
-                                        limit = world.getWorld().getAnimalSpawnLimit();
-                                        break;
-                                    case WATER_CREATURE:
-                                        limit = world.getWorld().getWaterAnimalSpawnLimit();
-                                        break;
-                                    case AMBIENT:
-                                        limit = world.getWorld().getAmbientSpawnLimit();
-                                        break;
-                                }
-
-                                if (limit == 0) {
-                                    continue;
-                                }
-                                // CraftBukkit end
-
-                                if (enumcreaturetype != EnumCreatureType.MISC && (!enumcreaturetype.c() || this.allowAnimals) && (enumcreaturetype.c() || this.allowMonsters) && (!enumcreaturetype.d() || flag2)) {
-                                    int k1 = limit * l / ChunkProviderServer.b; // CraftBukkit - use per-world limits
-
-                                    if (object2intmap.getInt(enumcreaturetype) <= k1) {
-                                        SpawnerCreature.a(enumcreaturetype, (World) this.world, chunk, blockposition);
-                                    }
-                                }
-                            }
-
-                            this.world.timings.mobSpawn.stopTiming(); // Spigot
-                            this.world.getMethodProfiler().exit();
-                        }
-
-                        this.world.timings.chunkTicks.startTiming(); // Spigot // Paper
-                        this.world.a(chunk, k);
-                        this.world.timings.chunkTicks.stopTiming(); // Spigot // Paper
-                    }
-                }
-            }
+//            this.world.getMethodProfiler().enter("pollingChunks");
+//            int k = this.world.getGameRules().c("randomTickSpeed");
+//            BlockPosition blockposition = this.world.getSpawn();
+//            boolean flag2 = world.ticksPerAnimalSpawns != 0L && worlddata.getTime() % world.ticksPerAnimalSpawns == 0L; // CraftBukkit // PAIL: TODO monster ticks
+//
+//            this.world.getMethodProfiler().enter("naturalSpawnCount");
+//            int l = this.chunkMapDistance.b();
+//            EnumCreatureType[] aenumcreaturetype = EnumCreatureType.values();
+//            Object2IntMap<EnumCreatureType> object2intmap = this.world.l();
+//
+//            this.world.getMethodProfiler().exit();
+//            ObjectBidirectionalIterator objectbidirectionaliterator = this.playerChunkMap.f();
+//
+//            while (objectbidirectionaliterator.hasNext()) {
+//                Entry<PlayerChunk> entry = (Entry) objectbidirectionaliterator.next();
+//                PlayerChunk playerchunk = (PlayerChunk) entry.getValue();
+//                Optional<Chunk> optional = ((Either) playerchunk.b().getNow(PlayerChunk.UNLOADED_CHUNK)).left();
+//
+//                if (optional.isPresent()) {
+//                    Chunk chunk = (Chunk) optional.get();
+//
+//                    this.world.getMethodProfiler().enter("broadcast");
+//                    playerchunk.a(chunk);
+//                    this.world.getMethodProfiler().exit();
+//                    ChunkCoordIntPair chunkcoordintpair = playerchunk.h();
+//
+//                    if (!this.playerChunkMap.isOutsideOfRange(chunkcoordintpair, false)) { // Spigot
+//                        chunk.b(chunk.q() + j);
+//                        if (flag1 && (this.allowMonsters || this.allowAnimals) && this.world.getWorldBorder().isInBounds(chunk.getPos()) && !this.playerChunkMap.isOutsideOfRange(chunkcoordintpair, true)) { // Spigot
+//                            this.world.getMethodProfiler().enter("spawner");
+//                            this.world.timings.mobSpawn.startTiming(); // Spigot
+//                            EnumCreatureType[] aenumcreaturetype1 = aenumcreaturetype;
+//                            int i1 = aenumcreaturetype.length;
+//
+//                            for (int j1 = 0; j1 < i1; ++j1) {
+//                                EnumCreatureType enumcreaturetype = aenumcreaturetype1[j1];
+//
+//                                // CraftBukkit start - Use per-world spawn limits
+//                                int limit = enumcreaturetype.b();
+//                                switch (enumcreaturetype) {
+//                                    case MONSTER:
+//                                        limit = world.getWorld().getMonsterSpawnLimit();
+//                                        break;
+//                                    case CREATURE:
+//                                        limit = world.getWorld().getAnimalSpawnLimit();
+//                                        break;
+//                                    case WATER_CREATURE:
+//                                        limit = world.getWorld().getWaterAnimalSpawnLimit();
+//                                        break;
+//                                    case AMBIENT:
+//                                        limit = world.getWorld().getAmbientSpawnLimit();
+//                                        break;
+//                                }
+//
+//                                if (limit == 0) {
+//                                    continue;
+//                                }
+//                                // CraftBukkit end
+//
+//                                if (enumcreaturetype != EnumCreatureType.MISC && (!enumcreaturetype.c() || this.allowAnimals) && (enumcreaturetype.c() || this.allowMonsters) && (!enumcreaturetype.d() || flag2)) {
+//                                    int k1 = limit * l / ChunkProviderServer.b; // CraftBukkit - use per-world limits
+//
+//                                    if (object2intmap.getInt(enumcreaturetype) <= k1) {
+//                                        SpawnerCreature.a(enumcreaturetype, (World) this.world, chunk, blockposition);
+//                                    }
+//                                }
+//                            }
+//
+//                            this.world.timings.mobSpawn.stopTiming(); // Spigot
+//                            this.world.getMethodProfiler().exit();
+//                        }
+//
+//                        this.world.timings.chunkTicks.startTiming(); // Spigot
+//                        this.world.a(chunk, k);
+//                        this.world.timings.chunkTicks.stopTiming(); // Spigot
+//                    }
+//                }
+//            }
 
             this.world.getMethodProfiler().enter("customSpawners");
             if (flag1) {
@@ -383,7 +382,7 @@ public class ChunkProviderServer extends IChunkProvider {
             }
 
             this.world.getMethodProfiler().exit();
-            this.world.getMethodProfiler().exit();
+//            this.world.getMethodProfiler().exit();
         }
 
         this.playerChunkMap.g();

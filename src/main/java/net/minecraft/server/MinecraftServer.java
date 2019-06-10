@@ -1,8 +1,5 @@
 package net.minecraft.server;
 
-import co.aikar.timings.Timings;
-import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
@@ -15,7 +12,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import java.awt.GraphicsEnvironment;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -40,21 +37,16 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
-import joptsimple.NonOptionArgumentSpec;
-import joptsimple.OptionParser;
+
 import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 // CraftBukkit start
-import joptsimple.OptionSet;
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.Main;
 import org.bukkit.event.server.ServerLoadEvent;
 // CraftBukkit end
 import org.spigotmc.SlackActivityAccountant; // Spigot
@@ -850,6 +842,44 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
     // Paper End
     // Spigot End
 
+    int tickingThreadCount = 2;
+    long tickDuration = 50L;
+    volatile int handlerThreads = 0;
+    private void scheduleChunkHandler(int threadId) {
+        handlerThreads++;
+
+        Thread thread = new Thread("Partition Handler #" + threadId) {
+            public void run() {
+                MinecraftServer.LOGGER.warn("MCMT | Running Partition Handler #" + threadId);
+
+                while (isRunning()) {
+                    long t1 = System.nanoTime();
+
+                    for(World world : getWorlds()) {
+                        ChunkProviderServer chunkProviderServer = (ChunkProviderServer)world.getChunkProvider();
+
+                        // Extremely naive scheduler that just round robin schedules work, one partition per thread
+                        // With 1 threads, all partitions will be handled by thread 0
+                        // With 2 threads, partition 0, 2, 4, 6, ..., n % 2 == 0 will be handled by thread 0
+                        //                 partition 1, 3, 5, 7, ..., n % 2 == 1 will be handled by thread 1
+
+                        for(int i = 0; i<world.getPartitionManager().getPartitions().size(); i++) {
+                            if (i % handlerThreads == threadId) {
+                                chunkProviderServer.tickChunk(i);
+                            }
+                        }
+                    }
+                    long elapsed = (System.nanoTime() - t1) / 1_000_000L; // ms
+                    long duration = Math.max(0, tickDuration - elapsed);
+                    LockSupport.parkNanos("waiting for " + this.getName(), duration);
+                }
+
+                MinecraftServer.LOGGER.warn("MCMT | Exiting Partition Handler #" + threadId);
+            }
+        };
+        thread.start();
+    }
+
     public void run() {
         try {
             if (this.init()) {
@@ -863,6 +893,11 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                 Arrays.fill( recentTps, 20 );
                 long start = System.nanoTime(), curTime, tickSection = start; // Paper - Further improve server tick loop
                 lastTick = start - TICK_TIME; // Paper
+
+                for (int i = 0; i<tickingThreadCount; i++) {
+                    scheduleChunkHandler(i);
+                }
+
                 while (this.isRunning) {
                     long i = ((curTime = System.nanoTime()) / (1000L * 1000L)) - this.nextTick; // Paper
 
