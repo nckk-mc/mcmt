@@ -51,6 +51,7 @@ import org.bukkit.event.server.ServerLoadEvent;
 // CraftBukkit end
 import org.spigotmc.SlackActivityAccountant; // Spigot
 import co.aikar.timings.MinecraftTimings; // Paper
+import java.util.ArrayList;
 
 public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTask> implements IMojangStatistics, ICommandListener, AutoCloseable, Runnable {
 
@@ -159,6 +160,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
     public final double[] recentTps = new double[ 3 ];
     public final SlackActivityAccountant slackActivityAccountant = new SlackActivityAccountant();
     // Spigot end
+    
+    public List<Double> threadsTPS;
 
     public MinecraftServer(OptionSet options, Proxy proxy, DataFixer datafixer, CommandDispatcher commanddispatcher, YggdrasilAuthenticationService yggdrasilauthenticationservice, MinecraftSessionService minecraftsessionservice, GameProfileRepository gameprofilerepository, UserCache usercache, WorldLoadListenerFactory worldloadlistenerfactory, String s) {
         super("Server");
@@ -842,7 +845,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
     // Paper End
     // Spigot End
 
-    int tickingThreadCount = 2;
+    public int tickingThreadCount = 2;
     long tickDuration = 50_000_000L; // ns
     volatile int handlerThreads = 0;
     private void scheduleChunkHandler(int threadId) {
@@ -879,6 +882,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                     double elapsedSinceLastLog = Math.max(1.0, (System.nanoTime()-start)/1_000_000_000.0);
                     double tps = (ticks / elapsedSinceLastLog);
                     if (elapsedSinceLastLog > 9) {
+                        getServer().threadsTPS.set(threadId, tps);
                         MinecraftServer.LOGGER.warn("MCMT | Partition Handler #" + threadId + " TPS: " + tps);
                         start = System.nanoTime();
                         ticks = 0;
@@ -905,8 +909,10 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                 long start = System.nanoTime(), curTime, tickSection = start; // Paper - Further improve server tick loop
                 lastTick = start - TICK_TIME; // Paper
 
+                this.threadsTPS = new ArrayList<>();
                 for (int i = 0; i<tickingThreadCount; i++) {
                     scheduleChunkHandler(i);
+                    threadsTPS.add(Double.NaN);
                 }
 
                 while (this.isRunning) {

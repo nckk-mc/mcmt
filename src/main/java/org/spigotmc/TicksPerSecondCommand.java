@@ -1,5 +1,6 @@
 package org.spigotmc;
 
+import net.minecraft.server.MinecraftServer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -30,7 +31,12 @@ public class TicksPerSecondCommand extends Command
         for ( int i = 0; i < tps.length; i++) {
             tpsAvg[i] = format( tps[i] );
         }
-        sender.sendMessage( ChatColor.GOLD + "TPS from last 1m, 5m, 15m: " + org.apache.commons.lang.StringUtils.join(tpsAvg, ", "));
+        sender.sendMessage( ChatColor.GOLD + "TPS Thread report: ");
+        MinecraftServer server = MinecraftServer.getServer();
+        for(int i = 0; i < server.tickingThreadCount; i++)
+        {
+            sender.sendMessage(ChatColor.GOLD + "Thread " + ChatColor.RED + "#" + Integer.toString(i) + " " + format(server.threadsTPS.get(i)));
+        }
         // Paper end
 
         return true;
