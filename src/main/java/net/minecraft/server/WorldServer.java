@@ -1277,14 +1277,16 @@ public class WorldServer extends World {
         return iblockdata.getBlock() == blockactiondata.b() ? iblockdata.a(this, blockactiondata.a(), blockactiondata.c(), blockactiondata.d()) : false;
     }
 
-    @Override
-    public TickListServer<Block> getBlockTickList() {
-        return this.nextTickListBlock;
+    public PartitionedTickList<Block> getBlockTickList() {
+        return this.partitionManager.getPartionBlockTickList();
     }
 
+
+
+
     @Override
-    public TickListServer<FluidType> getFluidTickList() {
-        return this.nextTickListFluid;
+    public PartitionedTickList<FluidType> getFluidTickList() {
+        return this.partitionManager.getPartionFluidTickList();
     }
 
     @Nonnull

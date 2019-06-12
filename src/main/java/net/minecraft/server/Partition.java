@@ -11,8 +11,8 @@ public class Partition {
 
     public List<PlayerChunk> chunks;
     public List<Entity> entities;
-    private TickListServer<Block> blockTickListServer;
-    private TickListServer<FluidType> fluidTickListServer;
+    public TickListServer<Block> blockTickListServer;
+    public TickListServer<FluidType> fluidTickListServer;
     private long lastTickTime;
 
     Partition(WorldServer world) {
@@ -65,7 +65,12 @@ public class Partition {
         }
         return false;
     }
-    
+
+    public TickListServer<Block> getBlockTickList()
+    {
+        return this.blockTickListServer;
+    }
+
     public boolean alreadyHasEntity(Entity entityToCheck)
     {
         String uuid = entityToCheck.getName();
@@ -246,5 +251,15 @@ public class Partition {
         for (j = 0; j < partition.entities.size(); ++j) {
             this.addEntity(partition.entities.get(j));
         }
+    }
+
+    public void assignFluidToTick(NextTickListEntry<FluidType> nextTickListEntry)
+    {
+        this.fluidTickListServer.add(nextTickListEntry);
+    }
+
+    public void assignBlockToTick(NextTickListEntry<Block> nextTickListEntry)
+    {
+        this.blockTickListServer.add(nextTickListEntry);
     }
 }

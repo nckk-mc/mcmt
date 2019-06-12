@@ -866,7 +866,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                         // With 2 threads, partition 0, 2, 4, 6, ..., n % 2 == 0 will be handled by thread 0
                         //                 partition 1, 3, 5, 7, ..., n % 2 == 1 will be handled by thread 1
 
-                        for(int i = 0; i<world.getPartitionManager().getPartitions().size(); i++) {
+                        for(int i = 0; i< world.getPartitionManager().getPartitions().size(); i++) {
                             if (i % handlerThreads == threadId) {
                                 world.tickPartition(i);
                             }

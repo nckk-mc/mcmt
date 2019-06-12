@@ -215,13 +215,18 @@ public class TickListServer<T> implements TickList<T> {
 
     @Override
     public void a(BlockPosition blockposition, T t0, int i, TickListPriority ticklistpriority) {
+        if(t0 instanceof BlockBamboo)
+        {
+            System.out.println("Bamboo Update!");
+        }
+
         if (!this.a.test(t0)) {
             this.add(new NextTickListEntry<>(blockposition, t0, (long) i + this.f.getTime(), ticklistpriority));
         }
 
     }
 
-    private void add(NextTickListEntry<T> nextticklistentry) {
+    public void add(NextTickListEntry<T> nextticklistentry) {
         if (!this.nextTickListHash.contains(nextticklistentry)) {
             this.nextTickListHash.add(nextticklistentry);
             this.nextTickList.add(nextticklistentry);
