@@ -353,7 +353,7 @@ public class PlayerChunk {
                     chunk.loadCallback();
 
                     // nckk
-                    this.getFullChunk().getWorld().getPartitionManager().load(this);
+                    this.getFullChunk().getWorld().getPartitionManager().addChunk(this);
                 });
             });
         }

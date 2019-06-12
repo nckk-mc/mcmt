@@ -283,8 +283,8 @@ public class ChunkProviderServer extends IChunkProvider {
         this.clearCache();
     }
 
-    public void tickPartition(int i) {
-        this.world.getPartitionManager().tickPartitionChunks(i, world, playerChunkMap, allowAnimals, allowMonsters);
+    public void tickPartition(int index, PartitionManager partitionManager) {
+        partitionManager.tickPartition(index, world, playerChunkMap, allowAnimals, allowMonsters);
     }
 
     private void tickChunks() {

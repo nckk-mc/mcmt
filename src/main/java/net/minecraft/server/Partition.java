@@ -13,11 +13,8 @@ public class Partition {
     public List<Entity> entities;
     private long lastTickTime;
 
-    Partition(PlayerChunk initial)
-    {
+    Partition() {
         this.chunks = new ArrayList<>();
-        this.chunks.add(initial);
-        
         this.entities = new ArrayList<>();
     }
 
@@ -80,7 +77,7 @@ public class Partition {
         }
         else
         {
-            //MinecraftServer.LOGGER.warn("MCMT | Attempted to load already loaded chunk!");
+            //MinecraftServer.LOGGER.warn("MCMT | Attempted to addChunk already loaded chunk!");
         }
     }
     

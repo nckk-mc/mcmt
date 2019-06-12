@@ -861,8 +861,6 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                     long t1 = System.nanoTime();
 
                     for(WorldServer world : getWorlds()) {
-                        ChunkProviderServer chunkProviderServer = (ChunkProviderServer)world.getChunkProvider();
-
                         // Extremely naive scheduler that just round robin schedules work, one partition per thread
                         // With 1 threads, all partitions will be handled by thread 0
                         // With 2 threads, partition 0, 2, 4, 6, ..., n % 2 == 0 will be handled by thread 0
@@ -870,7 +868,6 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
                         for(int i = 0; i<world.getPartitionManager().getPartitions().size(); i++) {
                             if (i % handlerThreads == threadId) {
-                                chunkProviderServer.tickPartition(i);
                                 world.tickPartition(i);
                             }
                         }

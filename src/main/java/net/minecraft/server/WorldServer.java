@@ -310,7 +310,7 @@ public class WorldServer extends World {
     }
     
     public void tickPartition(int index) {
-        this.getPartitionManager().tickPartitionEntities(index, this);
+        this.getChunkProvider().tickPartition(index, this.getPartitionManager());
     }
 
     public void a(Chunk chunk, int i) {
