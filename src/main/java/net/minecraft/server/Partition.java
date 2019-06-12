@@ -11,11 +11,22 @@ public class Partition {
 
     public List<PlayerChunk> chunks;
     public List<Entity> entities;
+    private TickListServer<Block> blockTickListServer;
+    private TickListServer<FluidType> fluidTickListServer;
     private long lastTickTime;
 
-    Partition() {
+    Partition(WorldServer world) {
         this.chunks = new ArrayList<>();
         this.entities = new ArrayList<>();
+
+        // Create individual TickListServer's for each Partition
+        this.blockTickListServer = new TickListServer<Block>(world, (block) -> {
+            return block == null || block.getBlockData().isAir();
+        }, IRegistry.BLOCK::getKey, IRegistry.BLOCK::get, world::b, "Blocks");
+
+        this.fluidTickListServer = new TickListServer<FluidType>(world, (fluidtype) -> {
+            return fluidtype == null || fluidtype == FluidTypes.EMPTY;
+        }, IRegistry.FLUID::getKey, IRegistry.FLUID::get, world::a, "Fluids");
     }
 
     long mergeRadius = 32;

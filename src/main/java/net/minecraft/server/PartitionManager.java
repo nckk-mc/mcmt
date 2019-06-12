@@ -8,11 +8,15 @@ import java.util.function.Function;
 public class PartitionManager {
 
     private List<Partition> partitions;
+    private WorldServer world;
     public List<Partition> getPartitions() {
         return this.partitions;
     }
 
-    public PartitionManager() {
+    public PartitionManager(WorldServer world) {
+
+        this.world = world;
+
         this.partitions = new ArrayList<>();
     }
 
@@ -41,7 +45,7 @@ public class PartitionManager {
         }
 
         if (partitionsInRange.isEmpty()) {
-            Partition target = new Partition();
+            Partition target = new Partition(this.world);
             this.partitions.add(target);
             addToPartition.accept(target);
             System.out.println("MCMT | Created Partition " + (this.partitions.size() - 1));

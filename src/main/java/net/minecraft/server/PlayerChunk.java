@@ -352,8 +352,8 @@ public class PlayerChunk {
                     Chunk chunk = (Chunk) chunkAccess;
                     chunk.loadCallback();
 
-                    // nckk
-                    this.getFullChunk().getWorld().getPartitionManager().addChunk(this);
+                    // MCMT
+                    this.getFullChunk().getWorld().getWorldData().world.getPartitionManager().addChunk(this);
                 });
             });
         }

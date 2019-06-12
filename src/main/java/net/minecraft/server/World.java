@@ -173,13 +173,10 @@ public abstract class World implements IIBlockAccess, GeneratorAccess, AutoClose
         this.keepSpawnInMemory = this.paperConfig.keepSpawnInMemory; // Paper
         this.entityLimiter = new org.spigotmc.TickLimiter(spigotConfig.entityMaxTickTime);
         this.tileLimiter = new org.spigotmc.TickLimiter(spigotConfig.tileMaxTickTime);
-		this.partitionManager = new PartitionManager();
+
     }
 	
-	private PartitionManager partitionManager;
-    public PartitionManager getPartitionManager() {
-        return this.partitionManager;
-    }
+
 
     @Override
     public BiomeBase getBiome(BlockPosition blockposition) {

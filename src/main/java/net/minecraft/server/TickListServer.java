@@ -41,7 +41,7 @@ public class TickListServer<T> implements TickList<T> {
     private final co.aikar.timings.Timing timingTicking; // Paper
     // Paper end
 
-    public void a() {
+    public void doTick() {
         int i = this.nextTickList.size();
 
         if (false) { // CraftBukkit
@@ -114,7 +114,7 @@ public class TickListServer<T> implements TickList<T> {
 
     @Override
     public void a(Stream<NextTickListEntry<T>> stream) {
-        stream.forEach(this::a);
+        stream.forEach(this::add);
     }
 
     public List<NextTickListEntry<T>> a(ChunkCoordIntPair chunkcoordintpair, boolean flag, boolean flag1) {
@@ -176,7 +176,7 @@ public class TickListServer<T> implements TickList<T> {
                 BlockPosition blockposition1 = nextticklistentry.a.a((BaseBlockPosition) blockposition);
                 T t0 = nextticklistentry.b();
 
-                this.a(new NextTickListEntry<>(blockposition1, t0, nextticklistentry.b, nextticklistentry.c));
+                this.add(new NextTickListEntry<>(blockposition1, t0, nextticklistentry.b, nextticklistentry.c));
             }
         }
 
@@ -216,12 +216,12 @@ public class TickListServer<T> implements TickList<T> {
     @Override
     public void a(BlockPosition blockposition, T t0, int i, TickListPriority ticklistpriority) {
         if (!this.a.test(t0)) {
-            this.a(new NextTickListEntry<>(blockposition, t0, (long) i + this.f.getTime(), ticklistpriority));
+            this.add(new NextTickListEntry<>(blockposition, t0, (long) i + this.f.getTime(), ticklistpriority));
         }
 
     }
 
-    private void a(NextTickListEntry<T> nextticklistentry) {
+    private void add(NextTickListEntry<T> nextticklistentry) {
         if (!this.nextTickListHash.contains(nextticklistentry)) {
             this.nextTickListHash.add(nextticklistentry);
             this.nextTickList.add(nextticklistentry);

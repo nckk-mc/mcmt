@@ -1,8 +1,5 @@
 package net.minecraft.server;
 
-import co.aikar.timings.TimingHistory;
-import co.aikar.timings.Timings;
-
 import com.destroystokyo.paper.PaperWorldConfig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -10,7 +7,6 @@ import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -119,6 +115,13 @@ public class WorldServer extends World {
 
         this.mobSpawnerTrader = this.worldProvider.getDimensionManager().getType() == DimensionManager.OVERWORLD ? new MobSpawnerTrader(this) : null; // CraftBukkit - getType()
         this.getServer().addWorld(this.getWorld()); // CraftBukkit
+
+        this.partitionManager = new PartitionManager(this);
+    }
+
+    private PartitionManager partitionManager;
+    public PartitionManager getPartitionManager() {
+        return this.partitionManager;
     }
 
     public void doTick(BooleanSupplier booleansupplier) {
@@ -265,8 +268,8 @@ public class WorldServer extends World {
         gameprofilerfiller.exitEnter("tickPending");
         timings.scheduledBlocks.startTiming(); // Spigot
         if (this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES) {
-            this.nextTickListBlock.a();
-            this.nextTickListFluid.a();
+            this.nextTickListBlock.doTick();
+            this.nextTickListFluid.doTick();
         }
         timings.scheduledBlocks.stopTiming(); // Spigot
 
@@ -470,7 +473,7 @@ public class WorldServer extends World {
         this.emptyTime = 0;
     }
 
-    private void a(NextTickListEntry<FluidType> nextticklistentry) {
+    public void a(NextTickListEntry<FluidType> nextticklistentry) {
         Fluid fluid = this.getFluid(nextticklistentry.a);
 
         if (fluid.getType() == nextticklistentry.b()) {
@@ -479,7 +482,7 @@ public class WorldServer extends World {
 
     }
 
-    private void b(NextTickListEntry<Block> nextticklistentry) {
+    public void b(NextTickListEntry<Block> nextticklistentry) {
         IBlockData iblockdata = this.getType(nextticklistentry.a);
 
         if (iblockdata.getBlock() == nextticklistentry.b()) {
