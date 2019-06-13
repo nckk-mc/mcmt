@@ -845,7 +845,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
     // Paper End
     // Spigot End
 
-    public int tickingThreadCount = 2;
+    public int tickingThreadCount = Runtime.getRuntime().availableProcessors()-1;
     long tickDuration = 50_000_000L; // ns
     volatile int handlerThreads = 0;
     private void scheduleChunkHandler(int threadId) {
@@ -853,7 +853,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
         Thread thread = new Thread("Partition Handler #" + threadId) {
             public void run() {
-                MinecraftServer.LOGGER.warn("MCMT | Running Partition Handler #" + threadId);
+                MinecraftServer.LOGGER.warn("MCMT | Running Partition Thread #" + threadId);
 
                 long ticks = 0;
                 long start = System.nanoTime();
@@ -880,13 +880,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                     double tps = (ticks / elapsedSinceLastLog);
                     if (elapsedSinceLastLog > 9) {
                         getServer().threadsTPS.set(threadId, tps);
-                        MinecraftServer.LOGGER.warn("MCMT | Partition Handler #" + threadId + " TPS: " + tps);
+                        MinecraftServer.LOGGER.warn("MCMT | Partition Thread #" + threadId + " TPS: " + tps);
                         start = System.nanoTime();
                         ticks = 0;
                     }
                 }
 
-                MinecraftServer.LOGGER.warn("MCMT | Exiting Partition Handler #" + threadId);
+                MinecraftServer.LOGGER.warn("MCMT | Exiting Partition Thread #" + threadId);
             }
         };
         thread.start();

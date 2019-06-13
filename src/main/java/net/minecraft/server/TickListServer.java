@@ -41,6 +41,10 @@ public class TickListServer<T> implements TickList<T> {
     private final co.aikar.timings.Timing timingTicking; // Paper
     // Paper end
 
+    public Set<NextTickListEntry<T>> getNextTickList() {
+        return this.nextTickListHash;
+    }
+
     public void doTick() {
         int i = this.nextTickList.size();
 
