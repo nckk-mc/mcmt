@@ -36,18 +36,29 @@ public class PartitionInfoCommand extends Command
 
             sender.sendMessage( ChatColor.GOLD + "Partition debug info:");
             for (WorldServer world : MinecraftServer.getServer().getWorlds()) {
+                sender.sendMessage( ChatColor.DARK_GREEN + "World " + world.getWorld().getName());
                 List<Partition> partitions = world.getPartitionManager().getPartitions();
                 for (int i=0; i<partitions.size(); i++) {
                     Partition partition = partitions.get(i);
-
-                    if (partition.isInRadius(coordinates, 1)) {
-                        sender.sendMessage(ChatColor.GOLD + "You are in partition #" + i);
-                        return true;
+                    sender.sendMessage(ChatColor.BLUE + "Partition #" + i);
+                    int chunkCount = partition.chunks.size();
+                    if (chunkCount > 0) {
+                        sender.sendMessage(ChatColor.LIGHT_PURPLE + " - Chunks: " + chunkCount + " @ " + partition.getChunkBoundingBox());
+                    }
+                    int entityCount = partition.entities.size();
+                    if (entityCount > 0) {
+                        sender.sendMessage(ChatColor.LIGHT_PURPLE + " - Entities: " + entityCount + " @ " + partition.getEntityBoundingBox());
+                    }
+                    int blockCount = partition.blockTickListServer.getNextTickList().size();
+                    if (blockCount > 0) {
+                        sender.sendMessage(ChatColor.LIGHT_PURPLE + " - Blocks: " + blockCount + " @ " + partition.getBlockTickBoundingBox());
+                    }
+                    int fluidCount = partition.fluidTickListServer.getNextTickList().size();
+                    if (fluidCount > 0) {
+                        sender.sendMessage(ChatColor.LIGHT_PURPLE + " - Fluids: " + fluidCount + " @ " + partition.getFluidTickBoundingBox());
                     }
                 }
             }
-
-            sender.sendMessage(ChatColor.RED + "Sorry, we didn't seem to find you in any of the partitions X: " + coordinates.x + " Z: " + coordinates.z);
         }
 
         return false;

@@ -5,6 +5,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.bukkit.util.BoundingBox;
 import org.spigotmc.ActivationRange;
 
 public class Partition {
@@ -47,11 +49,19 @@ public class Partition {
     }
 
     public boolean isInRadius(ChunkCoordIntPair pos, long radius) {
-        for (int i2 = 0; i2 < this.chunks.size(); ++i2) {
-            Chunk partitionChunk = this.chunks.get(i2).getFullChunk();
+        for (int i = 0; i < this.chunks.size(); ++i) {
+            Chunk partitionChunk = this.chunks.get(i).getFullChunk();
             ChunkCoordIntPair partitionPos = partitionChunk.getPos();
-            if ((long)Math.abs(partitionPos.x - pos.x) > radius || (long)Math.abs(partitionPos.z - pos.z) > radius) continue;
-            return true;
+            if ((long)Math.abs(partitionPos.x - pos.x) <= radius && (long)Math.abs(partitionPos.z - pos.z) <= radius) {
+                return true;
+            }
+        }
+        for (int i = 0; i < this.entities.size(); ++i) {
+            Chunk partitionChunk = this.entities.get(i).getCurrentChunk();
+            ChunkCoordIntPair partitionPos = partitionChunk.getPos();
+            if ((long)Math.abs(partitionPos.x - pos.x) <= radius && (long)Math.abs(partitionPos.z - pos.z) <= radius) {
+                return true;
+            }
         }
         return false;
     }
@@ -111,6 +121,68 @@ public class Partition {
                 }
             }
         }
+    }
+
+    public BoundingBox getChunkBoundingBox() {
+        double minX = 1e99, maxX = -1e99;
+        double minY = 0, maxY = 255;
+        double minZ = 1e99, maxZ = -1e99;
+        for (int i=0; i<this.chunks.size(); i++) {
+            PlayerChunk playerChunk = this.chunks.get(i);
+            ChunkCoordIntPair pos = playerChunk.getFullChunk().getPos();
+
+            minX = Math.min(minX, pos.x);
+            maxX = Math.max(maxX, pos.x);
+            minZ = Math.min(minZ, pos.z);
+            maxZ = Math.max(maxZ, pos.z);
+        }
+        return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+    public BoundingBox getEntityBoundingBox() {
+        double minX = 1e99, maxX = -1e99;
+        double minY = 0, maxY = 255;
+        double minZ = 1e99, maxZ = -1e99;
+        for (int i=0; i<this.entities.size(); i++) {
+            Entity entity = this.entities.get(i);
+            ChunkCoordIntPair pos = entity.getCurrentChunk().getPos();
+            minX = Math.min(minX, pos.x);
+            maxX = Math.max(maxX, pos.x);
+            minZ = Math.min(minZ, pos.z);
+            maxZ = Math.max(maxZ, pos.z);
+        }
+        return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+    public BoundingBox getBlockTickBoundingBox() {
+        double minX = 1e99, maxX = -1e99;
+        double minY = 0, maxY = 255;
+        double minZ = 1e99, maxZ = -1e99;
+        for (NextTickListEntry<Block> entry : blockTickListServer.getNextTickList()) {
+            BlockPosition blockPosition = entry.a;
+            int x = Math.floorDiv(blockPosition.getX(), 16);
+            int z = Math.floorDiv(blockPosition.getZ(), 16);
+            ChunkCoordIntPair pos = new ChunkCoordIntPair(x, z);
+            minX = Math.min(minX, pos.x);
+            maxX = Math.max(maxX, pos.x);
+            minZ = Math.min(minZ, pos.z);
+            maxZ = Math.max(maxZ, pos.z);
+        }
+        return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+    public BoundingBox getFluidTickBoundingBox() {
+        double minX = 1e99, maxX = -1e99;
+        double minY = 0, maxY = 255;
+        double minZ = 1e99, maxZ = -1e99;
+        for (NextTickListEntry<FluidType> entry : fluidTickListServer.getNextTickList()) {
+            BlockPosition blockPosition = entry.a;
+            int x = Math.floorDiv(blockPosition.getX(), 16);
+            int z = Math.floorDiv(blockPosition.getZ(), 16);
+            ChunkCoordIntPair pos = new ChunkCoordIntPair(x, z);
+            minX = Math.min(minX, pos.x);
+            maxX = Math.max(maxX, pos.x);
+            minZ = Math.min(minZ, pos.z);
+            maxZ = Math.max(maxZ, pos.z);
+        }
+        return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     public void tickChunks(WorldServer world, PlayerChunkMap playerChunkMap, boolean allowAnimals, boolean allowMonsters)
@@ -261,15 +333,5 @@ public class Partition {
         for (j = 0; j < partition.entities.size(); ++j) {
             this.addEntity(partition.entities.get(j));
         }
-    }
-
-    public void assignFluidToTick(NextTickListEntry<FluidType> nextTickListEntry)
-    {
-        this.fluidTickListServer.add(nextTickListEntry);
-    }
-
-    public void assignBlockToTick(NextTickListEntry<Block> nextTickListEntry)
-    {
-        this.blockTickListServer.add(nextTickListEntry);
     }
 }
