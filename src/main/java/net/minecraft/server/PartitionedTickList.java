@@ -43,21 +43,18 @@ public class PartitionedTickList<T> implements TickList<T> {
 
     @Override
     public void a(BlockPosition blockposition, T t0, int i, TickListPriority ticklistpriority) {
-        Partition partition = this.partitionManager.getPartition(blockposition);
-        this.getTickListForPartition.apply(partition).a(blockposition, t0, i, ticklistpriority);
+        this.getTickListServer(blockposition).a(blockposition, t0, i, ticklistpriority);
     }
 
     @Override
     public boolean b(BlockPosition blockPosition, T t) {
-        Partition partition = this.partitionManager.getPartition(blockPosition);
-        return this.getTickListForPartition.apply(partition).b(blockPosition, t);
+        return getTickListServer(blockPosition).b(blockPosition, t);
     }
 
     @Override
     public void a(Stream<NextTickListEntry<T>> stream) {
         stream.forEach(entry -> {
-            Partition partition = this.partitionManager.getPartition(entry.a);
-            this.getTickListForPartition.apply(partition).add(entry);
+            getTickListServer(entry.a).add(entry);
         });
     }
 }
