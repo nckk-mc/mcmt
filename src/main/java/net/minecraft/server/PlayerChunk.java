@@ -271,6 +271,9 @@ public class PlayerChunk {
                     // These actions may however happen deferred, so we manually set the needsSaving flag already here.
                     chunk.setNeedsSaving(true);
                     chunk.unloadCallback();
+
+                    // MCMT
+                    this.getFullChunk().getWorld().getWorldData().world.getPartitionManager().removeChunk(this);
                 });
             });
         }

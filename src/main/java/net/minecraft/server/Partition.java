@@ -113,6 +113,16 @@ public class Partition {
         }
     }
 
+    public boolean removeChunk(PlayerChunk chunk)
+    {
+        return this.chunks.remove(chunk);
+    }
+
+    public boolean removeEntitiy(Entity entity)
+    {
+        return this.entities.remove(entity);
+    }
+
     public void tickChunks(WorldServer world, PlayerChunkMap playerChunkMap, boolean allowAnimals, boolean allowMonsters)
     {
         ChunkMapDistance chunkMapDistance = playerChunkMap.e();

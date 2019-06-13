@@ -96,13 +96,25 @@ public class PartitionManager {
 
     public void removeEntity(Entity entity)
     {
-        for(int i = 0; i < partitions.size(); i++)
+        remove(p -> p.isInMergeDistance(entity), p -> p.removeEntitiy(entity));
+    }
+
+    public void removeChunk(PlayerChunk playerChunk)
+    {
+        remove(p -> p.isInMergeDistance(playerChunk), p -> p.removeChunk(playerChunk));
+    }
+
+    private void remove(Function<Partition, Boolean> isInMergeDistance, Function<Partition, Boolean> removeFromPartition)
+    {
+        for(int i = 0; i < this.partitions.size(); i++)
         {
             Partition partition = this.partitions.get(i);
-            if(partition.entities.remove(entity))
+            if(isInMergeDistance.apply(partition))
             {
-                System.out.println("MCMT | Removed Entity: " + entity.getName());
-                return;
+                if(removeFromPartition.apply(partition))
+                {
+                    return;
+                }
             }
         }
     }
