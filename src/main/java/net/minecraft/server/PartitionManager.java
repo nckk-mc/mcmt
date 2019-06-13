@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import org.bukkit.craftbukkit.LoggerOutputStream;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -46,7 +48,8 @@ public class PartitionManager {
                 return partition;
             }
         }
-        return null; //Should never hit here
+        System.out.println("MCMT | Requested partition for area that isn't loaded");
+        return partitions.get(0); //Should never hit here
     }
 
     public void addChunk(PlayerChunk playerChunk) {
@@ -56,6 +59,11 @@ public class PartitionManager {
     }
 
     public void addEntity(Entity entity) {
+        if(entity instanceof EntityPlayer)
+        {
+            System.out.println("MCMT | Ignorning player");
+            return;
+        }
         //System.out.println("MCMT | Loaded Entity: " + entity.getName());
         add(p -> p.isInMergeDistance(entity), p -> p.addEntity(entity));
     }
@@ -96,12 +104,12 @@ public class PartitionManager {
 
     public void removeEntity(Entity entity)
     {
-        remove(p -> p.isInMergeDistance(entity), p -> p.removeEntitiy(entity));
+        remove(p -> true, p -> p.removeEntitiy(entity));
     }
 
     public void removeChunk(PlayerChunk playerChunk)
     {
-        remove(p -> p.isInMergeDistance(playerChunk), p -> p.removeChunk(playerChunk));
+        remove(p -> true, p -> p.removeChunk(playerChunk));
     }
 
     private void remove(Function<Partition, Boolean> isInMergeDistance, Function<Partition, Boolean> removeFromPartition)
@@ -113,6 +121,11 @@ public class PartitionManager {
             {
                 if(removeFromPartition.apply(partition))
                 {
+                    if(partition.isEmpty())
+                    {
+                        System.out.println("MCMT | Removed partition");
+                        partitions.remove(i);
+                    }
                     return;
                 }
             }
@@ -125,5 +138,10 @@ public class PartitionManager {
         partition.tickEntities(worldServer);
         partition.fluidTickListServer.doTick();
         partition.blockTickListServer.doTick();
+        partition.tick();
+        if(partition.isEmpty())
+        {
+            this.partitions.remove(partition);
+        }
     }
 }

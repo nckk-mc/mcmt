@@ -15,11 +15,13 @@ public class Partition {
     public List<Entity> entities;
     public TickListServer<Block> blockTickListServer;
     public TickListServer<FluidType> fluidTickListServer;
+    private long age;
     private long lastTickTime;
 
     Partition(WorldServer world) {
         this.chunks = new ArrayList<>();
         this.entities = new ArrayList<>();
+        this.age = 0;
 
         // Create individual TickListServer's for each Partition
         this.blockTickListServer = new TickListServer<Block>(world, (block) -> {
@@ -58,9 +60,11 @@ public class Partition {
         }
         for (int i = 0; i < this.entities.size(); ++i) {
             Chunk partitionChunk = this.entities.get(i).getCurrentChunk();
-            ChunkCoordIntPair partitionPos = partitionChunk.getPos();
-            if ((long)Math.abs(partitionPos.x - pos.x) <= radius && (long)Math.abs(partitionPos.z - pos.z) <= radius) {
-                return true;
+            if(partitionChunk != null) {
+                ChunkCoordIntPair partitionPos = partitionChunk.getPos();
+                if ((long) Math.abs(partitionPos.x - pos.x) <= radius && (long) Math.abs(partitionPos.z - pos.z) <= radius) {
+                    return true;
+                }
             }
         }
         return false;
@@ -283,6 +287,11 @@ public class Partition {
             }
         }
     }
+
+    boolean isEmpty()
+    {
+        return (this.chunks.isEmpty() && this.entities.isEmpty() && this.age > 5);
+    }
     
     public void tickEntities(WorldServer world) {
         world.timings.tickEntities.startTiming();
@@ -332,6 +341,11 @@ public class Partition {
 
         gameprofilerfiller.exit();
         world.timings.tickEntities.stopTiming(); // Spigot
+    }
+
+    public void tick()
+    {
+        this.age++;
     }
 
 
