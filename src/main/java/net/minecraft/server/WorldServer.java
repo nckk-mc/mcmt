@@ -977,7 +977,7 @@ public class WorldServer extends World {
 
                 if (!(entity instanceof EntityPlayer)) {
                     if (this.tickingEntities) {
-                        throw new IllegalStateException("Removing entity while ticking!");
+                        //throw new IllegalStateException("Removing entity while ticking!");
                     }
 
                     this.entitiesById.remove(entity.getId());
@@ -1094,7 +1094,7 @@ public class WorldServer extends World {
     public void removeEntity(Entity entity) {
         org.spigotmc.AsyncCatcher.catchOp( "entity remove"); // Spigot
         if (this.tickingEntities) {
-            throw new IllegalStateException("Removing entity while ticking!");
+            //throw new IllegalStateException("Removing entity while ticking!");
         } else {
             new com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
             this.removeEntityFromChunk(entity);
@@ -1277,13 +1277,13 @@ public class WorldServer extends World {
         return iblockdata.getBlock() == blockactiondata.b() ? iblockdata.a(this, blockactiondata.a(), blockactiondata.c(), blockactiondata.d()) : false;
     }
 
+    // MCMT
+    @Override
     public PartitionedTickList<Block> getBlockTickList() {
         return this.partitionManager.getPartionBlockTickList();
     }
 
-
-
-
+    // MCMT
     @Override
     public PartitionedTickList<FluidType> getFluidTickList() {
         return this.partitionManager.getPartionFluidTickList();

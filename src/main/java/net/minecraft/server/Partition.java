@@ -43,10 +43,14 @@ public class Partition {
     }
 
     public boolean isInMergeDistance(ChunkCoordIntPair pos) {
+       return isInRadius(pos, this.mergeRadius);
+    }
+
+    public boolean isInRadius(ChunkCoordIntPair pos, long radius) {
         for (int i2 = 0; i2 < this.chunks.size(); ++i2) {
             Chunk partitionChunk = this.chunks.get(i2).getFullChunk();
             ChunkCoordIntPair partitionPos = partitionChunk.getPos();
-            if ((long)Math.abs(partitionPos.x - pos.x) > this.mergeRadius || (long)Math.abs(partitionPos.z - pos.z) > this.mergeRadius) continue;
+            if ((long)Math.abs(partitionPos.x - pos.x) > radius || (long)Math.abs(partitionPos.z - pos.z) > radius) continue;
             return true;
         }
         return false;
@@ -199,10 +203,11 @@ public class Partition {
     }
     
     public void tickEntities(WorldServer world) {
-        /*world.timings.tickEntities.startTiming();
+        world.timings.tickEntities.startTiming();
         world.worldProvider.l();
         GameProfilerFiller gameprofilerfiller = world.getMethodProfiler();
-        gameprofilerfiller.enter("global");*/
+        gameprofilerfiller.enter("global");
+
         for (int i = 0; i < this.entities.size(); ++i) {
             Entity entity = this.entities.get(i);
             if (entity == null) continue;
@@ -217,13 +222,13 @@ public class Partition {
                 this.entities.remove(i--);
             }
         }
-        /*
+
         gameprofilerfiller.exitEnter("regular");
         world.tickingEntities = true;
         
         ActivationRange.activateEntities(world);
         
-        world.timings.entityTick.startTiming();*/
+        world.timings.entityTick.startTiming();
         for (int i = 0; i < this.entities.size(); ++i) {
             Entity entity = this.entities.get(i);
             Entity vechile = entity.getVehicle();
@@ -240,6 +245,11 @@ public class Partition {
                 world.unregisterEntity(entity);
             }
         }
+        world.timings.entityTick.stopTiming(); // Spigot
+        world.tickingEntities = false;
+
+        gameprofilerfiller.exit();
+        world.timings.tickEntities.stopTiming(); // Spigot
     }
 
 

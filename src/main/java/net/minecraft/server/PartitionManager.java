@@ -20,36 +20,25 @@ public class PartitionManager {
         this.world = world;
 
         this.partitions = new ArrayList<>();
-        this.partionedBlockTickList = new PartitionedTickList<>(world, this::assignBlockToTick);
-        this.partionedFluidTickList = new PartitionedTickList<>(world, this::assignFluidToTick);
+        this.partionedBlockTickList = new PartitionedTickList<>(this, x -> x.blockTickListServer);
+        this.partionedFluidTickList = new PartitionedTickList<>(this, x -> x.fluidTickListServer);
     }
 
-    private void assignBlockToTick(NextTickListEntry<Block> nextTickListEntry)
-    {
-        getPartition(nextTickListEntry.a).assignBlockToTick(nextTickListEntry);
-    }
-
-    private void assignFluidToTick(NextTickListEntry<FluidType> nextTickListEntry)
-    {
-        getPartition(nextTickListEntry.a).assignFluidToTick(nextTickListEntry);
-    }
-
-    public PartitionedTickList<Block> getPartionBlockTickList()
-    {
+    public PartitionedTickList<Block> getPartionBlockTickList() {
         return this.partionedBlockTickList;
     }
     
-    public PartitionedTickList<FluidType> getPartionFluidTickList()
-    {
+    public PartitionedTickList<FluidType> getPartionFluidTickList() {
         return this.partionedFluidTickList;
     }
 
-    private Partition getPartition(BlockPosition blockPosition)
-    {
+    public Partition getPartition(BlockPosition blockPosition) {
         int x = Math.floorDiv(blockPosition.getX(), 16);
         int z = Math.floorDiv(blockPosition.getZ(), 16);
         ChunkCoordIntPair chunk = new ChunkCoordIntPair(x, z);
-
+        return getPartition(chunk);
+    }
+    public Partition getPartition(ChunkCoordIntPair chunk) {
         for (int i = 0; i < this.partitions.size(); i++) {
             Partition partition = this.partitions.get(i);
             if(partition.isInMergeDistance(chunk))
@@ -63,13 +52,11 @@ public class PartitionManager {
     public void addChunk(PlayerChunk playerChunk) {
         //Chunk chunk = playerChunk.getFullChunk();
         //System.out.println("MCMT | Loaded Chunk: " + Integer.toString(chunk.getPos().x) + ", " + Integer.toString(chunk.getPos().z));
-
         add(p -> p.isInMergeDistance(playerChunk), p -> p.addChunk(playerChunk));
     }
 
     public void addEntity(Entity entity) {
-        System.out.println("MCMT | Loaded Entity: " + entity.getName());
-
+        //System.out.println("MCMT | Loaded Entity: " + entity.getName());
         add(p -> p.isInMergeDistance(entity), p -> p.addEntity(entity));
     }
 

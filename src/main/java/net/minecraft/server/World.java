@@ -30,7 +30,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.event.block.BlockPhysicsEvent;
 // CraftBukkit end
 
-public abstract class World implements IIBlockAccess, AutoCloseable, GeneratorAccess {
+public abstract class World implements IIBlockAccess, GeneratorAccess, AutoCloseable {
 
     protected static final Logger LOGGER = LogManager.getLogger();
     private static final EnumDirection[] a = EnumDirection.values();
