@@ -60,6 +60,9 @@ public abstract class WorldProvider {
 
     public void k() {}
 
+    // MCMT | Helper
+    public void doBossBattle(){ this.l(); }
+
     public void l() {}
 
     public abstract ChunkGenerator<?> getChunkGenerator();

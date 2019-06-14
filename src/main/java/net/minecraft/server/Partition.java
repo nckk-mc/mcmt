@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.destroystokyo.paper.event.server.ServerExceptionEvent;
+import com.destroystokyo.paper.exception.ServerInternalException;
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.ArrayList;
@@ -294,18 +296,40 @@ public class Partition {
     }
     
     public void tickEntities(WorldServer world) {
+
         world.timings.tickEntities.startTiming();
-        world.worldProvider.l();
+        world.worldProvider.doBossBattle();
         GameProfilerFiller gameprofilerfiller = world.getMethodProfiler();
         gameprofilerfiller.enter("global");
 
         for (int i = 0; i < this.entities.size(); ++i) {
             Entity entity = this.entities.get(i);
-            if (entity == null) continue;
-            world.a(entity1 -> {
-                ++entity1.ticksLived;
-                entity1.tick();
-            }, entity);
+
+            if (entity == null)
+            {
+                System.out.println("MCMT | Removed Entity: " + entity.getName());
+                this.entities.remove(i--);
+                continue;
+            }
+
+            try {
+                world.timings.tickEntities.startTiming();
+                entity.tickTimer.startTiming();
+                // Spigot end
+                entity.ticksLived++;
+                entity.tick();
+            } catch (Throwable throwable) {
+                // Paper start - Prevent tile entity and entity crashes
+                String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX + "," + entity.locY + "," + entity.locZ;
+                System.err.println(msg);
+                throwable.printStackTrace();
+                world.getServer().getPluginManager().callEvent(new ServerExceptionEvent(new ServerInternalException(msg, throwable)));
+                entity.dead = true;
+                // Paper end
+            } finally {
+                entity.tickTimer.stopTiming();
+                world.timings.tickEntities.stopTiming();
+            }
             
             if (entity.dead)
             {
@@ -322,9 +346,9 @@ public class Partition {
         world.timings.entityTick.startTiming();
         for (int i = 0; i < this.entities.size(); ++i) {
             Entity entity = this.entities.get(i);
-            Entity vechile = entity.getVehicle();
-            if (vechile != null) {
-                if (!vechile.dead && vechile.w(entity)) continue;
+            Entity vehicle = entity.getVehicle();
+            if (vehicle != null) {
+                if (!vehicle.dead && vehicle.w(entity)) continue;
                 entity.stopRiding();
             }
             if (!entity.dead && !(entity instanceof EntityComplexPart)) {

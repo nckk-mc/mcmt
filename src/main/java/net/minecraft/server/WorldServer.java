@@ -492,7 +492,7 @@ public class WorldServer extends World {
     }
 
     public void entityJoinedWorld(Entity entity) {
-        if (entity instanceof EntityHuman || this.getChunkProvider().a(entity)) {
+        if (entity instanceof EntityHuman) {
             // Spigot start
             if (!org.spigotmc.ActivationRange.checkIfActive(entity)) {
                 entity.ticksLived++;
