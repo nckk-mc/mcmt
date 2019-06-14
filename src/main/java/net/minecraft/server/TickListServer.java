@@ -22,7 +22,9 @@ public class TickListServer<T> implements TickList<T> {
     private final Function<T, MinecraftKey> b;
     private final Function<MinecraftKey, T> c;
     private final Set<NextTickListEntry<T>> nextTickListHash = Sets.newHashSet();
-    private final TreeSet<NextTickListEntry<T>> nextTickList = Sets.newTreeSet(NextTickListEntry.a());
+    // MCMT: Made this set synchronyzed so it doesn't creash the processing thread anymore
+    // TODO: find a better data structure, or find a way to minimize time spent locking.
+    private final Set<NextTickListEntry<T>> nextTickList = Collections.synchronizedSortedSet(Sets.newTreeSet(NextTickListEntry.a()));
     private final WorldServer f;
     private final Queue<NextTickListEntry<T>> g = Queues.newArrayDeque();
     private final List<NextTickListEntry<T>> h = Lists.newArrayList();
@@ -235,6 +237,5 @@ public class TickListServer<T> implements TickList<T> {
             this.nextTickListHash.add(nextticklistentry);
             this.nextTickList.add(nextticklistentry);
         }
-
     }
 }
