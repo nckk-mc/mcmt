@@ -5,9 +5,7 @@ import com.mojang.datafixers.util.Either;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
@@ -30,9 +28,12 @@ public class ChunkProviderServer extends IChunkProvider {
     private long lastTickTime;
     public boolean allowMonsters = true;
     public boolean allowAnimals = true;
-    private final long[] cachePos = new long[4];
-    private final ChunkStatus[] cacheStatus = new ChunkStatus[4];
-    private final IChunkAccess[] cacheChunk = new IChunkAccess[4];
+    private final int cacheSize = 4;
+    private final Map<Long, IChunkAccess> chunkMap = new HashMap<>();
+    private final Map<Long, ChunkStatus> statusMap = new HashMap<>();
+    private final long[] cachePos = new long[cacheSize];
+    private final ChunkStatus[] cacheStatus = new ChunkStatus[cacheSize];
+    private final IChunkAccess[] cacheChunk = new IChunkAccess[cacheSize];
 
     public ChunkProviderServer(WorldServer worldserver, File file, DataFixer datafixer, DefinedStructureManager definedstructuremanager, Executor executor, ChunkGenerator<?> chunkgenerator, int i, int j, WorldLoadListener worldloadlistener, Supplier<WorldPersistentData> supplier) {
         this.world = worldserver;
@@ -67,30 +68,33 @@ public class ChunkProviderServer extends IChunkProvider {
     @Nullable
     @Override
     public IChunkAccess getChunkAt(int i, int j, ChunkStatus chunkstatus, boolean flag) {
-        if (Thread.currentThread() != this.serverThread) {
-            return (IChunkAccess) CompletableFuture.supplyAsync(() -> {
-                return this.getChunkAt(i, j, chunkstatus, flag);
-            }, this.serverThreadQueue).join();
-        } else {
-            long k = ChunkCoordIntPair.pair(i, j);
+        long k = ChunkCoordIntPair.pair(i, j);
 
-            IChunkAccess ichunkaccess;
+        IChunkAccess ichunkaccess;
 
-            for (int l = 0; l < 4; ++l) {
-                if (k == this.cachePos[l] && chunkstatus == this.cacheStatus[l]) {
-                    ichunkaccess = this.cacheChunk[l];
-                    if (ichunkaccess != null) { // CraftBukkit - the chunk can become accessible in the meantime TODO for non-null chunks it might also make sense to check that the chunk's state hasn't changed in the meantime
-                        return ichunkaccess;
-                    }
-                }
-            }
+        if (this.statusMap.get(k) == chunkstatus) {
+            ichunkaccess = this.chunkMap.get(k);
+            if (ichunkaccess != null) return ichunkaccess;
+        }
 
+//        for (int l = 0; l < cacheSize; ++l) {
+//            if (k == this.cachePos[l] && chunkstatus == this.cacheStatus[l]) {
+//                ichunkaccess = this.cacheChunk[l];
+//                if (ichunkaccess != null) { // CraftBukkit - the chunk can become accessible in the meantime TODO for non-null chunks it might also make sense to check that the chunk's state hasn't changed in the meantime
+//                    return ichunkaccess;
+//                }
+//            }
+//        }
+
+        Supplier<IChunkAccess> chunkSupplier = () -> {
             world.timings.syncChunkLoadTimer.startTiming(); // Spigot
             CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = this.getChunkFutureMainThread(i, j, chunkstatus, flag);
-
             this.serverThreadQueue.awaitTasks(completablefuture::isDone);
             world.timings.syncChunkLoadTimer.stopTiming(); // Spigot
-            ichunkaccess = (IChunkAccess) ((Either) completablefuture.join()).map((ichunkaccess1) -> {
+
+            return (IChunkAccess) ((Either) completablefuture.join()).map((ichunkaccess1) -> {
+                this.statusMap.merge(k, chunkstatus, (oldValue, newValue) -> chunkstatus);
+                this.chunkMap.merge(k, (IChunkAccess)ichunkaccess1, (oldValue, newValue) -> newValue);
                 return ichunkaccess1;
             }, (playerchunk_failure) -> {
                 if (flag) {
@@ -99,18 +103,24 @@ public class ChunkProviderServer extends IChunkProvider {
                     return null;
                 }
             });
+        };
 
-            for (int i1 = 3; i1 > 0; --i1) {
-                this.cachePos[i1] = this.cachePos[i1 - 1];
-                this.cacheStatus[i1] = this.cacheStatus[i1 - 1];
-                this.cacheChunk[i1] = this.cacheChunk[i1 - 1];
-            }
-
-            this.cachePos[0] = k;
-            this.cacheStatus[0] = chunkstatus;
-            this.cacheChunk[0] = ichunkaccess;
-            return ichunkaccess;
+        if (Thread.currentThread() != this.serverThread) {
+            ichunkaccess = CompletableFuture.supplyAsync(chunkSupplier, this.serverThreadQueue).join();
+        } else {
+            ichunkaccess = chunkSupplier.get();
         }
+
+//        for (int i1 = cacheSize-1; i1 > 0; --i1) {
+//            this.cachePos[i1] = this.cachePos[i1 - 1];
+//            this.cacheStatus[i1] = this.cacheStatus[i1 - 1];
+//            this.cacheChunk[i1] = this.cacheChunk[i1 - 1];
+//        }
+//
+//        this.cachePos[0] = k;
+//        this.cacheStatus[0] = chunkstatus;
+//        this.cacheChunk[0] = ichunkaccess;
+        return ichunkaccess;
     }
 
     private void clearCache() {
