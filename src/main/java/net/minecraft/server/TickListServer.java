@@ -3,13 +3,9 @@ package net.minecraft.server;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -24,7 +20,7 @@ public class TickListServer<T> implements TickList<T> {
     private final Set<NextTickListEntry<T>> nextTickListHash = Sets.newHashSet();
     // MCMT: Made this set synchronyzed so it doesn't creash the processing thread anymore
     // TODO: find a better data structure, or find a way to minimize time spent locking.
-    private final Set<NextTickListEntry<T>> nextTickList = Collections.synchronizedSortedSet(Sets.newTreeSet(NextTickListEntry.a()));
+    private final SortedSet<NextTickListEntry<T>> nextTickList = new ConcurrentSkipListSet<>(NextTickListEntry.a());
     private final WorldServer f;
     private final Queue<NextTickListEntry<T>> g = Queues.newArrayDeque();
     private final List<NextTickListEntry<T>> h = Lists.newArrayList();
