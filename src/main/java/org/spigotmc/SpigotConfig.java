@@ -28,6 +28,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.mcmt.PartitionInfoCommand;
+import org.mcmt.ProfilingCommand;
 
 public class SpigotConfig
 {
@@ -286,6 +287,11 @@ public class SpigotConfig
     private static void partitionCommand()
     {
         commands.put( "partition", new PartitionInfoCommand( "partition" ) );
+    }
+
+    private static void profilingCommand()
+    {
+        commands.put( "profiling", new ProfilingCommand( "profiling" ) );
     }
 
     private static void tpsCommand()

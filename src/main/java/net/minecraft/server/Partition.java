@@ -4,9 +4,9 @@ import com.destroystokyo.paper.event.server.ServerExceptionEvent;
 import com.destroystokyo.paper.exception.ServerInternalException;
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
+import java.util.function.Consumer;
 
 import org.bukkit.util.BoundingBox;
 import org.spigotmc.ActivationRange;
@@ -201,8 +201,7 @@ public class Partition {
         return this.entities.remove(entity);
     }
 
-    public void tickChunks(WorldServer world, PlayerChunkMap playerChunkMap, boolean allowAnimals, boolean allowMonsters)
-    {
+    public void tickChunks(WorldServer world, PlayerChunkMap playerChunkMap, boolean allowAnimals, boolean allowMonsters) {
         ChunkMapDistance chunkMapDistance = playerChunkMap.e();
 
         long currentTime = world.getTime();
@@ -295,71 +294,81 @@ public class Partition {
         return (this.chunks.isEmpty() && this.entities.isEmpty() && this.age > 5);
     }
     
-    public void tickEntities(WorldServer world) {
+    public void tickEntities(WorldServer world, Profile profile) {
 
         world.timings.tickEntities.startTiming();
-        world.worldProvider.doBossBattle();
+
+        profile.profile("doBossBattle", p -> {
+            world.worldProvider.doBossBattle();
+        });
+
         GameProfilerFiller gameprofilerfiller = world.getMethodProfiler();
         gameprofilerfiller.enter("global");
 
-        for (int i = 0; i < this.entities.size(); ++i) {
-            Entity entity = this.entities.get(i);
+        profile.profile("entityLoop", p -> {
+            for (int i = 0; i < this.entities.size(); ++i) {
+                Entity entity = this.entities.get(i);
 
-            if (entity == null)
-            {
-                System.out.println("MCMT | Removed Entity: " + entity.getName());
-                this.entities.remove(i--);
-                continue;
-            }
+                if (entity == null)
+                {
+                    System.out.println("MCMT | Removed Entity: " + entity.getName());
+                    this.entities.remove(i--);
+                    continue;
+                }
 
-            try {
-                world.timings.tickEntities.startTiming();
-                entity.tickTimer.startTiming();
-                // Spigot end
-                entity.ticksLived++;
-                entity.tick();
-            } catch (Throwable throwable) {
-                // Paper start - Prevent tile entity and entity crashes
-                String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX + "," + entity.locY + "," + entity.locZ;
-                System.err.println(msg);
-                throwable.printStackTrace();
-                world.getServer().getPluginManager().callEvent(new ServerExceptionEvent(new ServerInternalException(msg, throwable)));
-                entity.dead = true;
-                // Paper end
-            } finally {
-                entity.tickTimer.stopTiming();
-                world.timings.tickEntities.stopTiming();
+                try {
+                    world.timings.tickEntities.startTiming();
+                    entity.tickTimer.startTiming();
+                    // Spigot end
+                    entity.ticksLived++;
+                    entity.tick();
+                } catch (Throwable throwable) {
+                    // Paper start - Prevent tile entity and entity crashes
+                    String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX + "," + entity.locY + "," + entity.locZ;
+                    System.err.println(msg);
+                    throwable.printStackTrace();
+                    world.getServer().getPluginManager().callEvent(new ServerExceptionEvent(new ServerInternalException(msg, throwable)));
+                    entity.dead = true;
+                    // Paper end
+                } finally {
+                    entity.tickTimer.stopTiming();
+                    world.timings.tickEntities.stopTiming();
+                }
+
+                if (entity.dead)
+                {
+                    System.out.println("MCMT | Removed Entity: " + entity.getName());
+                    this.entities.remove(i--);
+                }
             }
-            
-            if (entity.dead)
-            {
-                System.out.println("MCMT | Removed Entity: " + entity.getName());   
-                this.entities.remove(i--);
-            }
-        }
+        });
 
         gameprofilerfiller.exitEnter("regular");
         world.tickingEntities = true;
-        
-        ActivationRange.activateEntities(world);
-        
+
+        profile.profile("activateEntities", p -> {
+            ActivationRange.activateEntities(world);
+        });
+
         world.timings.entityTick.startTiming();
-        for (int i = 0; i < this.entities.size(); ++i) {
-            Entity entity = this.entities.get(i);
-            Entity vehicle = entity.getVehicle();
-            if (vehicle != null) {
-                if (!vehicle.dead && vehicle.w(entity)) continue;
-                entity.stopRiding();
+        profile.profile("stop and remove", p -> {
+            for (int i = 0; i < this.entities.size(); ++i) {
+                Entity entity = this.entities.get(i);
+                Entity vehicle = entity.getVehicle();
+                if (vehicle != null) {
+                    if (!vehicle.dead && vehicle.w(entity)) continue;
+                    entity.stopRiding();
+                }
+                if (!entity.dead && !(entity instanceof EntityComplexPart)) {
+                    world.a(world::entityJoinedWorld, entity);
+                }
+
+                if (entity.dead) {
+                    world.removeEntityFromChunk(entity);
+                    world.unregisterEntity(entity);
+                }
             }
-            if (!entity.dead && !(entity instanceof EntityComplexPart)) {
-                world.a(world::entityJoinedWorld, entity);
-            }
-            
-            if (entity.dead) {
-                world.removeEntityFromChunk(entity);
-                world.unregisterEntity(entity);
-            }
-        }
+        });
         world.timings.entityTick.stopTiming(); // Spigot
         world.tickingEntities = false;
 
@@ -367,9 +376,26 @@ public class Partition {
         world.timings.tickEntities.stopTiming(); // Spigot
     }
 
-    public void tick()
-    {
-        this.age++;
+    public void tick(WorldServer worldServer, PlayerChunkMap playerChunkMap, boolean allowAnimals, boolean allowMonsters) {
+        profiler.profile("tick", tickProfile -> {
+            tickProfile.profile("tickChunks", profile -> {
+                tickChunks(worldServer, playerChunkMap, allowAnimals, allowMonsters);
+            });
+
+            tickProfile.profile("tickEntities", profile -> {
+                tickEntities(worldServer, profile);
+            });
+
+            tickProfile.profile("fluidTickListServer", profile -> {
+                fluidTickListServer.doTick();
+            });
+
+            tickProfile.profile("blockTickListServer", profile -> {
+                blockTickListServer.doTick();
+            });
+
+            this.age++;
+        });
     }
 
 
@@ -381,5 +407,53 @@ public class Partition {
         for (j = 0; j < partition.entities.size(); ++j) {
             this.addEntity(partition.entities.get(j));
         }
+    }
+
+    public static class Profile {
+        private String key;
+        private long started; // ns
+        private long stopped; // ns
+        private long elapsed;
+        private Map<String, Profile> children = new HashMap<>();
+        public Profile(String key) {
+            this.key = key;
+            this.started = System.nanoTime();
+        }
+        public Profile start(String key) {
+            Profile child = children.get(key);
+            if (child == null) {
+                child = new Profile(key);
+                children.put(key, child);
+            } else {
+                child.restart();
+            }
+            return child;
+        }
+        void restart() {
+            this.started = System.nanoTime();
+        }
+        public void stop() {
+            this.stopped = System.nanoTime();
+            elapsed += this.stopped - this.started;
+        }
+
+        public String getKey() { return this.key;}
+        public Collection<Profile> getChildren() { return this.children.values(); }
+        public long getElapsed() { return this.elapsed; }
+
+        public void profile(String key, Consumer<Profile> target) {
+            Profile profile = start(key);
+            target.accept(profile);
+            profile.stop();
+        }
+    }
+    private Profile profiler = new Profile("Partition");
+    public Profile startProfiling() {
+        profiler = new Profile("Partition");
+        return profiler;
+    }
+    public Profile stopProfiling() {
+        profiler.stop();
+        return profiler;
     }
 }

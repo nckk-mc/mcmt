@@ -131,11 +131,7 @@ public class PartitionManager {
 
     public void tickPartition(int index, WorldServer worldServer, PlayerChunkMap playerChunkMap, boolean allowAnimals, boolean allowMonsters) {
         Partition partition = this.partitions.get(index);
-        partition.tickChunks(worldServer, playerChunkMap, allowAnimals, allowMonsters);
-        partition.tickEntities(worldServer);
-        partition.fluidTickListServer.doTick();
-        partition.blockTickListServer.doTick();
-        partition.tick();
+        partition.tick(worldServer, playerChunkMap, allowAnimals, allowMonsters);
         if(partition.isEmpty())
         {
             this.partitions.remove(partition);
